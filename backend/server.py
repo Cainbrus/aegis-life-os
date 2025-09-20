@@ -546,7 +546,7 @@ async def store_phantom_file(file_data: Dict[str, Any]):
     """Phantom Folder - Store Sensitive File"""
     try:
         if l1_kernel.current_security_state != SecurityState.OWNER_PRESENT:
-            raise HTTPException(status_code=403, detail="Authentication required for phantom folder")
+            raise HTTPException(status_code=403, detail="Owner authentication required for phantom folder access")
         
         file_id = await phantom_folder.store_sensitive_file(
             filename=file_data.get("filename", "untitled"),
@@ -555,7 +555,10 @@ async def store_phantom_file(file_data: Dict[str, Any]):
         )
         
         return {"status": "stored", "file_id": file_id, "encrypted": True}
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Failed to store phantom file: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to store file: {e}")
 
 @api_router.get("/system/status")
