@@ -1,34 +1,215 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* Aegis HPI OS Custom Styles */
+.App {
+  text-align: center;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Smooth animations for security state transitions */
+.security-indicator {
+  transition: all 0.3s ease-in-out;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+/* Gradient backgrounds for different security states */
+.state-owner-present {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
-.App-link {
-    color: #61dafb;
+.state-unknown-user {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+  border-color: rgba(251, 191, 36, 0.3);
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.state-code-red {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Agent cards hover effects */
+.agent-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.agent-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Behavioral authentication pulse animation */
+.auth-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* AI Orchestrator processing animation */
+.processing {
+  position: relative;
+  overflow: hidden;
+}
+
+.processing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Phantom folder secure glow effect */
+.phantom-secure {
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+  animation: secure-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes secure-glow {
+  from {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+  }
+}
+
+/* Decoy mode styling */
+.decoy-indicator {
+  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+  background-size: 200% 200%;
+  animation: decoy-shift 2s ease-in-out infinite;
+}
+
+@keyframes decoy-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Security events scrollbar styling */
+.security-events::-webkit-scrollbar {
+  width: 6px;
+}
+
+.security-events::-webkit-scrollbar-track {
+  background: rgba(51, 65, 85, 0.5);
+  border-radius: 3px;
+}
+
+.security-events::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.7);
+  border-radius: 3px;
+}
+
+.security-events::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 1);
+}
+
+/* Custom focus styles for inputs */
+.hpi-input:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: rgba(59, 130, 246, 0.5);
+  border-color: transparent;
+}
+
+/* Architecture diagram connections */
+.architecture-connection {
+  position: relative;
+}
+
+.architecture-connection::after {
+  content: '→';
+  position: absolute;
+  right: -15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(99, 102, 241, 0.6);
+  font-size: 18px;
+}
+
+.architecture-connection:last-child::after {
+  display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .agent-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .architecture-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Loading state animations */
+.loading-dots::after {
+  content: '';
+  animation: loading-dots 1.5s infinite;
+}
+
+@keyframes loading-dots {
+  0%, 20% {
+    content: '.';
+  }
+  40% {
+    content: '..';
+  }
+  60%, 100% {
+    content: '...';
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .security-indicator {
+    border-width: 2px;
+  }
+  
+  .agent-card {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .auth-pulse,
+  .processing::after,
+  .secure-glow,
+  .decoy-shift {
+    animation: none;
+  }
+  
+  .agent-card {
+    transition: none;
+  }
 }
