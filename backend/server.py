@@ -61,8 +61,8 @@ class UserGoal(BaseModel):
 class BehavioralData(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str = "default_user"
-    mouse_movements: List[Dict[str, float]] = []
-    typing_patterns: List[Dict[str, float]] = []
+    mouse_movements: List[Dict[str, Any]] = []
+    typing_patterns: List[Dict[str, Any]] = []
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     is_owner: bool = True
 
