@@ -580,8 +580,13 @@ async def get_security_events():
     """Get Recent Security Events"""
     try:
         events = await db.security_events.find().sort("timestamp", -1).limit(10).to_list(10)
+        # Convert ObjectId to string to make it JSON serializable
+        for event in events:
+            if '_id' in event:
+                event['_id'] = str(event['_id'])
         return {"status": "success", "events": events, "count": len(events)}
     except Exception as e:
+        logger.error(f"Failed to get security events: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get security events: {e}")
 
 # Include the router in the main app
