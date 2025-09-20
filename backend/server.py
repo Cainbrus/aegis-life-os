@@ -506,7 +506,11 @@ async def process_user_goal(goal_request: Dict[str, str]):
 async def get_messages():
     """L3 Messages Agent - Get Messages"""
     try:
-        result = await l3_messages.process_action("get_recent", {})
+        # Check security state and return decoy data if unknown user
+        if l1_kernel.current_security_state == SecurityState.UNKNOWN_USER:
+            result = await l3_messages.process_action("get_recent", {"use_decoy_data": True})
+        else:
+            result = await l3_messages.process_action("get_recent", {})
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get messages: {e}")
@@ -515,7 +519,11 @@ async def get_messages():
 async def get_calendar_events():
     """L3 Calendar Agent - Get Events"""
     try:
-        result = await l3_calendar.process_action("get_events", {})
+        # Check security state and return decoy data if unknown user
+        if l1_kernel.current_security_state == SecurityState.UNKNOWN_USER:
+            result = await l3_calendar.process_action("get_events", {"use_decoy_data": True})
+        else:
+            result = await l3_calendar.process_action("get_events", {})
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get calendar events: {e}")
@@ -524,7 +532,11 @@ async def get_calendar_events():
 async def get_photos():
     """L3 Photos Agent - Get Photos"""
     try:
-        result = await l3_photos.process_action("get_recent", {})
+        # Check security state and return decoy data if unknown user
+        if l1_kernel.current_security_state == SecurityState.UNKNOWN_USER:
+            result = await l3_photos.process_action("get_recent", {"use_decoy_data": True})
+        else:
+            result = await l3_photos.process_action("get_recent", {})
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get photos: {e}")
