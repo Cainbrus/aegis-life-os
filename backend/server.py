@@ -137,7 +137,7 @@ class L1TrapKernelGuardian:
                 return await self._handle_primary_pin(pin_attempt)
             elif pin_attempt.pin_type == PinType.OWNER_PIN:
                 return await self._handle_owner_pin(pin_attempt)
-            else:
+            else:  # AUTO_DETECT or unknown
                 return await self._handle_auto_detect_pin(pin_attempt)
                 
         except Exception as e:
