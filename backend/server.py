@@ -297,6 +297,8 @@ class L1EnhancedKernelGuardian:
             "timestamp": datetime.utcnow(),
             "severity": "CRITICAL"
         })
+    
+    async def _end_intruder_session(self):
         """End intruder session and store evidence"""
         if self.intruder_session:
             self.intruder_session.duration_seconds = int((datetime.utcnow() - self.intruder_session.session_start).total_seconds())
