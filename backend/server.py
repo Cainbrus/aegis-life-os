@@ -175,7 +175,8 @@ class L1EnhancedKernelGuardian:
             behavioral_data.confidence_score = confidence_score
             
             # Determine security state based on confidence
-            if confidence_score > 0.85:
+            # Owner authentication with realistic thresholds
+            if confidence_score > 0.75 and len(behavioral_data.micro_gestures) >= 10 and len(behavioral_data.typing_patterns) >= 8:
                 await self._authenticate_as_owner()
             elif confidence_score < 0.3:
                 await self._detect_intruder(behavioral_data)
