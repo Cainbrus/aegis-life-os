@@ -288,7 +288,15 @@ class L1EnhancedKernelGuardian:
             self.intruder_session.photo_evidence = photo_data
             logger.info("L1: Intruder photo evidence captured")
     
-    async def _end_intruder_session(self):
+    async def _initiate_code_red(self):
+        """Emergency security protocol"""
+        self.current_security_state = SecurityState.CODE_RED
+        logger.critical("L1: CODE RED INITIATED - System lockdown")
+        await db.security_events.insert_one({
+            "event_type": "code_red_initiated",
+            "timestamp": datetime.utcnow(),
+            "severity": "CRITICAL"
+        })
         """End intruder session and store evidence"""
         if self.intruder_session:
             self.intruder_session.duration_seconds = int((datetime.utcnow() - self.intruder_session.session_start).total_seconds())
