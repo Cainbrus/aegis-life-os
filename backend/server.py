@@ -671,7 +671,57 @@ async def authenticate_with_pin(pin_data: Dict[str, Any]):
         logger.error(f"PIN authentication failed: {e}")
         raise HTTPException(status_code=500, detail="Authentication failed")
 
-@api_router.post("/trap/log-action")
+@api_router.get("/auth/status")
+async def get_auth_status():
+    """Get current authentication status"""
+    try:
+        return {
+            "security_state": l1_trap_kernel.current_security_state.value,
+            "dual_auth_configured": True,
+            "failed_attempts": l1_trap_kernel.dual_auth_system.failed_attempts,
+            "max_attempts": l1_trap_kernel.dual_auth_system.max_attempts,
+            "is_locked_out": l1_trap_kernel.dual_auth_system.is_locked_out,
+            "trap_mode": l1_trap_kernel.trap_mode_active,
+            "trap_active": l1_trap_kernel.trap_mode_active
+        }
+    except Exception as e:
+        logger.error(f"Failed to get auth status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get status")
+
+@api_router.post("/auth/setup-dual-pins")
+async def setup_dual_authentication(pin_setup: Dict[str, str]):
+    """Setup or change dual authentication PINs"""
+    try:
+        primary_pin = pin_setup.get("primary_pin", "")
+        owner_pin = pin_setup.get("owner_pin", "")
+        duress_pin = pin_setup.get("duress_pin", "0000")
+        
+        result = await l1_trap_kernel.setup_dual_auth(primary_pin, owner_pin, duress_pin)
+        return result
+        
+    except Exception as e:
+        logger.error(f"Dual PIN setup failed: {e}")
+        raise HTTPException(status_code=500, detail="PIN setup failed")
+
+@api_router.post("/auth/logout")
+async def logout():
+    """Logout and return to locked state"""
+    try:
+        if l1_trap_kernel.trap_mode_active:
+            await l1_trap_kernel._deactivate_trap_mode()
+        
+        l1_trap_kernel.current_security_state = SecurityState.LOCKED
+        l1_trap_kernel.trap_mode_active = False
+        
+        return {
+            "success": True,
+            "security_state": SecurityState.LOCKED.value,
+            "message": "Logged out successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Logout failed: {e}")
+        raise HTTPException(status_code=500, detail="Logout failed")
 async def log_trap_action(action_data: Dict[str, Any]):
     """Log intruder action in trap mode"""
     try:
