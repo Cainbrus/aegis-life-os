@@ -52,6 +52,7 @@ class PinType(str, Enum):
     PRIMARY_PIN = "primary_pin"
     OWNER_PIN = "owner_pin"
     DURESS_PIN = "duress_pin"
+    AUTO_DETECT = "auto_detect"
 
 class TrapAction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
