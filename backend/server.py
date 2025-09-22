@@ -722,6 +722,8 @@ async def logout():
     except Exception as e:
         logger.error(f"Logout failed: {e}")
         raise HTTPException(status_code=500, detail="Logout failed")
+
+@api_router.post("/trap/log-action")
 async def log_trap_action(action_data: Dict[str, Any]):
     """Log intruder action in trap mode"""
     try:
