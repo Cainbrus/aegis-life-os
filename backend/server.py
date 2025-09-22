@@ -587,6 +587,11 @@ PROACTIVE BEHAVIORS:
         
         await db.l3_agent_messages.insert_one(message)
         logger.info(f"L2: Delegated {action} to {agent_name} agent with context {self.current_context.value}")
+    
+    async def update_security_state(self, new_state: SecurityState):
+        """Update security state from L1"""
+        self.security_state = new_state
+        logger.info(f"L2: Security state updated to {new_state.value}")
 
 # ===============================
 # ENHANCED L3 APP AGENTS
