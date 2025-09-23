@@ -552,10 +552,21 @@ const AegisTrapSystem = () => {
   const capturePhoto = useSilentPhotoCapture(trapActive);
 
   useEffect(() => {
+    checkOnboardingStatus();
     loadAuthStatus();
     const interval = setInterval(loadAuthStatus, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/onboarding/status`);
+      setOnboardingComplete(response.data.onboarding_complete);
+    } catch (error) {
+      console.error('Failed to check onboarding status:', error);
+      setOnboardingComplete(false);
+    }
+  };
 
   // Take photo periodically in trap mode
   useEffect(() => {
