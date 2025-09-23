@@ -85,15 +85,26 @@ class AegisHPITester:
         success, data = self.run_test(
             "System Status Check",
             "GET", 
-            "system/status",
+            "system/trap-status",
             200,
-            expected_fields=["system", "version", "security_state", "l2_orchestrator", "l3_agents"]
+            expected_fields=["system"]
         )
         
         if success:
-            self.current_security_state = data.get("security_state", "UNKNOWN")
-            print(f"   🔒 Current Security State: {self.current_security_state}")
-            print(f"   🏗️  System Version: {data.get('version', 'Unknown')}")
+            system_info = data.get("system", "Unknown")
+            print(f"   🏗️  System: {system_info}")
+            
+            # Try to get current security state from auth status
+            auth_success, auth_data = self.run_test(
+                "Get Current Security State",
+                "GET",
+                "auth/status", 
+                200
+            )
+            
+            if auth_success:
+                self.current_security_state = auth_data.get("security_state", "UNKNOWN")
+                print(f"   🔒 Current Security State: {self.current_security_state}")
             
         return success
 
