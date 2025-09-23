@@ -48,10 +48,10 @@ class SecurityState(str, Enum):
     INTRUDER_DETECTED = "STATE_INTRUDER_DETECTED"
     CODE_RED = "STATE_CODE_RED"
 
-class PatternType(str, Enum):
-    PRIMARY_PATTERN = "primary_pattern"
-    OWNER_PATTERN = "owner_pattern"
-    DURESS_PATTERN = "duress_pattern"
+class PinType(str, Enum):
+    PRIMARY_PIN = "primary_pin"
+    OWNER_PIN = "owner_pin"
+    DURESS_PIN = "duress_pin"
     AUTO_DETECT = "auto_detect"
 
 class AlertType(str, Enum):
@@ -131,17 +131,17 @@ class IntruderSession(BaseModel):
     suspicion_level: float = 0.0
     evidence_score: int = 0
 
-class PatternAttempt(BaseModel):
-    pattern: str  # String like "1-2-5-8-9" representing connected dots
-    pattern_type: PatternType
+class PinAttempt(BaseModel):
+    pin: str
+    pin_type: PinType
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     attempt_number: int = 1
     source_ip: Optional[str] = None
 
 class DualAuthSystem(BaseModel):
-    primary_pattern: str = "1-2-3-6-9"  # L-shape pattern
-    owner_pattern: str = "1-5-9-8-7"   # Z-shape pattern
-    duress_pattern: str = "2-5-8"      # Vertical line pattern
+    primary_pin: str = "1234"
+    owner_pin: str = "9876"
+    duress_pin: str = "0000"
     max_attempts: int = 3
     lockout_duration: int = 300
     failed_attempts: int = 0
@@ -167,8 +167,8 @@ class L1EnhancedKernelGuardian:
             "VOICE_AWARENESS: Always listen for wake word and duress signals"
         ]
     
-    async def authenticate_with_pattern(self, pattern_attempt: PatternAttempt) -> Dict[str, Any]:
-        """Enhanced dual PATTERN authentication"""
+    async def authenticate_with_pin(self, pin_attempt: PinAttempt) -> Dict[str, Any]:
+        """Enhanced dual PIN authentication"""
         try:
             if self.dual_auth_system.is_locked_out:
                 if await self._check_lockout_expired():
@@ -182,26 +182,26 @@ class L1EnhancedKernelGuardian:
                         "lockout_active": True
                     }
             
-            if pattern_attempt.pattern_type == PatternType.DURESS_PATTERN:
-                return await self._handle_duress_pattern(pattern_attempt)
-            elif pattern_attempt.pattern_type == PatternType.PRIMARY_PATTERN:
-                return await self._handle_primary_pattern(pattern_attempt)
-            elif pattern_attempt.pattern_type == PatternType.OWNER_PATTERN:
-                return await self._handle_owner_pattern(pattern_attempt)
+            if pin_attempt.pin_type == PinType.DURESS_PIN:
+                return await self._handle_duress_pin(pin_attempt)
+            elif pin_attempt.pin_type == PinType.PRIMARY_PIN:
+                return await self._handle_primary_pin(pin_attempt)
+            elif pin_attempt.pin_type == PinType.OWNER_PIN:
+                return await self._handle_owner_pin(pin_attempt)
             else:  # AUTO_DETECT or unknown
-                return await self._handle_auto_detect_pattern(pattern_attempt)
+                return await self._handle_auto_detect_pin(pin_attempt)
                 
         except Exception as e:
-            logger.error(f"L1 PATTERN Authentication error: {e}")
+            logger.error(f"L1 PIN Authentication error: {e}")
             return {
                 "success": False,
                 "security_state": SecurityState.CODE_RED.value,
                 "message": "Authentication system error"
             }
     
-    async def _handle_primary_pattern(self, pattern_attempt: PatternAttempt) -> Dict[str, Any]:
-        """Handle primary PATTERN - activates TRAP MODE"""
-        if pattern_attempt.pattern == self.dual_auth_system.primary_pattern:
+    async def _handle_primary_pin(self, pin_attempt: PinAttempt) -> Dict[str, Any]:
+        """Handle primary PIN - activates TRAP MODE"""
+        if pin_attempt.pin == self.dual_auth_system.primary_pin:
             self.current_security_state = SecurityState.PHONE_UNLOCKED
             self.trap_mode_active = True
             await self._activate_trap_mode()
@@ -217,18 +217,18 @@ class L1EnhancedKernelGuardian:
                 "apps_available": True
             }
         else:
-            return await self._handle_failed_attempt(pattern_attempt, "Pattern incorrect")
+            return await self._handle_failed_attempt(pin_attempt, "PIN incorrect")
     
-    async def _handle_owner_pattern(self, pattern_attempt: PatternAttempt) -> Dict[str, Any]:
-        """Handle owner PATTERN - activates PROACTIVE MODE"""
+    async def _handle_owner_pin(self, pin_attempt: PinAttempt) -> Dict[str, Any]:
+        """Handle owner PIN - activates PROACTIVE MODE"""
         if self.current_security_state != SecurityState.PHONE_UNLOCKED:
             return {
                 "success": False,
                 "security_state": self.current_security_state.value,
-                "message": "Must unlock phone first with primary pattern"
+                "message": "Must unlock phone first with primary PIN"
             }
         
-        if pattern_attempt.pattern == self.dual_auth_system.owner_pattern:
+        if pin_attempt.pin == self.dual_auth_system.owner_pin:
             await self._deactivate_trap_mode()
             self.current_security_state = SecurityState.OWNER_PRESENT
             await self._activate_proactive_mode()
@@ -244,7 +244,7 @@ class L1EnhancedKernelGuardian:
                 "real_data": True
             }
         else:
-            return await self._handle_failed_attempt(pattern_attempt, "Owner pattern incorrect")
+            return await self._handle_failed_attempt(pin_attempt, "Owner PIN incorrect")
     
     async def _activate_proactive_mode(self):
         """Activate proactive intelligence features"""
@@ -447,7 +447,7 @@ class L1EnhancedKernelGuardian:
         }
     
     # Remaining helper methods
-    async def _handle_failed_attempt(self, pattern_attempt: PatternAttempt, message: str) -> Dict[str, Any]:
+    async def _handle_failed_attempt(self, pin_attempt: PinAttempt, message: str) -> Dict[str, Any]:
         self.dual_auth_system.failed_attempts += 1
         self.dual_auth_system.last_failed_attempt = datetime.utcnow()
         
@@ -469,12 +469,12 @@ class L1EnhancedKernelGuardian:
             "remaining_attempts": remaining_attempts
         }
     
-    async def _handle_duress_pattern(self, pattern_attempt: PatternAttempt) -> Dict[str, Any]:
-        if pattern_attempt.pattern == self.dual_auth_system.duress_pattern:
+    async def _handle_duress_pin(self, pin_attempt: PinAttempt) -> Dict[str, Any]:
+        if pin_attempt.pin == self.dual_auth_system.duress_pin:
             self.current_security_state = SecurityState.PHONE_UNLOCKED
             self.trap_mode_active = True
             await self._activate_trap_mode()
-            await self._initiate_silent_duress_protocol(pattern_attempt)
+            await self._initiate_silent_duress_protocol(pin_attempt)
             
             logger.critical("DURESS + TRAP: Silent emergency + surveillance active")
             return {
@@ -486,24 +486,24 @@ class L1EnhancedKernelGuardian:
                 "apps_available": True
             }
         else:
-            return await self._handle_failed_attempt(pattern_attempt, "Pattern incorrect")
+            return await self._handle_failed_attempt(pin_attempt, "PIN incorrect")
     
-    async def _handle_auto_detect_pattern(self, pattern_attempt: PatternAttempt) -> Dict[str, Any]:
-        if pattern_attempt.pattern == self.dual_auth_system.duress_pattern:
-            pattern_attempt.pattern_type = PatternType.DURESS_PATTERN
-            return await self._handle_duress_pattern(pattern_attempt)
+    async def _handle_auto_detect_pin(self, pin_attempt: PinAttempt) -> Dict[str, Any]:
+        if pin_attempt.pin == self.dual_auth_system.duress_pin:
+            pin_attempt.pin_type = PinType.DURESS_PIN
+            return await self._handle_duress_pin(pin_attempt)
         
         if self.current_security_state == SecurityState.LOCKED:
-            pattern_attempt.pattern_type = PatternType.PRIMARY_PATTERN
-            return await self._handle_primary_pattern(pattern_attempt)
+            pin_attempt.pin_type = PinType.PRIMARY_PIN
+            return await self._handle_primary_pin(pin_attempt)
         elif self.current_security_state == SecurityState.PHONE_UNLOCKED:
-            pattern_attempt.pattern_type = PatternType.OWNER_PATTERN
-            return await self._handle_owner_pattern(pattern_attempt)
+            pin_attempt.pin_type = PinType.OWNER_PIN
+            return await self._handle_owner_pin(pin_attempt)
         else:
             return {
                 "success": False,
                 "security_state": self.current_security_state.value,
-                "message": "Invalid state for pattern entry"
+                "message": "Invalid state for PIN entry"
             }
     
     async def _initiate_lockout(self):
@@ -513,11 +513,11 @@ class L1EnhancedKernelGuardian:
         if self.trap_mode_active:
             await self._deactivate_trap_mode()
     
-    async def _initiate_silent_duress_protocol(self, pattern_attempt: PatternAttempt):
+    async def _initiate_silent_duress_protocol(self, pin_attempt: PinAttempt):
         duress_event = {
-            "event_type": "duress_pattern_activated",
+            "event_type": "duress_pin_activated",
             "timestamp": datetime.utcnow(),
-            "source_ip": pattern_attempt.source_ip,
+            "source_ip": pin_attempt.source_ip,
             "severity": "CRITICAL",
             "trap_mode_active": self.trap_mode_active
         }
@@ -546,16 +546,16 @@ class L1EnhancedKernelGuardian:
         self.dual_auth_system.failed_attempts = 0
         self.dual_auth_system.last_failed_attempt = None
     
-    async def setup_dual_auth(self, primary_pattern: str, owner_pattern: str, duress_pattern: str = "2-5-8") -> Dict[str, Any]:
-        if len(primary_pattern.split("-")) < 4 or len(owner_pattern.split("-")) < 4:
-            return {"success": False, "message": "Patterns must connect at least 4 dots"}
+    async def setup_dual_auth(self, primary_pin: str, owner_pin: str, duress_pin: str = "0000") -> Dict[str, Any]:
+        if len(primary_pin) < 4 or len(owner_pin) < 4:
+            return {"success": False, "message": "PINs must be at least 4 digits"}
         
-        if primary_pattern == owner_pattern:
-            return {"success": False, "message": "Primary and Owner patterns must be different"}
+        if primary_pin == owner_pin:
+            return {"success": False, "message": "Primary and Owner PINs must be different"}
         
-        self.dual_auth_system.primary_pattern = primary_pattern
-        self.dual_auth_system.owner_pattern = owner_pattern
-        self.dual_auth_system.duress_pattern = duress_pattern
+        self.dual_auth_system.primary_pin = primary_pin
+        self.dual_auth_system.owner_pin = owner_pin
+        self.dual_auth_system.duress_pin = duress_pin
         
         return {
             "success": True,
@@ -836,245 +836,273 @@ async def root():
     return {
         "message": "Aegis Life OS - Your Proactive Digital Mate", 
         "version": "Proactive Intelligence v1.0",
-        "philosophy": "Privacy-First + Trap-Enhanced + Proactive Intelligence",
-        "authentication": "Dual Pattern System Active"
+        "philosophy": "Perfect Trap + Proactive AI Planning",
+        "tagline": "Two PINs, Total Intelligence",
+        "features": ["Trap System", "Proactive Planning", "Voice Interface", "Smart Alerts"]
     }
+
+@api_router.post("/auth/pin")
+async def authenticate_with_pin(pin_data: Dict[str, Any]):
+    """Enhanced Dual PIN Authentication with Proactive Features"""
+    try:
+        pin_attempt = PinAttempt(
+            pin=pin_data.get("pin", ""),
+            pin_type=PinType(pin_data.get("pin_type", "auto_detect")),
+            source_ip=pin_data.get("source_ip")
+        )
+        
+        result = await l1_enhanced_kernel.authenticate_with_pin(pin_attempt)
+        return result
+        
+    except Exception as e:
+        logger.error(f"PIN authentication failed: {e}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
 
 @api_router.get("/auth/status")
 async def get_auth_status():
     """Get current authentication status"""
-    return {
-        "security_state": l1_enhanced_kernel.current_security_state.value,
-        "trap_mode": l1_enhanced_kernel.trap_mode_active,
-        "lockout_active": l1_enhanced_kernel.dual_auth_system.is_locked_out,
-        "failed_attempts": l1_enhanced_kernel.dual_auth_system.failed_attempts,
-        "max_attempts": l1_enhanced_kernel.dual_auth_system.max_attempts,
-        "system": "Aegis Pattern Authentication v2.0"
-    }
-
-@api_router.post("/auth/pattern")
-async def authenticate_pattern(pattern_data: Dict[str, Any]):
-    """Enhanced dual pattern authentication"""
     try:
-        pattern_attempt = PatternAttempt(
-            pattern=pattern_data.get("pattern", ""),
-            pattern_type=PatternType(pattern_data.get("pattern_type", "auto_detect"))
-        )
-        
-        result = await l1_enhanced_kernel.authenticate_with_pattern(pattern_attempt)
-        
-        # Update L2 security state
-        l2_proactive_orchestrator.security_state = l1_enhanced_kernel.current_security_state
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Pattern authentication error: {e}")
         return {
-            "success": False,
-            "security_state": "STATE_CODE_RED",
-            "message": "Authentication system error"
+            "security_state": l1_enhanced_kernel.current_security_state.value,
+            "dual_auth_configured": True,
+            "failed_attempts": l1_enhanced_kernel.dual_auth_system.failed_attempts,
+            "max_attempts": l1_enhanced_kernel.dual_auth_system.max_attempts,
+            "is_locked_out": l1_enhanced_kernel.dual_auth_system.is_locked_out,
+            "trap_mode": l1_enhanced_kernel.trap_mode_active,
+            "proactive_mode": l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT
         }
-
-@api_router.post("/auth/setup-dual-patterns")
-async def setup_dual_patterns(pattern_data: Dict[str, str]):
-    """Setup dual pattern authentication system"""
-    try:
-        result = await l1_enhanced_kernel.setup_dual_auth(
-            primary_pattern=pattern_data.get("primary_pattern"),
-            owner_pattern=pattern_data.get("owner_pattern"),
-            duress_pattern=pattern_data.get("duress_pattern", "2-5-8")
-        )
-        return result
-        
     except Exception as e:
-        logger.error(f"Pattern setup error: {e}")
-        return {"success": False, "message": "Failed to setup patterns"}
+        logger.error(f"Failed to get auth status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get status")
 
-@api_router.post("/auth/logout")
-async def logout():
-    """Logout and lock system"""
-    try:
-        # Deactivate trap mode if active
-        if l1_enhanced_kernel.trap_mode_active:
-            await l1_enhanced_kernel._deactivate_trap_mode()
-        
-        # Reset to locked state
-        l1_enhanced_kernel.current_security_state = SecurityState.LOCKED
-        l2_proactive_orchestrator.security_state = SecurityState.LOCKED
-        
-        return {
-            "success": True,
-            "security_state": SecurityState.LOCKED.value,
-            "message": "System locked successfully"
-        }
-        
-    except Exception as e:
-        logger.error(f"Logout error: {e}")
-        return {"success": False, "message": "Logout failed"}
-
-# Proactive Intelligence Endpoints
 @api_router.post("/proactive/request")
 async def process_proactive_request(request_data: Dict[str, Any]):
     """Process user request with proactive intelligence"""
-    if l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT:
-        result = await l2_proactive_orchestrator.process_proactive_request(
-            user_input=request_data.get("input", ""),
-            context=request_data.get("context", "general")
-        )
+    try:
+        if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+            raise HTTPException(status_code=403, detail="Owner authentication required for proactive features")
+        
+        user_input = request_data.get("input", "")
+        context = request_data.get("context", "general")
+        
+        result = await l2_proactive_orchestrator.process_proactive_request(user_input, context)
         return result
-    else:
-        return {"status": "error", "message": "Owner authentication required"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to process proactive request: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process request")
 
 @api_router.get("/proactive/briefing")
-async def get_proactive_briefing(briefing_type: str = "morning"):
-    """Get proactive briefing"""
-    if l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT:
+async def get_morning_briefing():
+    """Get proactive morning briefing"""
+    try:
+        if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+            raise HTTPException(status_code=403, detail="Owner authentication required")
+        
         briefing = await l2_proactive_orchestrator.generate_morning_briefing()
         return briefing.dict()
-    else:
-        return {"error": "Owner authentication required"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to generate briefing: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate briefing")
 
-# Enhanced System Status Endpoints
-@api_router.get("/system/trap-status")
-async def get_system_trap_status():
-    """Enhanced system status with trap information"""
-    trap_system_info = {
-        "mode": "SURVEILLANCE" if l1_enhanced_kernel.trap_mode_active else "SECURE",
-        "evidence_collection": "ACTIVE" if l1_enhanced_kernel.trap_mode_active else "STANDBY",
-        "session_active": l1_enhanced_kernel.active_intruder_session is not None
-    }
-    
-    if l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT:
+@api_router.get("/proactive/alerts")
+async def get_proactive_alerts():
+    """Get current proactive alerts"""
+    try:
+        if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+            raise HTTPException(status_code=403, detail="Owner authentication required")
+        
+        alerts = await db.proactive_alerts.find(
+            {"user_responded": False}
+        ).sort("created_at", -1).limit(10).to_list(10)
+        
+        for alert in alerts:
+            if '_id' in alert:
+                alert['_id'] = str(alert['_id'])
+        
         return {
-            "system": "Aegis Life OS v2.0 - Pattern Authentication",
-            "data_mode": "REAL_DATA_ACCESS",
-            "ai_orchestrator": "ACTIVE",
-            "trap_system": trap_system_info,
-            "proactive_features": "ENABLED",
-            "constitution_enforced": True
+            "status": "success",
+            "alerts": alerts,
+            "count": len(alerts)
         }
-    elif l1_enhanced_kernel.current_security_state == SecurityState.PHONE_UNLOCKED:
-        return {
-            "system": "Standard Mobile OS",
-            "data_mode": "NORMAL_ACCESS",
-            "ai_orchestrator": "INACTIVE", 
-            "security": "STANDARD"
-        }
-    else:
-        return {
-            "system": "SYSTEM_LOCKED",
-            "message": "Authentication required"
-        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get alerts: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get alerts")
 
-# Trap Mode Endpoints
+@api_router.post("/proactive/alert-response")
+async def respond_to_alert(response_data: Dict[str, Any]):
+    """Respond to a proactive alert"""
+    try:
+        if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+            raise HTTPException(status_code=403, detail="Owner authentication required")
+        
+        alert_id = response_data.get("alert_id", "")
+        chosen_response = response_data.get("response", "")
+        
+        await db.proactive_alerts.update_one(
+            {"id": alert_id},
+            {"$set": {
+                "user_responded": True,
+                "response_chosen": chosen_response,
+                "responded_at": datetime.utcnow()
+            }}
+        )
+        
+        return {
+            "status": "success",
+            "message": f"Response recorded: {chosen_response}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to record alert response: {e}")
+        raise HTTPException(status_code=500, detail="Failed to record response")
+
+@api_router.post("/voice/command")
+async def process_voice_command(voice_data: VoiceCommand):
+    """Process voice commands with proactive responses"""
+    try:
+        # Check for duress first
+        if any(safe_word in voice_data.command_text.lower() for safe_word in ["help", "emergency", "police"]):
+            # Silent duress activation - don't reveal in response
+            await db.security_events.insert_one({
+                "event_type": "voice_duress_detected",
+                "timestamp": datetime.utcnow(),
+                "severity": "CRITICAL"
+            })
+        
+        # Process normal voice command
+        if l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT:
+            result = await l2_proactive_orchestrator.process_proactive_request(
+                voice_data.command_text, 
+                "voice_command"
+            )
+            
+            return {
+                "status": "success",
+                "wake_word": voice_data.wake_word,
+                "response": result.get("response", "I'm here to help!"),
+                "suggestions": result.get("suggestions", []),
+                "alerts": result.get("alerts", [])
+            }
+        else:
+            return {
+                "status": "success",
+                "wake_word": voice_data.wake_word,
+                "response": "Voice assistant ready. Unlock for full features.",
+                "suggestions": [],
+                "alerts": []
+            }
+        
+    except Exception as e:
+        logger.error(f"Voice command processing failed: {e}")
+        raise HTTPException(status_code=500, detail="Voice processing error")
+
+# Existing trap endpoints (keeping all of them)
 @api_router.post("/trap/log-action")
 async def log_trap_action(action_data: Dict[str, Any]):
-    """Log intruder action for evidence collection"""
-    result = await l1_enhanced_kernel.log_trap_action(action_data)
-    return result
+    """Log intruder action in trap mode"""
+    try:
+        result = await l1_enhanced_kernel.log_trap_action(action_data)
+        return result
+    except Exception as e:
+        logger.error(f"Failed to log trap action: {e}")
+        raise HTTPException(status_code=500, detail="Failed to log action")
 
 @api_router.post("/trap/capture-photo")
 async def capture_intruder_photo(photo_data: Dict[str, str]):
     """Silently capture intruder photo"""
-    result = await l1_enhanced_kernel.capture_intruder_photo(photo_data.get("photo", ""))
-    return result
+    try:
+        photo_base64 = photo_data.get("photo", "")
+        result = await l1_enhanced_kernel.capture_intruder_photo(photo_base64)
+        return result
+    except Exception as e:
+        logger.error(f"Failed to capture photo: {e}")
+        raise HTTPException(status_code=500, detail="Failed to capture photo")
 
-@api_router.get("/trap/status")
-async def get_trap_status():
-    """Get trap mode status (owner only)"""
-    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
-        return {"error": "Owner authentication required"}
-    
-    if l1_enhanced_kernel.active_intruder_session:
-        session = l1_enhanced_kernel.active_intruder_session
-        duration = (datetime.utcnow() - session.session_start).total_seconds()
-        
-        return {
-            "trap_active": True,
-            "session_id": session.id,
-            "duration_seconds": duration,
-            "actions_logged": len(session.actions_logged),
-            "photos_captured": len(session.photo_evidence),
-            "apps_accessed": session.apps_accessed,
-            "suspicious_actions": session.behavioral_patterns.get("suspicious_actions", 0)
-        }
-    else:
-        return {
-            "trap_active": False,
-            "message": "No active trap session"
-        }
-
-@api_router.get("/trap/evidence")
-async def get_trap_evidence():
-    """Get collected trap evidence (owner only)"""
-    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
-        return {"error": "Owner authentication required"}
-    
-    # Fetch recent evidence from database
-    evidence_docs = await db.intruder_evidence.find().sort("session_start", -1).limit(5).to_list(length=5)
-    
-    return {
-        "recent_sessions": evidence_docs,
-        "total_evidence_sessions": len(evidence_docs)
-    }
-
-# App Data Endpoints (Trap-Aware)
-@api_router.get("/apps/{app_name}/data")
-async def get_app_data(app_name: str, action: str = "view"):
-    """Get app data (real or fake based on security state)"""
-    
-    # Always return trap data when in phone unlocked state (trap mode)
-    if l1_enhanced_kernel.current_security_state == SecurityState.PHONE_UNLOCKED:
-        # Log the app access attempt
+@api_router.get("/trap/app/{app_name}")
+async def get_trap_app_data(app_name: str, action: str = "view", context: str = "evening"):
+    """Get convincing fake data for any app in trap mode"""
+    try:
         await l1_enhanced_kernel.log_trap_action({
-            "action_type": "app_data_request",
+            "action_type": "app_open",
             "app_name": app_name,
-            "details": {"action": action, "timestamp": datetime.utcnow().isoformat()}
+            "details": {"action": action, "context": context},
+            "timestamp": datetime.utcnow()
         })
         
-        # Return convincing fake data
-        trap_data = await l3_trap_agent.get_trap_data(app_name, action)
+        trap_data = await l3_trap_agent.get_trap_data(app_name, action, context)
         return trap_data
-    
-    elif l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT:
-        # Return real data for owner
-        return {
-            "status": "success",
-            "app": app_name,
-            "data_type": "real_data",
-            "data": {"message": "Real user data would be loaded here"},
-            "trap_active": False
-        }
-    
-    else:
-        return {"error": "Authentication required", "app": app_name}
+        
+    except Exception as e:
+        logger.error(f"Failed to get trap app data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get app data")
 
-# Voice Interface Endpoints
-@api_router.post("/voice/process")
-async def process_voice_command(voice_data: Dict[str, Any]):
-    """Process voice command"""
-    if l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT:
-        # Process with proactive AI
-        result = await l2_proactive_orchestrator.process_proactive_request(
-            user_input=voice_data.get("command", ""),
-            context="voice_interface"
-        )
-        return result
+@api_router.get("/system/proactive-status")
+async def get_proactive_system_status():
+    """Get system status with proactive intelligence information"""
+    current_hour = datetime.utcnow().hour
+    
+    if 5 <= current_hour < 10:
+        context = "morning"
+    elif 10 <= current_hour < 17:
+        context = "work"
+    elif 17 <= current_hour < 22:
+        context = "evening"
     else:
-        return {"error": "Voice interface requires owner authentication"}
+        context = "night"
+    
+    return {
+        "system": "Aegis Life OS",
+        "version": "Proactive Intelligence v1.0",
+        "tagline": "Your Proactive Digital Mate",
+        "philosophy": "Perfect Trap + Intelligent Planning",
+        "security_state": l1_enhanced_kernel.current_security_state.value,
+        "proactive_features": {
+            "active": l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT,
+            "briefing_ready": True,
+            "alerts_monitoring": True,
+            "voice_interface": "active",
+            "planning_mode": "proactive" if l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT else "disabled"
+        },
+        "trap_system": {
+            "active": l1_enhanced_kernel.trap_mode_active,
+            "mode": "comprehensive_surveillance" if l1_enhanced_kernel.trap_mode_active else "standby",
+            "evidence_collection": "active" if l1_enhanced_kernel.trap_mode_active else "inactive"
+        },
+        "current_context": context,
+        "data_mode": {
+            "STATE_LOCKED": "No access",
+            "STATE_PHONE_UNLOCKED": "TRAP MODE - Perfect deception active", 
+            "STATE_OWNER_PRESENT": "PROACTIVE MODE - Your digital mate is ready"
+        }.get(l1_enhanced_kernel.current_security_state.value, "Unknown"),
+        "timestamp": datetime.utcnow()
+    }
 
-# Add CORS middleware
+# Include the router in the main app
+app.include_router(api_router)
+
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
     allow_credentials=True,
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include API routes
-app.include_router(api_router)
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    client.close()
 
 if __name__ == "__main__":
     import uvicorn
