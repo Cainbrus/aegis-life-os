@@ -1050,6 +1050,163 @@ async def get_app_data(app_name: str, action: str = "view"):
     else:
         return {"error": "Authentication required", "app": app_name}
 
+# Vault/Phantom Folder Endpoints
+@api_router.post("/vault/access-attempt")
+async def log_vault_access_attempt(access_data: Dict[str, Any]):
+    """Log calculator secret handshake attempt"""
+    try:
+        # Log the vault access attempt
+        vault_log = {
+            "access_type": "secret_handshake",
+            "action": access_data.get("action", "unknown"),
+            "code_used": access_data.get("code_used", ""),
+            "timestamp": datetime.utcnow(),
+            "security_state": l1_enhanced_kernel.current_security_state.value,
+            "session_id": str(uuid.uuid4())
+        }
+        
+        await db.vault_access_logs.insert_one(vault_log)
+        
+        logger.info(f"VAULT: Secret handshake detected - {access_data.get('action')}")
+        
+        return {
+            "success": True,
+            "message": "Vault access attempt logged",
+            "handshake_detected": True
+        }
+        
+    except Exception as e:
+        logger.error(f"Vault access logging error: {e}")
+        return {"success": False, "message": "Failed to log vault access"}
+
+@api_router.post("/vault/authenticate")
+async def authenticate_vault(auth_data: Dict[str, Any]):
+    """Authenticate access to Phantom Folder"""
+    try:
+        # Only allow vault access if owner is authenticated
+        if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+            return {
+                "success": False,
+                "message": "Owner authentication required for vault access"
+            }
+        
+        auth_method = auth_data.get("method", "pattern")
+        
+        # Log successful vault authentication
+        vault_auth_log = {
+            "event_type": "vault_authenticated",
+            "auth_method": auth_method,
+            "timestamp": datetime.utcnow(),
+            "security_state": l1_enhanced_kernel.current_security_state.value,
+            "session_id": str(uuid.uuid4())
+        }
+        
+        await db.vault_authentications.insert_one(vault_auth_log)
+        
+        logger.info(f"VAULT: Successfully authenticated via {auth_method}")
+        
+        return {
+            "success": True,
+            "message": "Vault authentication successful",
+            "vault_unlocked": True,
+            "auth_method": auth_method
+        }
+        
+    except Exception as e:
+        logger.error(f"Vault authentication error: {e}")
+        return {"success": False, "message": "Vault authentication failed"}
+
+@api_router.get("/vault/data")
+async def get_vault_data():
+    """Get Phantom Folder contents"""
+    try:
+        # Only allow vault data access if owner is authenticated
+        if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+            return {"error": "Owner authentication required for vault access"}
+        
+        # Return structured vault data
+        vault_data = {
+            "secure_files": [
+                {"name": "passport_scan.pdf", "size": "2.4 MB", "encrypted": True, "last_modified": "2024-01-15"},
+                {"name": "private_keys.txt", "size": "1.2 KB", "encrypted": True, "last_modified": "2024-01-10"},
+                {"name": "family_photos_backup.zip", "size": "156 MB", "encrypted": True, "last_modified": "2024-01-20"},
+                {"name": "medical_records.pdf", "size": "8.7 MB", "encrypted": True, "last_modified": "2024-01-18"}
+            ],
+            "hidden_apps": [
+                {"name": "Signal", "icon": "💬", "hidden_since": "2024-01-01"},
+                {"name": "Tor Browser", "icon": "🌐", "hidden_since": "2024-01-05"},
+                {"name": "ProtonMail", "icon": "📧", "hidden_since": "2024-01-10"},
+                {"name": "Crypto Wallet", "icon": "₿", "hidden_since": "2024-01-12"},
+                {"name": "VPN Client", "icon": "🛡️", "hidden_since": "2024-01-15"},
+                {"name": "Password Manager", "icon": "🔑", "hidden_since": "2024-01-18"}
+            ],
+            "ai_hidden_plans": [
+                {
+                    "title": "Career Transition Plan",
+                    "status": "Active",
+                    "confidence": "High",
+                    "last_updated": "2 days ago",
+                    "description": "Strategic plan for career advancement based on AI analysis"
+                },
+                {
+                    "title": "Investment Strategy Backup", 
+                    "status": "Monitoring",
+                    "confidence": "Medium",
+                    "last_updated": "5 days ago",
+                    "description": "AI-generated investment recommendations and risk analysis"
+                },
+                {
+                    "title": "Emergency Contact Protocol",
+                    "status": "Standby", 
+                    "confidence": "High",
+                    "last_updated": "1 week ago",
+                    "description": "Automated emergency response procedures and contacts"
+                },
+                {
+                    "title": "Digital Legacy Plan",
+                    "status": "Draft",
+                    "confidence": "Low", 
+                    "last_updated": "2 weeks ago",
+                    "description": "Digital asset and account management for inheritance"
+                }
+            ],
+            "quarantine_bin": [
+                {
+                    "type": "Suspicious Email",
+                    "item": "phishing@fake-bank.com",
+                    "risk_level": "High",
+                    "quarantined": "2 hours ago",
+                    "reason": "Phishing attempt detected by AI analysis"
+                },
+                {
+                    "type": "Malicious Link", 
+                    "item": "malware-site.com/download",
+                    "risk_level": "Critical",
+                    "quarantined": "1 day ago", 
+                    "reason": "Known malware distribution site"
+                },
+                {
+                    "type": "Tracking Pixel",
+                    "item": "ad-tracker.jpg",
+                    "risk_level": "Medium",
+                    "quarantined": "3 days ago",
+                    "reason": "Privacy violation - unauthorized tracking"
+                }
+            ],
+            "vault_stats": {
+                "total_files": 4,
+                "total_size": "168.1 MB",
+                "encryption_strength": "AES-256",
+                "last_accessed": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        }
+        
+        return vault_data
+        
+    except Exception as e:
+        logger.error(f"Vault data retrieval error: {e}")
+        return {"error": "Failed to retrieve vault data"}
+
 # Voice Interface Endpoints
 @api_router.post("/voice/process")
 async def process_voice_command(voice_data: Dict[str, Any]):
