@@ -630,6 +630,15 @@ const AegisTrapSystem = () => {
     setCurrentApp(appName);
   };
 
+  const handleVaultAccess = (isAccessed) => {
+    if (isAccessed) {
+      logAction("phantom_folder_accessed", "vault", {
+        access_method: "calculator_handshake",
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await axios.post(`${API}/auth/logout`);
