@@ -97,74 +97,286 @@ class AegisHPITester:
             
         return success
 
-    def test_behavioral_auth_unknown_user(self) -> bool:
-        """Test L1 Behavioral Authentication - Unknown User (Minimal Data)"""
-        minimal_behavioral_data = {
-            "mouse_movements": [
-                {"x": 100, "y": 200, "timestamp": int(time.time() * 1000), "velocity": 5}
-            ],
-            "typing_patterns": [
-                {"key": "a", "timestamp": int(time.time() * 1000), "duration": 100}
-            ],
-            "is_owner": False
-        }
-        
+    def test_auth_status(self) -> bool:
+        """Test authentication status endpoint"""
         success, data = self.run_test(
-            "L1 Behavioral Auth - Unknown User",
-            "POST",
-            "auth/behavioral", 
+            "Authentication Status Check",
+            "GET",
+            "auth/status",
             200,
-            data=minimal_behavioral_data,
-            expected_fields=["status", "security_state", "authenticated", "timestamp"]
+            expected_fields=["security_state", "trap_mode", "lockout_active", "failed_attempts", "max_attempts", "system"]
         )
         
         if success:
-            security_state = data.get("security_state")
-            authenticated = data.get("authenticated", False)
+            self.current_security_state = data.get("security_state", "UNKNOWN")
+            print(f"   🔒 Current Security State: {self.current_security_state}")
+            print(f"   🎭 Trap Mode Active: {data.get('trap_mode', False)}")
+            print(f"   🔐 Lockout Active: {data.get('lockout_active', False)}")
+            print(f"   ❌ Failed Attempts: {data.get('failed_attempts', 0)}/{data.get('max_attempts', 3)}")
             
-            if security_state == "STATE_UNKNOWN_USER" and not authenticated:
-                print(f"   ✅ CORRECT - Unknown user detected, decoy mode should activate")
-                self.current_security_state = security_state
+        return success
+
+    def test_pattern_setup(self) -> bool:
+        """Test dual pattern setup endpoint"""
+        pattern_config = {
+            "primary_pattern": "1-2-3-6-9",  # L-shape pattern
+            "owner_pattern": "1-5-9-8-7",   # Z-shape pattern  
+            "duress_pattern": "2-5-8"       # Vertical line pattern
+        }
+        
+        success, data = self.run_test(
+            "Pattern Setup - Dual Authentication",
+            "POST",
+            "auth/setup-dual-patterns",
+            200,
+            data=pattern_config,
+            expected_fields=["success", "message"]
+        )
+        
+        if success:
+            setup_success = data.get("success", False)
+            message = data.get("message", "")
+            
+            if setup_success:
+                print(f"   ✅ CORRECT - Dual patterns configured successfully")
+                print(f"   📝 Message: {message}")
                 return True
             else:
-                print(f"   ❌ UNEXPECTED - Expected UNKNOWN_USER, got {security_state}")
+                print(f"   ❌ FAILED - Pattern setup failed: {message}")
                 return False
         
         return False
 
-    def test_behavioral_auth_owner(self) -> bool:
-        """Test L1 Behavioral Authentication - Owner (Rich Data)"""
-        rich_behavioral_data = {
-            "mouse_movements": [
-                {"x": 100 + i*10, "y": 200 + i*5, "timestamp": int(time.time() * 1000) + i*100, "velocity": 5 + i}
-                for i in range(8)  # 8 mouse movements for high confidence
-            ],
-            "typing_patterns": [
-                {"key": chr(97 + i), "timestamp": int(time.time() * 1000) + i*150, "duration": 100 + i*10}
-                for i in range(6)  # 6 typing patterns for high confidence
-            ],
-            "is_owner": True
+    def test_pattern_validation(self) -> bool:
+        """Test pattern validation (minimum 4 dots)"""
+        # Test invalid pattern (too short)
+        invalid_pattern = {
+            "primary_pattern": "1-2-3",      # Only 3 dots - should fail
+            "owner_pattern": "1-5-9-8-7",   # Valid
+            "duress_pattern": "2-5-8"       # Valid but short (duress can be shorter)
         }
         
         success, data = self.run_test(
-            "L1 Behavioral Auth - Owner",
-            "POST",
-            "auth/behavioral",
-            200, 
-            data=rich_behavioral_data,
-            expected_fields=["status", "security_state", "authenticated", "timestamp"]
+            "Pattern Validation - Too Short",
+            "POST", 
+            "auth/setup-dual-patterns",
+            200,
+            data=invalid_pattern,
+            expected_fields=["success", "message"]
         )
         
         if success:
-            security_state = data.get("security_state")
-            authenticated = data.get("authenticated", False)
+            setup_success = data.get("success", False)
+            message = data.get("message", "")
             
-            if security_state == "STATE_OWNER_PRESENT" and authenticated:
-                print(f"   ✅ CORRECT - Owner authenticated, full access granted")
+            if not setup_success and "at least 4 dots" in message:
+                print(f"   ✅ CORRECT - Pattern validation working: {message}")
+                return True
+            else:
+                print(f"   ❌ FAILED - Pattern validation not working properly")
+                return False
+        
+        return False
+
+    def test_primary_pattern_auth(self) -> bool:
+        """Test primary pattern authentication (trap mode)"""
+        primary_pattern_data = {
+            "pattern": "1-2-3-6-9",
+            "pattern_type": "primary_pattern"
+        }
+        
+        success, data = self.run_test(
+            "Primary Pattern Auth - Trap Mode",
+            "POST",
+            "auth/pattern",
+            200,
+            data=primary_pattern_data,
+            expected_fields=["success", "security_state", "message", "trap_mode"]
+        )
+        
+        if success:
+            auth_success = data.get("success", False)
+            security_state = data.get("security_state")
+            trap_mode = data.get("trap_mode", False)
+            
+            if auth_success and security_state == "STATE_PHONE_UNLOCKED" and trap_mode:
+                print(f"   ✅ CORRECT - Primary pattern activated trap mode")
                 self.current_security_state = security_state
                 return True
             else:
-                print(f"   ❌ UNEXPECTED - Expected OWNER_PRESENT, got {security_state}")
+                print(f"   ❌ UNEXPECTED - Expected trap mode activation, got {security_state}")
+                return False
+        
+        return False
+
+    def test_owner_pattern_auth(self) -> bool:
+        """Test owner pattern authentication (real data access)"""
+        # First ensure we're in phone unlocked state
+        if self.current_security_state != "STATE_PHONE_UNLOCKED":
+            print(f"   ⚠️  Need to be in PHONE_UNLOCKED state first, currently: {self.current_security_state}")
+            # Try primary pattern first
+            self.test_primary_pattern_auth()
+        
+        owner_pattern_data = {
+            "pattern": "1-5-9-8-7",
+            "pattern_type": "owner_pattern"
+        }
+        
+        success, data = self.run_test(
+            "Owner Pattern Auth - Real Data Access",
+            "POST",
+            "auth/pattern", 
+            200,
+            data=owner_pattern_data,
+            expected_fields=["success", "security_state", "message", "proactive_mode"]
+        )
+        
+        if success:
+            auth_success = data.get("success", False)
+            security_state = data.get("security_state")
+            proactive_mode = data.get("proactive_mode", False)
+            
+            if auth_success and security_state == "STATE_OWNER_PRESENT" and proactive_mode:
+                print(f"   ✅ CORRECT - Owner pattern activated proactive mode")
+                self.current_security_state = security_state
+                return True
+            else:
+                print(f"   ❌ UNEXPECTED - Expected owner mode activation, got {security_state}")
+                return False
+        
+        return False
+
+    def test_duress_pattern_auth(self) -> bool:
+        """Test duress pattern authentication (emergency + trap mode)"""
+        # Reset to locked state first
+        self.test_logout()
+        
+        duress_pattern_data = {
+            "pattern": "2-5-8",
+            "pattern_type": "duress_pattern"
+        }
+        
+        success, data = self.run_test(
+            "Duress Pattern Auth - Emergency Mode",
+            "POST",
+            "auth/pattern",
+            200,
+            data=duress_pattern_data,
+            expected_fields=["success", "security_state", "message", "trap_mode"]
+        )
+        
+        if success:
+            auth_success = data.get("success", False)
+            security_state = data.get("security_state")
+            trap_mode = data.get("trap_mode", False)
+            
+            if auth_success and security_state == "STATE_PHONE_UNLOCKED" and trap_mode:
+                print(f"   ✅ CORRECT - Duress pattern activated emergency + trap mode")
+                self.current_security_state = security_state
+                return True
+            else:
+                print(f"   ❌ UNEXPECTED - Expected emergency trap mode, got {security_state}")
+                return False
+        
+        return False
+
+    def test_auto_detect_pattern(self) -> bool:
+        """Test auto-detect pattern functionality"""
+        # Reset to locked state first
+        self.test_logout()
+        
+        # Test auto-detect with primary pattern
+        auto_detect_data = {
+            "pattern": "1-2-3-6-9",
+            "pattern_type": "auto_detect"
+        }
+        
+        success, data = self.run_test(
+            "Auto-Detect Pattern - Primary",
+            "POST",
+            "auth/pattern",
+            200,
+            data=auto_detect_data,
+            expected_fields=["success", "security_state", "trap_mode"]
+        )
+        
+        if success:
+            auth_success = data.get("success", False)
+            security_state = data.get("security_state")
+            trap_mode = data.get("trap_mode", False)
+            
+            if auth_success and security_state == "STATE_PHONE_UNLOCKED" and trap_mode:
+                print(f"   ✅ CORRECT - Auto-detect correctly identified primary pattern")
+                self.current_security_state = security_state
+                return True
+            else:
+                print(f"   ❌ UNEXPECTED - Auto-detect failed for primary pattern")
+                return False
+        
+        return False
+
+    def test_failed_authentication_lockout(self) -> bool:
+        """Test failed authentication and lockout system"""
+        # Reset to locked state first
+        self.test_logout()
+        
+        wrong_pattern_data = {
+            "pattern": "9-8-7-6-5",  # Wrong pattern
+            "pattern_type": "primary_pattern"
+        }
+        
+        # Test multiple failed attempts
+        failed_attempts = 0
+        for attempt in range(4):  # Try 4 times to trigger lockout
+            success, data = self.run_test(
+                f"Failed Auth Attempt #{attempt + 1}",
+                "POST",
+                "auth/pattern",
+                200,
+                data=wrong_pattern_data,
+                expected_fields=["success", "security_state", "message"]
+            )
+            
+            if success:
+                auth_success = data.get("success", False)
+                message = data.get("message", "")
+                
+                if not auth_success:
+                    failed_attempts += 1
+                    print(f"   ✅ Failed attempt #{attempt + 1} correctly rejected")
+                    
+                    if "locked" in message.lower():
+                        print(f"   ✅ CORRECT - System locked after {failed_attempts} failed attempts")
+                        return True
+                else:
+                    print(f"   ❌ UNEXPECTED - Wrong pattern was accepted!")
+                    return False
+            
+            time.sleep(0.5)  # Brief pause between attempts
+        
+        print(f"   ❌ FAILED - System did not lock after {failed_attempts} failed attempts")
+        return False
+
+    def test_logout(self) -> bool:
+        """Test logout functionality"""
+        success, data = self.run_test(
+            "System Logout",
+            "POST",
+            "auth/logout",
+            200,
+            expected_fields=["success", "security_state", "message"]
+        )
+        
+        if success:
+            logout_success = data.get("success", False)
+            security_state = data.get("security_state")
+            
+            if logout_success and security_state == "STATE_LOCKED":
+                print(f"   ✅ CORRECT - System locked successfully")
+                self.current_security_state = security_state
+                return True
+            else:
+                print(f"   ❌ FAILED - Logout did not lock system properly")
                 return False
         
         return False
