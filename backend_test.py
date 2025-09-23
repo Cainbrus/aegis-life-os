@@ -651,9 +651,329 @@ class AegisPatternAuthTester:
         
         return False
 
+    def test_calculator_secret_handshake(self) -> bool:
+        """Test Calculator Secret Handshake - POST /api/vault/access-attempt"""
+        calculator_access_data = {
+            "action": "secret_calculation",
+            "code_used": "8675309",
+            "calculation": "867 + 5309 = 6176"
+        }
+        
+        success, data = self.run_test(
+            "Calculator Secret Handshake",
+            "POST",
+            "vault/access-attempt",
+            200,
+            data=calculator_access_data,
+            expected_fields=["success", "message", "handshake_detected"]
+        )
+        
+        if success:
+            handshake_detected = data.get("handshake_detected", False)
+            message = data.get("message", "")
+            
+            if handshake_detected:
+                print(f"   ✅ Calculator secret handshake detected and logged")
+                return True
+            else:
+                print(f"   ❌ Calculator secret handshake not properly detected")
+                return False
+        
+        return False
+
+    def test_phantom_folder_authentication(self) -> bool:
+        """Test Phantom Folder authentication - POST /api/vault/authenticate"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping vault auth test - requires owner authentication")
+            return True
+            
+        vault_auth_data = {
+            "method": "pattern",
+            "vault_key": "phantom_access"
+        }
+        
+        success, data = self.run_test(
+            "Phantom Folder Authentication",
+            "POST",
+            "vault/authenticate",
+            200,
+            data=vault_auth_data,
+            expected_fields=["success", "message", "vault_unlocked"]
+        )
+        
+        if success:
+            vault_unlocked = data.get("vault_unlocked", False)
+            auth_method = data.get("auth_method", "")
+            
+            if vault_unlocked:
+                print(f"   ✅ Phantom Folder successfully authenticated via {auth_method}")
+                return True
+            else:
+                print(f"   ❌ Phantom Folder authentication failed")
+                return False
+        
+        return False
+
+    def test_phantom_folder_data_access(self) -> bool:
+        """Test Phantom Folder data access - GET /api/vault/data"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping vault data test - requires owner authentication")
+            return True
+            
+        success, data = self.run_test(
+            "Phantom Folder Data Access",
+            "GET",
+            "vault/data",
+            200,
+            expected_fields=["secure_files", "hidden_apps", "ai_hidden_plans", "quarantine_bin", "vault_stats"]
+        )
+        
+        if success:
+            secure_files = data.get("secure_files", [])
+            hidden_apps = data.get("hidden_apps", [])
+            ai_plans = data.get("ai_hidden_plans", [])
+            quarantine = data.get("quarantine_bin", [])
+            
+            print(f"   📁 Secure Files: {len(secure_files)} found")
+            print(f"   📱 Hidden Apps: {len(hidden_apps)} found")
+            print(f"   🧠 AI Plans: {len(ai_plans)} found")
+            print(f"   🗑️  Quarantine Items: {len(quarantine)} found")
+            
+            if secure_files and hidden_apps and ai_plans:
+                print(f"   ✅ Phantom Folder data comprehensive and accessible")
+                return True
+            else:
+                print(f"   ❌ Phantom Folder data incomplete or missing")
+                return False
+        
+        return False
+
+    def test_voice_interface_processing(self) -> bool:
+        """Test Voice interface - POST /api/voice/process"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping voice test - requires owner authentication")
+            return True
+            
+        voice_command_data = {
+            "command": "Hey Mate, schedule a meeting with Sarah tomorrow at 3pm and check my messages",
+            "wake_word": "mate",
+            "confidence": 0.95
+        }
+        
+        success, data = self.run_test(
+            "Voice Interface Processing",
+            "POST",
+            "voice/process",
+            200,
+            data=voice_command_data,
+            expected_fields=["status", "response"]
+        )
+        
+        if success:
+            status = data.get("status", "")
+            response = data.get("response", "")
+            suggestions = data.get("suggestions", [])
+            
+            print(f"   🎤 Voice Response: {response[:100]}...")
+            print(f"   💡 Suggestions: {len(suggestions)} provided")
+            
+            if status == "success" and response:
+                print(f"   ✅ Voice interface successfully processed command")
+                return True
+            else:
+                print(f"   ❌ Voice interface failed to process command")
+                return False
+        
+        return False
+
+    def test_emergency_duress_protocol(self) -> bool:
+        """Test Emergency duress - POST /api/emergency/duress (CRITICAL SECURITY FEATURE)"""
+        duress_data = {
+            "phrase": "help me please",
+            "location": "home",
+            "context": "voice_command"
+        }
+        
+        success, data = self.run_test(
+            "Emergency Duress Protocol",
+            "POST",
+            "emergency/duress",
+            200,
+            data=duress_data,
+            expected_fields=["status", "message"]
+        )
+        
+        if success:
+            status = data.get("status", "")
+            message = data.get("message", "")
+            
+            # CRITICAL: Duress should respond normally to avoid alerting attacker
+            if status == "success" and "processing complete" in message.lower():
+                print(f"   ✅ CRITICAL - Duress protocol activated silently (responds normally)")
+                print(f"   🚨 Emergency response would be triggered in background")
+                return True
+            else:
+                print(f"   ❌ CRITICAL - Duress protocol not working properly")
+                return False
+        
+        return False
+
+    def test_onboarding_status_check(self) -> bool:
+        """Test Onboarding status - GET /api/onboarding/status"""
+        success, data = self.run_test(
+            "Onboarding Status Check",
+            "GET",
+            "onboarding/status",
+            200,
+            expected_fields=["onboarding_complete"]
+        )
+        
+        if success:
+            onboarding_complete = data.get("onboarding_complete", False)
+            setup_date = data.get("setup_date", None)
+            
+            print(f"   📋 Onboarding Complete: {onboarding_complete}")
+            if setup_date:
+                print(f"   📅 Setup Date: {setup_date}")
+            
+            print(f"   ✅ Onboarding status endpoint working correctly")
+            return True
+        
+        return False
+
+    def test_onboarding_completion(self) -> bool:
+        """Test Onboarding completion - POST /api/onboarding/complete"""
+        onboarding_data = {
+            "customWakeName": "Mate",
+            "duressPhrase": "help me please",
+            "calculatorCode": "8675309",
+            "behavioral_baseline": {
+                "typing_speed": 45,
+                "app_usage_patterns": ["messages", "calendar", "photos"],
+                "security_preferences": "high"
+            }
+        }
+        
+        success, data = self.run_test(
+            "Onboarding Completion",
+            "POST",
+            "onboarding/complete",
+            200,
+            data=onboarding_data,
+            expected_fields=["success", "message", "user_id"]
+        )
+        
+        if success:
+            setup_success = data.get("success", False)
+            user_id = data.get("user_id", "")
+            message = data.get("message", "")
+            
+            if setup_success and user_id:
+                print(f"   ✅ Onboarding completed successfully")
+                print(f"   👤 User ID: {user_id}")
+                return True
+            else:
+                print(f"   ❌ Onboarding completion failed: {message}")
+                return False
+        
+        return False
+
+    def test_proactive_briefing_generation(self) -> bool:
+        """Test Proactive briefings - GET /api/proactive/briefing"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping briefing test - requires owner authentication")
+            return True
+            
+        success, data = self.run_test(
+            "Proactive Briefing Generation",
+            "GET",
+            "proactive/briefing?briefing_type=morning",
+            200,
+            expected_fields=["briefing_type", "title", "summary", "insights", "action_items"]
+        )
+        
+        if success:
+            briefing_type = data.get("briefing_type", "")
+            title = data.get("title", "")
+            insights = data.get("insights", [])
+            action_items = data.get("action_items", [])
+            
+            print(f"   📋 Briefing Type: {briefing_type}")
+            print(f"   📝 Title: {title}")
+            print(f"   💡 Insights: {len(insights)} provided")
+            print(f"   ✅ Action Items: {len(action_items)} provided")
+            
+            if briefing_type and title and insights:
+                print(f"   ✅ Proactive briefing generated successfully")
+                return True
+            else:
+                print(f"   ❌ Proactive briefing incomplete")
+                return False
+        
+        return False
+
+    def test_wake_word_status(self) -> bool:
+        """Test Wake word status - GET /api/voice/wake-word-status"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping wake word test - requires owner authentication")
+            return True
+            
+        success, data = self.run_test(
+            "Wake Word Status Check",
+            "GET",
+            "voice/wake-word-status",
+            200,
+            expected_fields=["wake_word_active", "custom_name", "duress_monitoring"]
+        )
+        
+        if success:
+            wake_word_active = data.get("wake_word_active", False)
+            custom_name = data.get("custom_name", "")
+            duress_monitoring = data.get("duress_monitoring", False)
+            
+            print(f"   🎤 Wake Word Active: {wake_word_active}")
+            print(f"   📛 Custom Name: {custom_name}")
+            print(f"   🚨 Duress Monitoring: {duress_monitoring}")
+            
+            if wake_word_active and custom_name:
+                print(f"   ✅ Wake word system operational")
+                return True
+            else:
+                print(f"   ❌ Wake word system not properly configured")
+                return False
+        
+        return False
+
+    def test_vault_access_without_auth(self) -> bool:
+        """Test vault endpoints require proper authentication"""
+        # Reset to locked state to test security
+        self.test_logout()
+        
+        success, data = self.run_test(
+            "Vault Access Without Authentication",
+            "POST",
+            "vault/authenticate",
+            200,
+            data={"method": "pattern"},
+            expected_fields=["success", "message"]
+        )
+        
+        if success:
+            vault_success = data.get("success", True)  # Should be False
+            message = data.get("message", "")
+            
+            if not vault_success and "owner authentication required" in message.lower():
+                print(f"   ✅ Vault properly protected - requires owner authentication")
+                return True
+            else:
+                print(f"   ❌ SECURITY ISSUE - Vault accessible without proper authentication")
+                return False
+        
+        return False
+
     def run_comprehensive_test_suite(self):
-        """Run the complete Pattern Authentication Test Suite"""
-        print(f"\n🚀 STARTING PATTERN AUTHENTICATION TEST SUITE")
+        """Run the complete Enhanced Aegis System Test Suite"""
+        print(f"\n🚀 STARTING ENHANCED AEGIS SYSTEM TEST SUITE")
         print(f"⏰ Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("=" * 60)
         
@@ -664,8 +984,8 @@ class AegisPatternAuthTester:
         self.test_pattern_setup()
         self.test_pattern_validation()
         
-        # Phase 2: Pattern Authentication Testing
-        print(f"\n🔐 PHASE 2: PATTERN AUTHENTICATION TESTING")
+        # Phase 2: Core Authentication & Security (Priority 1)
+        print(f"\n🔐 PHASE 2: CORE AUTHENTICATION & SECURITY (PRIORITY 1)")
         self.test_primary_pattern_auth()
         time.sleep(1)  # Brief pause for state propagation
         self.test_l3_agents_trap_mode()
@@ -678,14 +998,30 @@ class AegisPatternAuthTester:
         self.test_l3_agents_owner_mode()
         self.test_trap_status_check()
         
-        # Phase 4: Advanced Pattern Features
-        print(f"\n🧠 PHASE 4: ADVANCED PATTERN FEATURES")
+        # Phase 4: New Advanced Features (Priority 2)
+        print(f"\n🚀 PHASE 4: NEW ADVANCED FEATURES (PRIORITY 2)")
+        self.test_calculator_secret_handshake()
+        self.test_phantom_folder_authentication()
+        self.test_phantom_folder_data_access()
+        self.test_voice_interface_processing()
+        self.test_emergency_duress_protocol()
+        self.test_onboarding_status_check()
+        self.test_onboarding_completion()
+        
+        # Phase 5: Proactive Intelligence (Priority 3)
+        print(f"\n🧠 PHASE 5: PROACTIVE INTELLIGENCE (PRIORITY 3)")
         self.test_l2_ai_orchestrator()
+        self.test_proactive_briefing_generation()
+        self.test_wake_word_status()
+        
+        # Phase 6: Advanced Pattern Features & Security
+        print(f"\n🔒 PHASE 6: ADVANCED PATTERN FEATURES & SECURITY")
         self.test_duress_pattern_auth()
         self.test_auto_detect_pattern()
+        self.test_vault_access_without_auth()
         
-        # Phase 5: Security & Lockout Testing
-        print(f"\n🛡️  PHASE 5: SECURITY & LOCKOUT TESTING")
+        # Phase 7: Security & Lockout Testing
+        print(f"\n🛡️  PHASE 7: SECURITY & LOCKOUT TESTING")
         self.test_failed_authentication_lockout()
         self.test_logout()
         
