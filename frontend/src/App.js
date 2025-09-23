@@ -541,6 +541,7 @@ const AegisTrapSystem = () => {
   const [currentApp, setCurrentApp] = useState(null);
   const [trapStatus, setTrapStatus] = useState(null);
   const [trapEvidence, setTrapEvidence] = useState(null);
+  const [onboardingComplete, setOnboardingComplete] = useState(null);
 
   // Determine if trap mode is active
   const trapActive = authStatus?.security_state === "STATE_PHONE_UNLOCKED" && authStatus?.trap_mode;
