@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Aegis Pattern Authentication - Comprehensive Backend API Testing
-Tests the new pattern-based authentication system that replaced PIN authentication
+Aegis Enhanced System - Comprehensive Backend API Testing
+Tests the complete enhanced Aegis system with all new features including pattern authentication,
+vault endpoints, voice interface, emergency duress, onboarding, and proactive intelligence.
 """
 
 import requests
@@ -11,7 +12,7 @@ import sys
 from datetime import datetime
 from typing import Dict, Any, List
 
-class AegisPatternAuthTester:
+class AegisEnhancedSystemTester:
     def __init__(self, base_url="https://hpi-mate.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
@@ -19,7 +20,7 @@ class AegisPatternAuthTester:
         self.tests_passed = 0
         self.current_security_state = "STATE_LOCKED"
         
-        print(f"🚀 Aegis Pattern Authentication Testing Suite")
+        print(f"🚀 Aegis Enhanced System Testing Suite")
         print(f"📡 Testing against: {self.base_url}")
         print(f"🔬 API Endpoint: {self.api_url}")
         print("=" * 60)
@@ -392,265 +393,6 @@ class AegisPatternAuthTester:
         
         return False
 
-    def test_l2_ai_orchestrator(self) -> bool:
-        """Test L2 AI Orchestrator - Proactive Request Processing"""
-        if self.current_security_state != "STATE_OWNER_PRESENT":
-            print(f"   ⚠️  Skipping L2 AI test - requires owner authentication")
-            return True
-            
-        proactive_request = {
-            "input": "Schedule a meeting with Sarah tomorrow at 2pm and check my recent messages",
-            "context": "general"
-        }
-        
-        success, data = self.run_test(
-            "L2 Proactive AI - Complex Request",
-            "POST",
-            "proactive/request",
-            200,
-            data=proactive_request,
-            expected_fields=["status", "response", "suggestions"]
-        )
-        
-        if success:
-            status = data.get("status", "")
-            response = data.get("response", "")
-            suggestions = data.get("suggestions", [])
-            
-            print(f"   🧠 AI Response: {response[:100]}...")
-            print(f"   💡 Suggestions: {len(suggestions)} provided")
-            
-            if status == "success" and response:
-                print(f"   ✅ AI successfully processed proactive request")
-                return True
-            else:
-                print(f"   ❌ AI failed to properly process the request")
-                return False
-        
-        return False
-
-    def test_l3_agents_trap_mode(self) -> bool:
-        """Test L3 App Agents - Trap Mode (when in phone unlocked state)"""
-        if self.current_security_state != "STATE_PHONE_UNLOCKED":
-            print(f"   ⚠️  Skipping trap mode test - not in phone unlocked state")
-            return True
-            
-        print(f"\n🎭 Testing L3 Agents in Trap Mode (Security State: {self.current_security_state})")
-        
-        agents_results = []
-        
-        # Test Messages App Data
-        success, data = self.run_test(
-            "L3 Messages App - Trap Data",
-            "GET",
-            "apps/messages/data",
-            200,
-            expected_fields=["status", "app", "data_type", "data", "trap_active"]
-        )
-        
-        if success:
-            data_type = data.get("data_type", "")
-            trap_active = data.get("trap_active", False)
-            app_data = data.get("data", {})
-            
-            if data_type == "trap_decoy" and trap_active and app_data:
-                print(f"   ✅ Messages app returning convincing trap data")
-                agents_results.append(True)
-            else:
-                print(f"   ❌ Messages app not in proper trap mode")
-                agents_results.append(False)
-        else:
-            agents_results.append(False)
-
-        # Test Photos App Data  
-        success, data = self.run_test(
-            "L3 Photos App - Trap Data",
-            "GET",
-            "apps/photos/data",
-            200,
-            expected_fields=["status", "app", "data_type", "data", "trap_active"]
-        )
-        
-        if success:
-            data_type = data.get("data_type", "")
-            trap_active = data.get("trap_active", False)
-            app_data = data.get("data", {})
-            
-            if data_type == "trap_decoy" and trap_active and app_data:
-                print(f"   ✅ Photos app returning convincing trap data")
-                agents_results.append(True)
-            else:
-                print(f"   ❌ Photos app not in proper trap mode")
-                agents_results.append(False)
-        else:
-            agents_results.append(False)
-
-        # Test Calendar App Data
-        success, data = self.run_test(
-            "L3 Calendar App - Trap Data", 
-            "GET",
-            "apps/calendar/data",
-            200,
-            expected_fields=["status", "app", "data_type", "data", "trap_active"]
-        )
-        
-        if success:
-            data_type = data.get("data_type", "")
-            trap_active = data.get("trap_active", False)
-            app_data = data.get("data", {})
-            
-            if data_type == "trap_decoy" and trap_active and app_data:
-                print(f"   ✅ Calendar app returning convincing trap data")
-                agents_results.append(True)
-            else:
-                print(f"   ❌ Calendar app not in proper trap mode")
-                agents_results.append(False)
-        else:
-            agents_results.append(False)
-
-        return all(agents_results)
-
-    def test_l3_agents_owner_mode(self) -> bool:
-        """Test L3 App Agents - Owner Mode (when authenticated)"""
-        if self.current_security_state != "STATE_OWNER_PRESENT":
-            print(f"   ⚠️  Skipping owner mode test - not authenticated as owner")
-            return True
-            
-        print(f"\n🔓 Testing L3 Agents in Owner Mode (Security State: {self.current_security_state})")
-        
-        agents_results = []
-        
-        # Test Messages App Data
-        success, data = self.run_test(
-            "L3 Messages App - Real Data",
-            "GET", 
-            "apps/messages/data",
-            200,
-            expected_fields=["status", "app", "data_type", "data", "trap_active"]
-        )
-        
-        if success:
-            data_type = data.get("data_type", "")
-            trap_active = data.get("trap_active", False)
-            
-            if data_type == "real_data" and not trap_active:
-                print(f"   ✅ Messages app returning real data (no trap mode)")
-                agents_results.append(True)
-            else:
-                print(f"   ❌ Messages app still in trap mode when owner authenticated")
-                agents_results.append(False)
-        else:
-            agents_results.append(False)
-
-        # Test Photos App Data
-        success, data = self.run_test(
-            "L3 Photos App - Real Data",
-            "GET",
-            "apps/photos/data", 
-            200,
-            expected_fields=["status", "app", "data_type", "data", "trap_active"]
-        )
-        
-        if success:
-            data_type = data.get("data_type", "")
-            trap_active = data.get("trap_active", False)
-            
-            if data_type == "real_data" and not trap_active:
-                print(f"   ✅ Photos app returning real data (no trap mode)")
-                agents_results.append(True)
-            else:
-                print(f"   ❌ Photos app still in trap mode when owner authenticated")
-                agents_results.append(False)
-        else:
-            agents_results.append(False)
-
-        # Test Calendar App Data
-        success, data = self.run_test(
-            "L3 Calendar App - Real Data",
-            "GET",
-            "apps/calendar/data",
-            200,
-            expected_fields=["status", "app", "data_type", "data", "trap_active"]
-        )
-        
-        if success:
-            data_type = data.get("data_type", "")
-            trap_active = data.get("trap_active", False)
-            
-            if data_type == "real_data" and not trap_active:
-                print(f"   ✅ Calendar app returning real data (no trap mode)")
-                agents_results.append(True)
-            else:
-                print(f"   ❌ Calendar app still in trap mode when owner authenticated")
-                agents_results.append(False)
-        else:
-            agents_results.append(False)
-
-        return all(agents_results)
-
-    def test_trap_action_logging(self) -> bool:
-        """Test trap action logging when in trap mode"""
-        if self.current_security_state != "STATE_PHONE_UNLOCKED":
-            print(f"   ⚠️  Skipping trap action test - not in trap mode")
-            return True
-            
-        trap_action_data = {
-            "action_type": "app_access",
-            "app_name": "messages",
-            "details": {"action": "view_messages", "timestamp": datetime.now().isoformat()},
-            "duration_ms": 1500
-        }
-        
-        success, data = self.run_test(
-            "Trap Action Logging",
-            "POST",
-            "trap/log-action",
-            200,
-            data=trap_action_data,
-            expected_fields=["logged", "action_id"]
-        )
-        
-        if success:
-            logged = data.get("logged", False)
-            action_id = data.get("action_id", "")
-            
-            if logged and action_id:
-                print(f"   ✅ Trap action logged successfully: {action_id}")
-                return True
-            else:
-                print(f"   ❌ Trap action logging failed")
-                return False
-        
-        return False
-
-    def test_trap_status_check(self) -> bool:
-        """Test trap status endpoint (owner only)"""
-        if self.current_security_state != "STATE_OWNER_PRESENT":
-            print(f"   ⚠️  Skipping trap status test - requires owner authentication")
-            return True
-            
-        success, data = self.run_test(
-            "Trap Status Check - Owner Only",
-            "GET",
-            "trap/status",
-            200,
-            expected_fields=["trap_active"]
-        )
-        
-        if success:
-            trap_active = data.get("trap_active", False)
-            
-            if not trap_active:
-                print(f"   ✅ Trap status correctly shows inactive when owner authenticated")
-                return True
-            else:
-                session_id = data.get("session_id", "")
-                actions_logged = data.get("actions_logged", 0)
-                print(f"   ℹ️  Trap session active: {session_id}, actions: {actions_logged}")
-                return True
-        
-        return False
-
     def test_calculator_secret_handshake(self) -> bool:
         """Test Calculator Secret Handshake - POST /api/vault/access-attempt"""
         calculator_access_data = {
@@ -878,6 +620,43 @@ class AegisPatternAuthTester:
         
         return False
 
+    def test_l2_ai_orchestrator(self) -> bool:
+        """Test L2 AI Orchestrator - Proactive Request Processing"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping L2 AI test - requires owner authentication")
+            return True
+            
+        proactive_request = {
+            "input": "Schedule a meeting with Sarah tomorrow at 2pm and check my recent messages",
+            "context": "general"
+        }
+        
+        success, data = self.run_test(
+            "L2 Proactive AI - Complex Request",
+            "POST",
+            "proactive/request",
+            200,
+            data=proactive_request,
+            expected_fields=["status", "response", "suggestions"]
+        )
+        
+        if success:
+            status = data.get("status", "")
+            response = data.get("response", "")
+            suggestions = data.get("suggestions", [])
+            
+            print(f"   🧠 AI Response: {response[:100]}...")
+            print(f"   💡 Suggestions: {len(suggestions)} provided")
+            
+            if status == "success" and response:
+                print(f"   ✅ AI successfully processed proactive request")
+                return True
+            else:
+                print(f"   ❌ AI failed to properly process the request")
+                return False
+        
+        return False
+
     def test_proactive_briefing_generation(self) -> bool:
         """Test Proactive briefings - GET /api/proactive/briefing"""
         if self.current_security_state != "STATE_OWNER_PRESENT":
@@ -941,6 +720,228 @@ class AegisPatternAuthTester:
             else:
                 print(f"   ❌ Wake word system not properly configured")
                 return False
+        
+        return False
+
+    def test_l3_agents_trap_mode(self) -> bool:
+        """Test L3 App Agents - Trap Mode (when in phone unlocked state)"""
+        if self.current_security_state != "STATE_PHONE_UNLOCKED":
+            print(f"   ⚠️  Skipping trap mode test - not in phone unlocked state")
+            return True
+            
+        print(f"\n🎭 Testing L3 Agents in Trap Mode (Security State: {self.current_security_state})")
+        
+        agents_results = []
+        
+        # Test Messages App Data
+        success, data = self.run_test(
+            "L3 Messages App - Trap Data",
+            "GET",
+            "apps/messages/data",
+            200,
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
+        )
+        
+        if success:
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
+            app_data = data.get("data", {})
+            
+            if data_type == "trap_decoy" and trap_active and app_data:
+                print(f"   ✅ Messages app returning convincing trap data")
+                agents_results.append(True)
+            else:
+                print(f"   ❌ Messages app not in proper trap mode")
+                agents_results.append(False)
+        else:
+            agents_results.append(False)
+
+        # Test Photos App Data  
+        success, data = self.run_test(
+            "L3 Photos App - Trap Data",
+            "GET",
+            "apps/photos/data",
+            200,
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
+        )
+        
+        if success:
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
+            app_data = data.get("data", {})
+            
+            if data_type == "trap_decoy" and trap_active and app_data:
+                print(f"   ✅ Photos app returning convincing trap data")
+                agents_results.append(True)
+            else:
+                print(f"   ❌ Photos app not in proper trap mode")
+                agents_results.append(False)
+        else:
+            agents_results.append(False)
+
+        # Test Calendar App Data
+        success, data = self.run_test(
+            "L3 Calendar App - Trap Data", 
+            "GET",
+            "apps/calendar/data",
+            200,
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
+        )
+        
+        if success:
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
+            app_data = data.get("data", {})
+            
+            if data_type == "trap_decoy" and trap_active and app_data:
+                print(f"   ✅ Calendar app returning convincing trap data")
+                agents_results.append(True)
+            else:
+                print(f"   ❌ Calendar app not in proper trap mode")
+                agents_results.append(False)
+        else:
+            agents_results.append(False)
+
+        return all(agents_results)
+
+    def test_l3_agents_owner_mode(self) -> bool:
+        """Test L3 App Agents - Owner Mode (when authenticated)"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping owner mode test - not authenticated as owner")
+            return True
+            
+        print(f"\n🔓 Testing L3 Agents in Owner Mode (Security State: {self.current_security_state})")
+        
+        agents_results = []
+        
+        # Test Messages App Data
+        success, data = self.run_test(
+            "L3 Messages App - Real Data",
+            "GET", 
+            "apps/messages/data",
+            200,
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
+        )
+        
+        if success:
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
+            
+            if data_type == "real_data" and not trap_active:
+                print(f"   ✅ Messages app returning real data (no trap mode)")
+                agents_results.append(True)
+            else:
+                print(f"   ❌ Messages app still in trap mode when owner authenticated")
+                agents_results.append(False)
+        else:
+            agents_results.append(False)
+
+        # Test Photos App Data
+        success, data = self.run_test(
+            "L3 Photos App - Real Data",
+            "GET",
+            "apps/photos/data", 
+            200,
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
+        )
+        
+        if success:
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
+            
+            if data_type == "real_data" and not trap_active:
+                print(f"   ✅ Photos app returning real data (no trap mode)")
+                agents_results.append(True)
+            else:
+                print(f"   ❌ Photos app still in trap mode when owner authenticated")
+                agents_results.append(False)
+        else:
+            agents_results.append(False)
+
+        # Test Calendar App Data
+        success, data = self.run_test(
+            "L3 Calendar App - Real Data",
+            "GET",
+            "apps/calendar/data",
+            200,
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
+        )
+        
+        if success:
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
+            
+            if data_type == "real_data" and not trap_active:
+                print(f"   ✅ Calendar app returning real data (no trap mode)")
+                agents_results.append(True)
+            else:
+                print(f"   ❌ Calendar app still in trap mode when owner authenticated")
+                agents_results.append(False)
+        else:
+            agents_results.append(False)
+
+        return all(agents_results)
+
+    def test_trap_action_logging(self) -> bool:
+        """Test trap action logging when in trap mode"""
+        if self.current_security_state != "STATE_PHONE_UNLOCKED":
+            print(f"   ⚠️  Skipping trap action test - not in trap mode")
+            return True
+            
+        trap_action_data = {
+            "action_type": "app_access",
+            "app_name": "messages",
+            "details": {"action": "view_messages", "timestamp": datetime.now().isoformat()},
+            "duration_ms": 1500
+        }
+        
+        success, data = self.run_test(
+            "Trap Action Logging",
+            "POST",
+            "trap/log-action",
+            200,
+            data=trap_action_data,
+            expected_fields=["logged", "action_id"]
+        )
+        
+        if success:
+            logged = data.get("logged", False)
+            action_id = data.get("action_id", "")
+            
+            if logged and action_id:
+                print(f"   ✅ Trap action logged successfully: {action_id}")
+                return True
+            else:
+                print(f"   ❌ Trap action logging failed")
+                return False
+        
+        return False
+
+    def test_trap_status_check(self) -> bool:
+        """Test trap status endpoint (owner only)"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping trap status test - requires owner authentication")
+            return True
+            
+        success, data = self.run_test(
+            "Trap Status Check - Owner Only",
+            "GET",
+            "trap/status",
+            200,
+            expected_fields=["trap_active"]
+        )
+        
+        if success:
+            trap_active = data.get("trap_active", False)
+            
+            if not trap_active:
+                print(f"   ✅ Trap status correctly shows inactive when owner authenticated")
+                return True
+            else:
+                session_id = data.get("session_id", "")
+                actions_logged = data.get("actions_logged", 0)
+                print(f"   ℹ️  Trap session active: {session_id}, actions: {actions_logged}")
+                return True
         
         return False
 
@@ -1045,7 +1046,7 @@ class AegisPatternAuthTester:
 
 def main():
     """Main test execution"""
-    tester = AegisPatternAuthTester()
+    tester = AegisEnhancedSystemTester()
     return tester.run_comprehensive_test_suite()
 
 if __name__ == "__main__":
