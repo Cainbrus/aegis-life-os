@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Aegis HPI OS - Comprehensive Backend API Testing
-Tests the revolutionary 4-tier Hierarchical Proactive Intelligence Operating System
+Aegis Pattern Authentication - Comprehensive Backend API Testing
+Tests the new pattern-based authentication system that replaced PIN authentication
 """
 
 import requests
@@ -11,15 +11,15 @@ import sys
 from datetime import datetime
 from typing import Dict, Any, List
 
-class AegisHPITester:
+class AegisPatternAuthTester:
     def __init__(self, base_url="https://hpi-mate.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
         self.tests_passed = 0
-        self.current_security_state = "STATE_UNKNOWN_USER"
+        self.current_security_state = "STATE_LOCKED"
         
-        print(f"🚀 Aegis HPI OS Testing Suite")
+        print(f"🚀 Aegis Pattern Authentication Testing Suite")
         print(f"📡 Testing against: {self.base_url}")
         print(f"🔬 API Endpoint: {self.api_url}")
         print("=" * 60)
@@ -588,7 +588,7 @@ class AegisHPITester:
 
         return all(agents_results)
 
-    def test_phantom_folder_unauthorized(self) -> bool:
+    def test_trap_action_logging(self) -> bool:
         """Test trap action logging when in trap mode"""
         if self.current_security_state != "STATE_PHONE_UNLOCKED":
             print(f"   ⚠️  Skipping trap action test - not in trap mode")
@@ -623,7 +623,7 @@ class AegisHPITester:
         
         return False
 
-    def test_phantom_folder_authorized(self) -> bool:
+    def test_trap_status_check(self) -> bool:
         """Test trap status endpoint (owner only)"""
         if self.current_security_state != "STATE_OWNER_PRESENT":
             print(f"   ⚠️  Skipping trap status test - requires owner authentication")
@@ -651,35 +651,6 @@ class AegisHPITester:
         
         return False
 
-    def test_security_events_log(self) -> bool:
-        """Test Security Events Logging"""
-        success, data = self.run_test(
-            "Security Events Log",
-            "GET",
-            "system/security-events",
-            200,
-            expected_fields=["status", "events", "count"]
-        )
-        
-        if success:
-            events = data.get("events", [])
-            count = data.get("count", 0)
-            
-            print(f"   📊 Security Events Logged: {count}")
-            
-            # Check if we have security state change events
-            state_changes = [e for e in events if e.get("event_type") == "security_state_change"]
-            print(f"   🔄 State Change Events: {len(state_changes)}")
-            
-            if count > 0:
-                print(f"   ✅ Security events are being properly logged")
-                return True
-            else:
-                print(f"   ⚠️  No security events found (may be expected for fresh system)")
-                return True  # Not necessarily a failure
-        
-        return False
-
     def run_comprehensive_test_suite(self):
         """Run the complete Pattern Authentication Test Suite"""
         print(f"\n🚀 STARTING PATTERN AUTHENTICATION TEST SUITE")
@@ -698,14 +669,14 @@ class AegisHPITester:
         self.test_primary_pattern_auth()
         time.sleep(1)  # Brief pause for state propagation
         self.test_l3_agents_trap_mode()
-        self.test_phantom_folder_unauthorized()  # Trap action logging
+        self.test_trap_action_logging()
         
         # Phase 3: Owner Pattern Authentication
         print(f"\n👑 PHASE 3: OWNER PATTERN AUTHENTICATION")
         self.test_owner_pattern_auth()
         time.sleep(1)  # Brief pause for state propagation
         self.test_l3_agents_owner_mode()
-        self.test_phantom_folder_authorized()  # Trap status check
+        self.test_trap_status_check()
         
         # Phase 4: Advanced Pattern Features
         print(f"\n🧠 PHASE 4: ADVANCED PATTERN FEATURES")
@@ -737,7 +708,7 @@ class AegisHPITester:
 
 def main():
     """Main test execution"""
-    tester = AegisHPITester()
+    tester = AegisPatternAuthTester()
     return tester.run_comprehensive_test_suite()
 
 if __name__ == "__main__":
