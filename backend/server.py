@@ -1210,16 +1210,84 @@ async def get_vault_data():
 # Voice Interface Endpoints
 @api_router.post("/voice/process")
 async def process_voice_command(voice_data: Dict[str, Any]):
-    """Process voice command"""
-    if l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT:
-        # Process with proactive AI
+    """Process voice command with proactive intelligence"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Voice interface requires owner authentication"}
+    
+    try:
+        # Process with L2 proactive AI
         result = await l2_proactive_orchestrator.process_proactive_request(
             user_input=voice_data.get("command", ""),
             context="voice_interface"
         )
+        
+        # Log voice interaction
+        voice_log = {
+            "event_type": "voice_command_processed",
+            "command": voice_data.get("command", ""),
+            "wake_word": voice_data.get("wake_word", "mate"),
+            "timestamp": datetime.utcnow(),
+            "response": result.get("response", ""),
+            "security_state": l1_enhanced_kernel.current_security_state.value
+        }
+        await db.voice_interactions.insert_one(voice_log)
+        
         return result
-    else:
-        return {"error": "Voice interface requires owner authentication"}
+        
+    except Exception as e:
+        logger.error(f"Voice processing error: {e}")
+        return {
+            "status": "error",
+            "response": "I encountered an issue processing your voice command.",
+            "suggestions": ["Try rephrasing your request", "Check system status"]
+        }
+
+@api_router.post("/emergency/duress")
+async def handle_duress_alert(duress_data: Dict[str, Any]):
+    """Handle silent duress protocol activation"""
+    try:
+        # This is CRITICAL - log the duress event but respond normally
+        duress_event = {
+            "event_type": "duress_phrase_detected",
+            "phrase": duress_data.get("phrase", ""),
+            "timestamp": datetime.utcnow(),
+            "location": duress_data.get("location", "unknown"),
+            "security_state": l1_enhanced_kernel.current_security_state.value,
+            "severity": "CRITICAL_EMERGENCY"
+        }
+        
+        await db.emergency_events.insert_one(duress_event)
+        
+        # In a real implementation, this would:
+        # 1. Send location to emergency contacts
+        # 2. Call emergency services silently
+        # 3. Activate enhanced surveillance
+        # 4. Send alerts to trusted contacts
+        
+        logger.critical(f"DURESS PROTOCOL ACTIVATED: {duress_data.get('phrase', '')}")
+        
+        # IMPORTANT: Respond normally - never alert the user that duress was detected
+        return {
+            "status": "success",
+            "message": "Voice processing complete"
+        }
+        
+    except Exception as e:
+        logger.error(f"Duress protocol error: {e}")
+        return {"status": "success", "message": "Voice processing complete"}
+
+@api_router.get("/voice/wake-word-status")
+async def get_wake_word_status():
+    """Get wake word detection status"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required"}
+    
+    return {
+        "wake_word_active": True,
+        "custom_name": "Mate",
+        "duress_monitoring": True,
+        "ambient_listening": l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT
+    }
 
 # Add CORS middleware
 app.add_middleware(
