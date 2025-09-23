@@ -674,6 +674,15 @@ const AegisTrapSystem = () => {
 
   // Show specific app if opened
   if (currentApp) {
+    if (currentApp === 'calculator') {
+      return (
+        <CalculatorVault 
+          onClose={() => setCurrentApp(null)}
+          onVaultAccess={handleVaultAccess}
+        />
+      );
+    }
+    
     return (
       <TrapApp 
         appName={currentApp}
