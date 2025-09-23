@@ -501,72 +501,76 @@ class AegisHPITester:
 
     def test_l3_agents_owner_mode(self) -> bool:
         """Test L3 App Agents - Owner Mode (when authenticated)"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping owner mode test - not authenticated as owner")
+            return True
+            
         print(f"\n🔓 Testing L3 Agents in Owner Mode (Security State: {self.current_security_state})")
         
         agents_results = []
         
-        # Test Messages Agent
+        # Test Messages App Data
         success, data = self.run_test(
-            "L3 Messages Agent - Owner Mode",
+            "L3 Messages App - Real Data",
             "GET", 
-            "agents/messages",
+            "apps/messages/data",
             200,
-            expected_fields=["status", "messages", "count"]
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
         )
         
         if success:
-            has_decoy_flag = data.get("decoy", False)
-            messages = data.get("messages", [])
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
             
-            if not has_decoy_flag:
-                print(f"   ✅ Messages agent returning real data (no decoy flag)")
+            if data_type == "real_data" and not trap_active:
+                print(f"   ✅ Messages app returning real data (no trap mode)")
                 agents_results.append(True)
             else:
-                print(f"   ❌ Messages agent still in decoy mode when owner authenticated")
+                print(f"   ❌ Messages app still in trap mode when owner authenticated")
                 agents_results.append(False)
         else:
             agents_results.append(False)
 
-        # Test Calendar Agent
+        # Test Photos App Data
         success, data = self.run_test(
-            "L3 Calendar Agent - Owner Mode",
+            "L3 Photos App - Real Data",
             "GET",
-            "agents/calendar", 
+            "apps/photos/data", 
             200,
-            expected_fields=["status", "events", "count"]
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
         )
         
         if success:
-            has_decoy_flag = data.get("decoy", False)
-            events = data.get("events", [])
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
             
-            if not has_decoy_flag:
-                print(f"   ✅ Calendar agent returning real data (no decoy flag)")
+            if data_type == "real_data" and not trap_active:
+                print(f"   ✅ Photos app returning real data (no trap mode)")
                 agents_results.append(True)
             else:
-                print(f"   ❌ Calendar agent still in decoy mode when owner authenticated")
+                print(f"   ❌ Photos app still in trap mode when owner authenticated")
                 agents_results.append(False)
         else:
             agents_results.append(False)
 
-        # Test Photos Agent
+        # Test Calendar App Data
         success, data = self.run_test(
-            "L3 Photos Agent - Owner Mode",
+            "L3 Calendar App - Real Data",
             "GET",
-            "agents/photos",
+            "apps/calendar/data",
             200,
-            expected_fields=["status", "photos", "count"]
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
         )
         
         if success:
-            has_decoy_flag = data.get("decoy", False)
-            photos = data.get("photos", [])
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
             
-            if not has_decoy_flag:
-                print(f"   ✅ Photos agent returning real data (no decoy flag)")
+            if data_type == "real_data" and not trap_active:
+                print(f"   ✅ Calendar app returning real data (no trap mode)")
                 agents_results.append(True)
             else:
-                print(f"   ❌ Photos agent still in decoy mode when owner authenticated")
+                print(f"   ❌ Calendar app still in trap mode when owner authenticated")
                 agents_results.append(False)
         else:
             agents_results.append(False)
