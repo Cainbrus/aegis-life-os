@@ -722,12 +722,21 @@ const AegisTrapSystem = () => {
 
   // Main interface - Now uses dynamic contextual hub
   return (
-    <ContextualHub 
-      authStatus={authStatus}
-      onAppOpen={handleAppOpen}
-      trapActive={trapActive}
-      ownerMode={ownerMode}
-    />
+    <>
+      <ContextualHub 
+        authStatus={authStatus}
+        onAppOpen={handleAppOpen}
+        trapActive={trapActive}
+        ownerMode={ownerMode}
+      />
+      
+      {/* Voice Interface - Always active for ambient listening */}
+      <VoiceInterface
+        ownerMode={ownerMode}
+        onVoiceCommand={handleVoiceCommand}
+        onDuressDetected={handleDuressDetected}
+      />
+    </>
   );
 };
 
