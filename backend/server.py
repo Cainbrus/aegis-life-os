@@ -1289,6 +1289,58 @@ async def get_wake_word_status():
         "ambient_listening": l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT
     }
 
+# Onboarding Endpoints
+@api_router.post("/onboarding/complete")
+async def complete_onboarding(onboarding_data: Dict[str, Any]):
+    """Complete user onboarding and setup"""
+    try:
+        # Store onboarding configuration
+        onboarding_record = {
+            "user_id": str(uuid.uuid4()),
+            "completed_at": datetime.utcnow(),
+            "custom_wake_name": onboarding_data.get("customWakeName", "Mate"),
+            "duress_phrase": onboarding_data.get("duressPhrase", "help me please"),
+            "calculator_code": onboarding_data.get("calculatorCode", "8675309"),
+            "behavioral_baseline": onboarding_data.get("behavioral_baseline", {}),
+            "constitution_agreed": True,
+            "setup_version": "1.0"
+        }
+        
+        await db.user_onboarding.insert_one(onboarding_record)
+        
+        # Update L1 kernel with custom settings
+        l1_enhanced_kernel.custom_wake_name = onboarding_data.get("customWakeName", "Mate")
+        l1_enhanced_kernel.duress_phrase = onboarding_data.get("duressPhrase", "help me please")
+        l1_enhanced_kernel.calculator_secret = onboarding_data.get("calculatorCode", "8675309")
+        
+        logger.info("User onboarding completed successfully")
+        
+        return {
+            "success": True,
+            "message": "Aegis setup complete",
+            "user_id": onboarding_record["user_id"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Onboarding completion error: {e}")
+        return {"success": False, "message": "Failed to complete setup"}
+
+@api_router.get("/onboarding/status")
+async def get_onboarding_status():
+    """Check if user has completed onboarding"""
+    try:
+        # Check if any onboarding records exist
+        record = await db.user_onboarding.find_one({}, sort=[("completed_at", -1)])
+        
+        return {
+            "onboarding_complete": record is not None,
+            "setup_date": record.get("completed_at") if record else None
+        }
+        
+    except Exception as e:
+        logger.error(f"Onboarding status check error: {e}")
+        return {"onboarding_complete": False}
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
