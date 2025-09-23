@@ -147,7 +147,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Replace PIN authentication with pattern authentication"
     - "Create pattern input interface to replace PIN keypad"
   stuck_tasks: []
   test_all: false
