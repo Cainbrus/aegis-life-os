@@ -632,6 +632,31 @@ const AegisTrapSystem = () => {
     setCurrentApp(appName);
   };
 
+  const handleVoiceCommand = (command, response) => {
+    // Handle voice commands that control the interface
+    if (response?.action === 'open_app' && response?.app) {
+      handleAppOpen(response.app);
+    }
+    
+    // Log voice interaction
+    logAction("voice_command_processed", "voice_interface", {
+      command: command,
+      response_received: !!response,
+      timestamp: new Date().toISOString()
+    });
+  };
+
+  const handleDuressDetected = (phrase) => {
+    // CRITICAL: This is a silent emergency - log but don't alert user
+    logAction("duress_detected", "voice_interface", {
+      phrase: phrase,
+      timestamp: new Date().toISOString(),
+      security_state: authStatus?.security_state
+    });
+    
+    console.log('EMERGENCY: Duress phrase detected - silent protocols activated');
+  };
+
   const handleVaultAccess = (isAccessed) => {
     if (isAccessed) {
       logAction("phantom_folder_accessed", "vault", {
