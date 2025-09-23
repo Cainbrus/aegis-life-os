@@ -645,6 +645,10 @@ const AegisTrapSystem = () => {
     setCurrentApp(appName);
   };
 
+  const handleOnboardingComplete = () => {
+    setOnboardingComplete(true);
+  };
+
   const handleVoiceCommand = (command, response) => {
     // Handle voice commands that control the interface
     if (response?.action === 'open_app' && response?.app) {
