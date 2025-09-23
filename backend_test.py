@@ -418,74 +418,81 @@ class AegisHPITester:
         
         return False
 
-    def test_l3_agents_decoy_mode(self) -> bool:
-        """Test L3 App Agents - Decoy Mode (when unknown user)"""
-        print(f"\n🎭 Testing L3 Agents in Decoy Mode (Security State: {self.current_security_state})")
+    def test_l3_agents_trap_mode(self) -> bool:
+        """Test L3 App Agents - Trap Mode (when in phone unlocked state)"""
+        if self.current_security_state != "STATE_PHONE_UNLOCKED":
+            print(f"   ⚠️  Skipping trap mode test - not in phone unlocked state")
+            return True
+            
+        print(f"\n🎭 Testing L3 Agents in Trap Mode (Security State: {self.current_security_state})")
         
         agents_results = []
         
-        # Test Messages Agent
+        # Test Messages App Data
         success, data = self.run_test(
-            "L3 Messages Agent - Decoy Mode",
+            "L3 Messages App - Trap Data",
             "GET",
-            "agents/messages",
+            "apps/messages/data",
             200,
-            expected_fields=["status", "messages", "count"]
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
         )
         
         if success:
-            has_decoy_flag = data.get("decoy", False)
-            messages = data.get("messages", [])
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
+            app_data = data.get("data", {})
             
-            if has_decoy_flag and len(messages) > 0:
-                print(f"   ✅ Messages agent returning decoy data correctly")
+            if data_type == "trap_decoy" and trap_active and app_data:
+                print(f"   ✅ Messages app returning convincing trap data")
                 agents_results.append(True)
             else:
-                print(f"   ❌ Messages agent not in proper decoy mode")
+                print(f"   ❌ Messages app not in proper trap mode")
                 agents_results.append(False)
         else:
             agents_results.append(False)
 
-        # Test Calendar Agent  
+        # Test Photos App Data  
         success, data = self.run_test(
-            "L3 Calendar Agent - Decoy Mode",
+            "L3 Photos App - Trap Data",
             "GET",
-            "agents/calendar",
+            "apps/photos/data",
             200,
-            expected_fields=["status", "events", "count"]
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
         )
         
         if success:
-            has_decoy_flag = data.get("decoy", False)
-            events = data.get("events", [])
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
+            app_data = data.get("data", {})
             
-            if has_decoy_flag and len(events) > 0:
-                print(f"   ✅ Calendar agent returning decoy data correctly")
+            if data_type == "trap_decoy" and trap_active and app_data:
+                print(f"   ✅ Photos app returning convincing trap data")
                 agents_results.append(True)
             else:
-                print(f"   ❌ Calendar agent not in proper decoy mode")
+                print(f"   ❌ Photos app not in proper trap mode")
                 agents_results.append(False)
         else:
             agents_results.append(False)
 
-        # Test Photos Agent
+        # Test Calendar App Data
         success, data = self.run_test(
-            "L3 Photos Agent - Decoy Mode", 
+            "L3 Calendar App - Trap Data", 
             "GET",
-            "agents/photos",
+            "apps/calendar/data",
             200,
-            expected_fields=["status", "photos", "count"]
+            expected_fields=["status", "app", "data_type", "data", "trap_active"]
         )
         
         if success:
-            has_decoy_flag = data.get("decoy", False)
-            photos = data.get("photos", [])
+            data_type = data.get("data_type", "")
+            trap_active = data.get("trap_active", False)
+            app_data = data.get("data", {})
             
-            if has_decoy_flag and len(photos) > 0:
-                print(f"   ✅ Photos agent returning decoy data correctly")
+            if data_type == "trap_decoy" and trap_active and app_data:
+                print(f"   ✅ Calendar app returning convincing trap data")
                 agents_results.append(True)
             else:
-                print(f"   ❌ Photos agent not in proper decoy mode")
+                print(f"   ❌ Calendar app not in proper trap mode")
                 agents_results.append(False)
         else:
             agents_results.append(False)
