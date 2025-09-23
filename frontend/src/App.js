@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import CalculatorVault from './components/CalculatorVault';
 import './App.css';
 
 const API = process.env.REACT_APP_BACKEND_URL;
