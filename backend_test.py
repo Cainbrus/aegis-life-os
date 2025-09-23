@@ -681,40 +681,46 @@ class AegisHPITester:
         return False
 
     def run_comprehensive_test_suite(self):
-        """Run the complete Aegis HPI OS test suite"""
-        print(f"\n🚀 STARTING COMPREHENSIVE AEGIS HPI OS TEST SUITE")
+        """Run the complete Pattern Authentication Test Suite"""
+        print(f"\n🚀 STARTING PATTERN AUTHENTICATION TEST SUITE")
         print(f"⏰ Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("=" * 60)
         
-        # Phase 1: System Status
-        print(f"\n📊 PHASE 1: SYSTEM STATUS VERIFICATION")
+        # Phase 1: System Status & Setup
+        print(f"\n📊 PHASE 1: SYSTEM STATUS & PATTERN SETUP")
         self.test_system_status()
+        self.test_auth_status()
+        self.test_pattern_setup()
+        self.test_pattern_validation()
         
-        # Phase 2: Unknown User Testing (Decoy Mode)
-        print(f"\n🎭 PHASE 2: UNKNOWN USER TESTING (DECOY MODE)")
-        self.test_behavioral_auth_unknown_user()
+        # Phase 2: Pattern Authentication Testing
+        print(f"\n🔐 PHASE 2: PATTERN AUTHENTICATION TESTING")
+        self.test_primary_pattern_auth()
         time.sleep(1)  # Brief pause for state propagation
-        self.test_l3_agents_decoy_mode()
-        self.test_phantom_folder_unauthorized()
+        self.test_l3_agents_trap_mode()
+        self.test_phantom_folder_unauthorized()  # Trap action logging
         
-        # Phase 3: Owner Authentication Testing
-        print(f"\n🔓 PHASE 3: OWNER AUTHENTICATION TESTING")
-        self.test_behavioral_auth_owner()
+        # Phase 3: Owner Pattern Authentication
+        print(f"\n👑 PHASE 3: OWNER PATTERN AUTHENTICATION")
+        self.test_owner_pattern_auth()
         time.sleep(1)  # Brief pause for state propagation
         self.test_l3_agents_owner_mode()
-        self.test_phantom_folder_authorized()
+        self.test_phantom_folder_authorized()  # Trap status check
         
-        # Phase 4: AI Intelligence Testing
-        print(f"\n🧠 PHASE 4: AI INTELLIGENCE TESTING")
+        # Phase 4: Advanced Pattern Features
+        print(f"\n🧠 PHASE 4: ADVANCED PATTERN FEATURES")
         self.test_l2_ai_orchestrator()
+        self.test_duress_pattern_auth()
+        self.test_auto_detect_pattern()
         
-        # Phase 5: Security & Monitoring
-        print(f"\n🛡️  PHASE 5: SECURITY & MONITORING")
-        self.test_security_events_log()
+        # Phase 5: Security & Lockout Testing
+        print(f"\n🛡️  PHASE 5: SECURITY & LOCKOUT TESTING")
+        self.test_failed_authentication_lockout()
+        self.test_logout()
         
         # Final Results
         print(f"\n" + "=" * 60)
-        print(f"🏁 AEGIS HPI OS TEST SUITE COMPLETED")
+        print(f"🏁 PATTERN AUTHENTICATION TEST SUITE COMPLETED")
         print(f"📊 Tests Run: {self.tests_run}")
         print(f"✅ Tests Passed: {self.tests_passed}")
         print(f"❌ Tests Failed: {self.tests_run - self.tests_passed}")
@@ -723,7 +729,7 @@ class AegisHPITester:
         print(f"⏰ Test completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
         if self.tests_passed == self.tests_run:
-            print(f"\n🎉 ALL TESTS PASSED - AEGIS HPI OS IS FULLY OPERATIONAL!")
+            print(f"\n🎉 ALL TESTS PASSED - PATTERN AUTHENTICATION SYSTEM IS FULLY OPERATIONAL!")
             return 0
         else:
             print(f"\n⚠️  SOME TESTS FAILED - REVIEW RESULTS ABOVE")
