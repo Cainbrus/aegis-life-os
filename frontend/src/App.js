@@ -776,9 +776,10 @@ const AegisTrapSystem = () => {
             { name: "Photos", icon: "📸", color: "bg-green-600" },
             { name: "Contacts", icon: "👥", color: "bg-purple-600" },
             { name: "Calendar", icon: "📅", color: "bg-red-600" },
+            { name: "Calculator", icon: "🔢", color: "bg-orange-600" },
             { name: "Settings", icon: "⚙️", color: "bg-gray-600" },
             { name: "Banking", icon: "💳", color: "bg-yellow-600" },
-            { name: "Notes", icon: "📝", color: "bg-orange-600" },
+            { name: "Notes", icon: "📝", color: "bg-indigo-600" },
             { name: "Camera", icon: "📷", color: "bg-pink-600" }
           ].map((app, idx) => (
             <button
