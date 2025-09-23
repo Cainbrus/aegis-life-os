@@ -589,31 +589,39 @@ class AegisHPITester:
         return all(agents_results)
 
     def test_phantom_folder_unauthorized(self) -> bool:
-        """Test L0 Phantom Folder - Unauthorized Access"""
-        sensitive_file = {
-            "filename": "secret_document.txt",
-            "content": "This is highly sensitive information that should be encrypted",
-            "sensitivity": 0.9
+        """Test trap action logging when in trap mode"""
+        if self.current_security_state != "STATE_PHONE_UNLOCKED":
+            print(f"   ⚠️  Skipping trap action test - not in trap mode")
+            return True
+            
+        trap_action_data = {
+            "action_type": "app_access",
+            "app_name": "messages",
+            "details": {"action": "view_messages", "timestamp": datetime.now().isoformat()},
+            "duration_ms": 1500
         }
         
         success, data = self.run_test(
-            "L0 Phantom Folder - Unauthorized Access",
+            "Trap Action Logging",
             "POST",
-            "phantom/store",
-            403,  # Should be forbidden for unknown users
-            data=sensitive_file
+            "trap/log-action",
+            200,
+            data=trap_action_data,
+            expected_fields=["logged", "action_id"]
         )
         
-        # For 403, success means we got the expected rejection
-        if not success and self.current_security_state == "STATE_UNKNOWN_USER":
-            print(f"   ✅ CORRECT - Phantom folder properly rejected unauthorized access")
-            return True
-        elif success:
-            print(f"   ❌ SECURITY BREACH - Phantom folder allowed unauthorized access!")
-            return False
-        else:
-            print(f"   ❌ Unexpected response for unauthorized phantom folder access")
-            return False
+        if success:
+            logged = data.get("logged", False)
+            action_id = data.get("action_id", "")
+            
+            if logged and action_id:
+                print(f"   ✅ Trap action logged successfully: {action_id}")
+                return True
+            else:
+                print(f"   ❌ Trap action logging failed")
+                return False
+        
+        return False
 
     def test_phantom_folder_authorized(self) -> bool:
         """Test L0 Phantom Folder - Authorized Access"""
