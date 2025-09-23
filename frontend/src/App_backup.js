@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import axios from 'axios';
-import './App.css';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import axios from "axios";
+import "./App.css";
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
-// Trap logging hook
+// Trap Action Logger - Silently logs everything
 const useTrapLogger = (trapActive) => {
-  return useCallback(async (actionType, appName, details = {}) => {
+  const logAction = useCallback(async (actionType, appName, details = {}) => {
     if (!trapActive) return;
     
     try {
@@ -14,87 +15,118 @@ const useTrapLogger = (trapActive) => {
         action_type: actionType,
         app_name: appName,
         details: details,
-        coordinates: { x: Math.random() * 100, y: Math.random() * 100 },
-        duration_ms: Math.floor(Math.random() * 5000) + 1000,
-        search_terms: details.search_terms || []
+        coordinates: details.coordinates,
+        duration_ms: details.duration || 0,
+        search_terms: details.searchTerms || []
       });
     } catch (error) {
-      console.error("Failed to log trap action:", error);
+      // Silent fail - never let intruder know logging failed
+      console.error("Trap logging failed:", error);
     }
   }, [trapActive]);
+
+  return logAction;
 };
 
-// Silent photo capture hook
+// Silent Photo Capture - Invisible to intruder
 const useSilentPhotoCapture = (trapActive) => {
-  return useCallback(async () => {
+  const capturePhoto = useCallback(async () => {
     if (!trapActive) return;
     
     try {
-      const fakePhotoData = `trap_photo_${Date.now()}_${Math.random()}`;
+      // In a real implementation, this would:
+      // 1. Access front camera without showing UI
+      // 2. Take photo silently
+      // 3. Convert to base64
+      // 4. Send to trap system
+      
+      // Simulated photo capture
+      const fakePhotoData = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD..."; // Simulated
+      
       await axios.post(`${API}/trap/capture-photo`, {
         photo: fakePhotoData
       });
       
-      console.log("Silent photo captured for evidence");
+      console.log("📸 TRAP: Silent photo captured"); // Only visible in console
     } catch (error) {
-      console.error("Failed to capture trap photo:", error);
+      console.error("Silent photo capture failed:", error);
     }
   }, [trapActive]);
+
+  return capturePhoto;
 };
 
-// Enhanced TrapApp Component
+// Trap App Interface - Shows fake but convincing data
 const TrapApp = ({ appName, onClose, logAction, capturePhoto }) => {
   const [appData, setAppData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     loadAppData();
+    capturePhoto(); // Take photo when app opens
     
     // Log app opening
-    logAction("app_opened", appName, {
+    logAction("app_open", appName, {
       opened_at: new Date().toISOString()
     });
-
-    // Capture photo when app opens
-    setTimeout(() => {
-      capturePhoto();
-    }, 2000);
-
-    return () => {
-      logAction("app_closed", appName, {
-        closed_at: new Date().toISOString()
-      });
-    };
   }, [appName, logAction, capturePhoto]);
 
   const loadAppData = async () => {
     try {
-      const response = await axios.get(`${API}/apps/${appName}/data`);
+      setLoading(true);
+      const response = await axios.get(`${API}/trap/app/${appName}?action=view`);
       setAppData(response.data);
     } catch (error) {
       console.error("Failed to load app data:", error);
+      setAppData({ data: { message: "Loading..." } });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInteraction = (interactionType, details = {}) => {
-    logAction(interactionType, appName, details);
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+    
+    // Log search attempt
+    logAction("search", appName, {
+      searchTerms: [searchTerm],
+      query: searchTerm
+    });
+    
+    try {
+      await axios.post(`${API}/trap/search`, {
+        terms: [searchTerm],
+        app: appName
+      });
+      
+      // Show fake "no results" to frustrate them
+      alert("No results found for your search.");
+    } catch (error) {
+      alert("Search temporarily unavailable.");
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">📱</div>
-          <div className="text-xl">Loading {appName}...</div>
-        </div>
-      </div>
-    );
-  }
+  const handleItemClick = (item, itemType) => {
+    // Log what they're interested in
+    logAction("item_click", appName, {
+      item_type: itemType,
+      item_data: item,
+      interest_level: "high"
+    });
+    
+    // Take another photo when they show interest
+    capturePhoto();
+  };
 
   const renderAppContent = () => {
-    if (!appData?.data) return <div className="text-center text-slate-400">No data available</div>;
+    if (loading) {
+      return <div className="text-center py-8">Loading...</div>;
+    }
+
+    if (!appData || !appData.data) {
+      return <div className="text-center py-8">App temporarily unavailable</div>;
+    }
 
     const data = appData.data;
 
@@ -102,20 +134,17 @@ const TrapApp = ({ appName, onClose, logAction, capturePhoto }) => {
       case "messages":
         return (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-4">📨 Messages</h2>
-            
+            <h3 className="text-lg font-semibold mb-4">Recent Messages</h3>
             {data.recent_messages?.map((msg, idx) => (
               <div 
                 key={idx} 
-                className="bg-slate-700 rounded-lg p-4 cursor-pointer hover:bg-slate-600"
-                onClick={() => handleInteraction("message_tap", { from: msg.from, content_length: msg.content?.length })}
+                className="bg-slate-700 rounded p-3 cursor-pointer hover:bg-slate-600"
+                onClick={() => handleItemClick(msg, "message")}
               >
-                <div className="flex justify-between items-start mb-2">
-                  <div className="font-semibold">{msg.from}</div>
-                  <div className="text-xs text-slate-400">{msg.time}</div>
-                </div>
-                <div className="text-sm text-slate-300">{msg.content}</div>
-                {!msg.read && <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>}
+                <div className="font-medium text-blue-400">{msg.from}</div>
+                <div className="text-slate-300 text-sm">{msg.content}</div>
+                <div className="text-xs text-slate-500 mt-1">{msg.time}</div>
+                {!msg.read && <div className="text-xs text-green-400">● Unread</div>}
               </div>
             ))}
           </div>
@@ -124,23 +153,123 @@ const TrapApp = ({ appName, onClose, logAction, capturePhoto }) => {
       case "photos":
         return (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-4">📸 Photos</h2>
-            <div className="text-slate-300 mb-4">{data.photo_count} photos</div>
-            
-            <div className="grid grid-cols-2 gap-4">
+            <h3 className="text-lg font-semibold mb-4">Recent Photos ({data.photo_count})</h3>
+            <div className="grid grid-cols-2 gap-3">
               {data.recent_photos?.map((photo, idx) => (
                 <div 
-                  key={idx} 
-                  className="bg-slate-700 rounded-lg p-4 cursor-pointer hover:bg-slate-600"
-                  onClick={() => handleInteraction("photo_view", { photo_id: photo.id, location: photo.location })}
+                  key={idx}
+                  className="bg-slate-700 rounded p-3 cursor-pointer hover:bg-slate-600"
+                  onClick={() => handleItemClick(photo, "photo")}
                 >
                   <div className="aspect-square bg-slate-600 rounded mb-2 flex items-center justify-center">
-                    📷
+                    <span className="text-4xl">📸</span>
                   </div>
-                  <div className="text-xs text-slate-400">{photo.filename}</div>
+                  <div className="text-sm font-medium">{photo.filename}</div>
+                  <div className="text-xs text-slate-400">{photo.location}</div>
                   <div className="text-xs text-slate-500">{photo.date}</div>
                 </div>
               ))}
+            </div>
+            
+            <div className="mt-4">
+              <h4 className="font-medium mb-2">Albums</h4>
+              <div className="flex flex-wrap gap-2">
+                {data.recent_albums?.map((album, idx) => (
+                  <button 
+                    key={idx}
+                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
+                    onClick={() => handleItemClick({ album }, "album")}
+                  >
+                    {album}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case "contacts":
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold mb-4">Favorites</h3>
+            {data.favorites?.map((contact, idx) => (
+              <div 
+                key={idx}
+                className="bg-slate-700 rounded p-3 cursor-pointer hover:bg-slate-600"
+                onClick={() => handleItemClick(contact, "contact")}
+              >
+                <div className="font-medium text-green-400">{contact.name}</div>
+                <div className="text-slate-300 text-sm">{contact.phone}</div>
+                <div className="text-slate-400 text-xs">{contact.email}</div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case "calendar":
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold mb-4">Upcoming Events</h3>
+            {data.upcoming_events?.map((event, idx) => (
+              <div 
+                key={idx}
+                className="bg-slate-700 rounded p-3 cursor-pointer hover:bg-slate-600"
+                onClick={() => handleItemClick(event, "calendar_event")}
+              >
+                <div className="font-medium text-purple-400">{event.title}</div>
+                <div className="text-slate-300 text-sm">{event.time}</div>
+                <div className="text-slate-400 text-xs">{event.location}</div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case "settings":
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold mb-4">Account Information</h3>
+            
+            <div className="bg-slate-700 rounded p-4">
+              <div className="space-y-2">
+                <div><strong>Name:</strong> {data.account_info?.name}</div>
+                <div><strong>Email:</strong> {data.account_info?.email}</div>
+                <div><strong>Phone:</strong> {data.account_info?.phone}</div>
+                <div><strong>Storage:</strong> {data.account_info?.storage_used}</div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="font-medium">Recent Activity</h4>
+              {data.recent_activity?.map((activity, idx) => (
+                <div key={idx} className="text-sm text-slate-400">• {activity}</div>
+              ))}
+            </div>
+            
+            <div className="space-y-2">
+              <button 
+                className="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm"
+                onClick={() => {
+                  logAction("security_access_attempt", "settings", { 
+                    attempted_action: "factory_reset",
+                    suspicious: true 
+                  });
+                  alert("This action requires owner authentication.");
+                }}
+              >
+                Factory Reset
+              </button>
+              <button 
+                className="w-full bg-slate-600 hover:bg-slate-500 px-4 py-2 rounded text-sm"
+                onClick={() => {
+                  logAction("security_access_attempt", "settings", { 
+                    attempted_action: "change_password",
+                    suspicious: true 
+                  });
+                  alert("Password change requires verification.");
+                }}
+              >
+                Change Password
+              </button>
             </div>
           </div>
         );
@@ -148,33 +277,27 @@ const TrapApp = ({ appName, onClose, logAction, capturePhoto }) => {
       case "banking":
         return (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-4">💳 Banking</h2>
+            <h3 className="text-lg font-semibold mb-4">Account Overview</h3>
             
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-6 text-white">
-              <div className="text-sm opacity-75">Available Balance</div>
-              <div 
-                className="text-3xl font-bold cursor-pointer"
-                onClick={() => handleInteraction("balance_view", { balance: data.account_balance })}
-              >
-                {data.account_balance}
-              </div>
+            <div className="bg-green-900 border border-green-700 rounded p-4">
+              <div className="text-green-300 text-lg font-bold">Balance: {data.account_balance}</div>
             </div>
             
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Recent Transactions</h3>
-              {data.recent_transactions?.map((tx, idx) => (
+            <div>
+              <h4 className="font-medium mb-2">Recent Transactions</h4>
+              {data.recent_transactions?.map((transaction, idx) => (
                 <div 
-                  key={idx} 
-                  className="bg-slate-700 rounded-lg p-3 cursor-pointer hover:bg-slate-600"
-                  onClick={() => handleInteraction("transaction_view", { description: tx.description, amount: tx.amount })}
+                  key={idx}
+                  className="bg-slate-700 rounded p-3 mb-2 cursor-pointer hover:bg-slate-600"
+                  onClick={() => handleItemClick(transaction, "transaction")}
                 >
                   <div className="flex justify-between">
-                    <div>{tx.description}</div>
-                    <div className={tx.amount.startsWith('+') ? 'text-green-400' : 'text-red-400'}>
-                      {tx.amount}
-                    </div>
+                    <span>{transaction.description}</span>
+                    <span className={transaction.amount.startsWith('+') ? 'text-green-400' : 'text-red-400'}>
+                      {transaction.amount}
+                    </span>
                   </div>
-                  <div className="text-xs text-slate-400">{tx.date}</div>
+                  <div className="text-xs text-slate-500">{transaction.date}</div>
                 </div>
               ))}
             </div>
@@ -183,39 +306,41 @@ const TrapApp = ({ appName, onClose, logAction, capturePhoto }) => {
 
       default:
         return (
-          <div className="text-center">
-            <div className="text-6xl mb-4">📱</div>
-            <div className="text-xl mb-2">{appName.charAt(0).toUpperCase() + appName.slice(1)}</div>
-            <div className="text-slate-400">App functionality coming soon</div>
-            <button 
-              onClick={() => handleInteraction("generic_tap", { area: "main_content" })}
-              className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-            >
-              Explore
-            </button>
+          <div className="text-center py-8">
+            <div className="text-4xl mb-4">📱</div>
+            <div>App data loading...</div>
           </div>
         );
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="fixed inset-0 bg-slate-900 z-50">
       {/* App Header */}
-      <div className="bg-slate-800 p-4 flex items-center justify-between border-b border-slate-700">
+      <div className="bg-slate-800 border-b border-slate-700 p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <button 
             onClick={onClose}
-            className="text-2xl hover:text-blue-400"
+            className="text-blue-400 hover:text-blue-300"
           >
-            ←
+            ← Back
           </button>
-          <h1 className="text-xl font-semibold capitalize">{appName}</h1>
+          <h2 className="text-xl font-semibold capitalize">{appName}</h2>
         </div>
         
+        {/* Search Bar */}
         <div className="flex items-center space-x-2">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search..."
+            className="bg-slate-700 border border-slate-600 rounded px-3 py-1 text-sm"
+            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+          />
           <button 
-            onClick={() => handleInteraction("search_tap", { app: appName })}
-            className="text-xl hover:text-blue-400"
+            onClick={handleSearch}
+            className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
           >
             🔍
           </button>
@@ -230,77 +355,47 @@ const TrapApp = ({ appName, onClose, logAction, capturePhoto }) => {
   );
 };
 
-// Pattern Authentication Component
-const DualPatternAuth = ({ onAuthSuccess, authStatus }) => {
-  const [currentPattern, setCurrentPattern] = useState([]);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [showPatternSetup, setShowPatternSetup] = useState(false);
-  const [setupPatterns, setSetupPatterns] = useState({
-    primary_pattern: "",
-    owner_pattern: "",
-    duress_pattern: "2-5-8"
+// Dual PIN Interface (unchanged from previous)
+const DualPinAuth = ({ onAuthSuccess, authStatus }) => {
+  const [currentPin, setCurrentPin] = useState("");
+  const [showPinSetup, setShowPinSetup] = useState(false);
+  const [setupPins, setSetupPins] = useState({
+    primary_pin: "",
+    owner_pin: "",
+    duress_pin: "0000"
   });
   const [authResult, setAuthResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Pattern grid: 3x3 numbered 1-9
-  const patternGrid = [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 9]
-  ];
+  const handlePinInput = (digit) => {
+    if (currentPin.length < 8) {
+      setCurrentPin(prev => prev + digit);
+    }
+  };
 
-  const handleDotStart = (dotNumber) => {
-    if (loading) return;
-    setIsDrawing(true);
-    setCurrentPattern([dotNumber]);
+  const handlePinClear = () => {
+    setCurrentPin("");
     setAuthResult(null);
   };
 
-  const handleDotEnter = (dotNumber) => {
-    if (!isDrawing) return;
-    if (!currentPattern.includes(dotNumber)) {
-      setCurrentPattern(prev => [...prev, dotNumber]);
-    }
-  };
-
-  const handleDotEnd = () => {
-    setIsDrawing(false);
-    if (currentPattern.length >= 4) {
-      handlePatternSubmit();
-    }
-  };
-
-  const handlePatternClear = () => {
-    setCurrentPattern([]);
-    setAuthResult(null);
-  };
-
-  const handlePatternSubmit = async () => {
-    if (currentPattern.length < 4) {
-      setAuthResult({
-        success: false,
-        message: "Pattern must connect at least 4 dots"
-      });
-      return;
-    }
+  const handlePinSubmit = async () => {
+    if (currentPin.length < 4) return;
     
     setLoading(true);
     try {
-      const patternString = currentPattern.join("-");
-      const response = await axios.post(`${API}/auth/pattern`, {
-        pattern: patternString,
-        pattern_type: "auto_detect"
+      const response = await axios.post(`${API}/auth/pin`, {
+        pin: currentPin,
+        pin_type: "auto_detect"
       });
 
       setAuthResult(response.data);
       
       if (response.data.success) {
         onAuthSuccess(response.data);
-        setCurrentPattern([]);
+        setCurrentPin("");
       }
     } catch (error) {
-      console.error("Pattern authentication failed:", error);
+      console.error("PIN authentication failed:", error);
       setAuthResult({
         success: false,
         message: "Authentication failed"
@@ -310,37 +405,37 @@ const DualPatternAuth = ({ onAuthSuccess, authStatus }) => {
     }
   };
 
-  const handleSetupPatterns = async () => {
-    if (setupPatterns.primary_pattern.split("-").length < 4 || setupPatterns.owner_pattern.split("-").length < 4) {
-      alert("Patterns must connect at least 4 dots");
+  const handleSetupPins = async () => {
+    if (setupPins.primary_pin.length < 4 || setupPins.owner_pin.length < 4) {
+      alert("PINs must be at least 4 digits");
       return;
     }
 
-    if (setupPatterns.primary_pattern === setupPatterns.owner_pattern) {
-      alert("Primary and Owner patterns must be different");
+    if (setupPins.primary_pin === setupPins.owner_pin) {
+      alert("Primary and Owner PINs must be different");
       return;
     }
 
     try {
-      const response = await axios.post(`${API}/auth/setup-dual-patterns`, setupPatterns);
+      const response = await axios.post(`${API}/auth/setup-dual-pins`, setupPins);
       
       if (response.data.success) {
-        setShowPatternSetup(false);
-        setSetupPatterns({ primary_pattern: "", owner_pattern: "", duress_pattern: "2-5-8" });
-        alert("Dual Pattern authentication configured successfully!");
+        setShowPinSetup(false);
+        setSetupPins({ primary_pin: "", owner_pin: "", duress_pin: "0000" });
+        alert("Dual PIN authentication configured successfully!");
       }
     } catch (error) {
-      console.error("Pattern setup failed:", error);
-      alert("Failed to setup patterns");
+      console.error("PIN setup failed:", error);
+      alert("Failed to setup PINs");
     }
   };
 
   const getAuthStatusDisplay = () => {
     switch (authStatus?.security_state) {
       case "STATE_LOCKED":
-        return { icon: "🔒", text: "Device Locked", color: "text-red-500", instruction: "Draw Primary Pattern to unlock" };
+        return { icon: "🔒", text: "Device Locked", color: "text-red-500", instruction: "Enter Primary PIN to unlock" };
       case "STATE_PHONE_UNLOCKED":
-        return { icon: "📱", text: "Phone Unlocked", color: "text-green-500", instruction: "Full access granted" };
+        return { icon: "📱", text: "Phone Unlocked", color: "text-green-500", instruction: "Full access granted" }; // Lie to intruder
       case "STATE_OWNER_PRESENT":
         return { icon: "✅", text: "Owner Authenticated", color: "text-green-500", instruction: "Full access granted" };
       default:
@@ -349,68 +444,68 @@ const DualPatternAuth = ({ onAuthSuccess, authStatus }) => {
   };
 
   const statusDisplay = getAuthStatusDisplay();
+  const pinButtons = [
+    ['1', '2', '3'],
+    ['4', '5', '6'], 
+    ['7', '8', '9'],
+    ['*', '0', '#']
+  ];
 
-  const isConnected = (dot1, dot2) => {
-    const index1 = currentPattern.indexOf(dot1);
-    const index2 = currentPattern.indexOf(dot2);
-    return index1 !== -1 && index2 !== -1 && Math.abs(index1 - index2) === 1;
-  };
-
-  if (showPatternSetup) {
+  if (showPinSetup) {
     return (
-      <div className="dual-pattern-setup bg-slate-800 rounded-lg p-6 border border-slate-700 max-w-md mx-auto">
-        <h2 className="text-xl font-semibold mb-4 text-center">🔐 Setup Dual Pattern Authentication</h2>
+      <div className="dual-pin-setup bg-slate-800 rounded-lg p-6 border border-slate-700 max-w-md mx-auto">
+        <h2 className="text-xl font-semibold mb-4 text-center">🔐 Setup Dual PIN Authentication</h2>
         
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Primary Pattern (unlocks phone) - Example: 1-2-3-6-9
+              Primary PIN (unlocks phone)
             </label>
             <input
-              type="text"
-              value={setupPatterns.primary_pattern}
-              onChange={(e) => setSetupPatterns(prev => ({...prev, primary_pattern: e.target.value}))}
+              type="password"
+              value={setupPins.primary_pin}
+              onChange={(e) => setSetupPins(prev => ({...prev, primary_pin: e.target.value}))}
               className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
-              placeholder="e.g., 1-2-5-8-9"
+              placeholder="Enter 4+ digits"
             />
           </div>
           
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Owner Pattern (real data access) - Example: 1-5-9-8-7
+              Owner PIN (real data access)
             </label>
             <input
-              type="text"
-              value={setupPatterns.owner_pattern}
-              onChange={(e) => setSetupPatterns(prev => ({...prev, owner_pattern: e.target.value}))}
+              type="password"
+              value={setupPins.owner_pin}
+              onChange={(e) => setSetupPins(prev => ({...prev, owner_pin: e.target.value}))}
               className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
-              placeholder="e.g., 7-5-3-2-1"
+              placeholder="Enter 4+ digits"
             />
           </div>
           
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Duress Pattern (emergency) - Example: 2-5-8
+              Duress PIN (emergency)
             </label>
             <input
-              type="text"
-              value={setupPatterns.duress_pattern}
-              onChange={(e) => setSetupPatterns(prev => ({...prev, duress_pattern: e.target.value}))}
+              type="password"
+              value={setupPins.duress_pin}
+              onChange={(e) => setSetupPins(prev => ({...prev, duress_pin: e.target.value}))}
               className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
-              placeholder="Emergency pattern"
+              placeholder="Emergency PIN"
             />
           </div>
         </div>
         
         <div className="flex space-x-3 mt-6">
           <button
-            onClick={handleSetupPatterns}
+            onClick={handleSetupPins}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium"
           >
-            Setup Patterns
+            Setup PINs
           </button>
           <button
-            onClick={() => setShowPatternSetup(false)}
+            onClick={() => setShowPinSetup(false)}
             className="flex-1 bg-slate-600 hover:bg-slate-500 text-white px-4 py-2 rounded font-medium"
           >
             Cancel
@@ -421,85 +516,50 @@ const DualPatternAuth = ({ onAuthSuccess, authStatus }) => {
   }
 
   return (
-    <div className="dual-pattern-auth bg-slate-800 rounded-lg p-6 border border-slate-700 max-w-md mx-auto">
+    <div className="dual-pin-auth bg-slate-800 rounded-lg p-6 border border-slate-700 max-w-md mx-auto">
       <div className={`text-center mb-6 ${statusDisplay.color}`}>
         <div className="text-4xl mb-2">{statusDisplay.icon}</div>
         <div className="text-lg font-semibold">{statusDisplay.text}</div>
         <div className="text-sm text-slate-400 mt-1">{statusDisplay.instruction}</div>
       </div>
 
-      {/* Pattern Display */}
-      <div className="pattern-display bg-slate-900 rounded-lg p-4 mb-6 text-center">
-        <div className="text-lg font-medium text-white mb-2">
-          {currentPattern.length > 0 ? `Connected: ${currentPattern.length} dots` : "Draw your pattern"}
+      <div className="pin-display bg-slate-900 rounded-lg p-4 mb-6 text-center">
+        <div className="text-2xl font-mono text-white">
+          {currentPin.replace(/./g, '●') || "Enter PIN"}
         </div>
-        {currentPattern.length > 0 && (
-          <div className="text-sm text-slate-400">
-            Pattern: {currentPattern.join(" → ")}
-          </div>
-        )}
       </div>
 
-      {/* 3x3 Pattern Grid */}
-      <div className="pattern-grid mb-6">
-        <div className="grid grid-cols-3 gap-8 max-w-xs mx-auto">
-          {patternGrid.flat().map((dotNumber) => {
-            const isSelected = currentPattern.includes(dotNumber);
-            const isLast = currentPattern[currentPattern.length - 1] === dotNumber;
-            
-            return (
-              <div
-                key={dotNumber}
-                className={`
-                  w-16 h-16 rounded-full border-2 flex items-center justify-center cursor-pointer
-                  transition-all duration-200 select-none
-                  ${isSelected 
-                    ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/50' 
-                    : 'bg-slate-700 border-slate-500 text-slate-300 hover:border-slate-400'
-                  }
-                  ${isLast ? 'ring-4 ring-blue-300 ring-opacity-50' : ''}
-                `}
-                onMouseDown={() => handleDotStart(dotNumber)}
-                onMouseEnter={() => handleDotEnter(dotNumber)}
-                onMouseUp={handleDotEnd}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  handleDotStart(dotNumber);
-                }}
-                onTouchMove={(e) => {
-                  e.preventDefault();
-                  const touch = e.touches[0];
-                  const element = document.elementFromPoint(touch.clientX, touch.clientY);
-                  const dotNum = element?.getAttribute('data-dot');
-                  if (dotNum) handleDotEnter(parseInt(dotNum));
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  handleDotEnd();
-                }}
-                data-dot={dotNumber}
-              >
-                <span className="text-lg font-bold">{dotNumber}</span>
-              </div>
-            );
-          })}
-        </div>
+      <div className="pin-keypad grid grid-cols-3 gap-3 mb-6">
+        {pinButtons.flat().map((btn, idx) => (
+          <button
+            key={idx}
+            onClick={() => btn !== '*' && btn !== '#' ? handlePinInput(btn) : null}
+            disabled={loading}
+            className={`h-12 rounded-lg font-semibold text-lg transition-colors ${
+              btn === '*' || btn === '#' 
+                ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                : 'bg-slate-700 hover:bg-slate-600 text-white active:bg-slate-500'
+            }`}
+          >
+            {btn}
+          </button>
+        ))}
       </div>
 
       <div className="flex space-x-3">
         <button
-          onClick={handlePatternClear}
-          disabled={loading || currentPattern.length === 0}
-          className="flex-1 bg-slate-600 hover:bg-slate-500 disabled:opacity-50 text-white px-4 py-2 rounded font-medium"
+          onClick={handlePinClear}
+          disabled={loading}
+          className="flex-1 bg-slate-600 hover:bg-slate-500 text-white px-4 py-2 rounded font-medium"
         >
           Clear
         </button>
         <button
-          onClick={handlePatternSubmit}
-          disabled={currentPattern.length < 4 || loading}
+          onClick={handlePinSubmit}
+          disabled={currentPin.length < 4 || loading}
           className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white px-4 py-2 rounded font-medium"
         >
-          {loading ? "..." : "Submit"}
+          {loading ? "..." : "Enter"}
         </button>
       </div>
 
@@ -515,15 +575,11 @@ const DualPatternAuth = ({ onAuthSuccess, authStatus }) => {
 
       <div className="text-center mt-4">
         <button
-          onClick={() => setShowPatternSetup(true)}
+          onClick={() => setShowPinSetup(true)}
           className="text-blue-400 hover:text-blue-300 text-sm underline"
         >
-          Setup/Change Patterns
+          Setup/Change PINs
         </button>
-      </div>
-      
-      <div className="text-center mt-2 text-xs text-slate-500">
-        Tip: Connect at least 4 dots in your pattern
       </div>
     </div>
   );
@@ -643,7 +699,7 @@ const AegisTrapSystem = () => {
     }
   };
 
-  // Show Pattern interface if not authenticated
+  // Show PIN interface if not authenticated
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
@@ -653,10 +709,10 @@ const AegisTrapSystem = () => {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-2">
               Aegis Life OS
             </h1>
-            <p className="text-slate-400">Pattern Authentication System</p>
+            <p className="text-slate-400">Perfect Trap System</p>
           </div>
           
-          <DualPatternAuth onAuthSuccess={handleAuthSuccess} authStatus={authStatus} />
+          <DualPinAuth onAuthSuccess={handleAuthSuccess} authStatus={authStatus} />
         </div>
       </div>
     );
