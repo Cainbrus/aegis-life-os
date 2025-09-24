@@ -416,14 +416,9 @@ const AegisOnboarding = ({ onComplete }) => {
   const canProceed = () => {
     switch (currentStep) {
       case 1: return userConsent;
-      case 2: return (
-        behavioralBaseline.swipeData.length >= 5 && 
-        behavioralBaseline.tapData.length >= 10 && 
-        behavioralBaseline.pressureData.length >= 5
-      );
-      case 3: return setupData.primaryPattern && setupData.ownerPattern;
-      case 4: return setupData.customWakeName && setupData.duressPhrase;
-      case 5: return setupData.calculatorCode;
+      case 2: return setupData.primaryPattern && setupData.ownerPattern;
+      case 3: return setupData.customWakeName && setupData.duressPhrase;
+      case 4: return setupData.calculatorCode;
       default: return true;
     }
   };
