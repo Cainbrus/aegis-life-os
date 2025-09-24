@@ -711,6 +711,11 @@ const AegisTrapSystem = () => {
     }
   };
 
+  // Show wipe complete screen if at /wipe-complete
+  if (window.location.pathname === '/wipe-complete') {
+    return <WipeCompleteScreen />;
+  }
+
   // Show onboarding if not completed
   if (onboardingComplete === false) {
     return <AegisOnboarding onComplete={handleOnboardingComplete} />;
