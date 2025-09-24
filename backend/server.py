@@ -938,11 +938,11 @@ async def authenticate_pattern(pattern_data: Dict[str, Any]):
 
 @api_router.post("/auth/setup-dual-patterns")
 async def setup_dual_patterns(pattern_data: Dict[str, str]):
-    """Setup dual pattern authentication system"""
+    """Setup corrected dual pattern authentication system"""
     try:
         result = await l1_enhanced_kernel.setup_dual_auth(
-            primary_pattern=pattern_data.get("primary_pattern"),
-            owner_pattern=pattern_data.get("owner_pattern"),
+            normal_pattern=pattern_data.get("normal_pattern"),
+            owner_code=pattern_data.get("owner_code"), 
             duress_pattern=pattern_data.get("duress_pattern", "2-5-8")
         )
         return result
