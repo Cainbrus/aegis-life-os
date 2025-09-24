@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import AIWorkforceMonitor from './AIWorkforceMonitor';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
