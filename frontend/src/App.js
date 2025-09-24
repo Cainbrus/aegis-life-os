@@ -789,6 +789,9 @@ const AegisTrapSystem = () => {
         onVoiceCommand={handleVoiceCommand}
         onDuressDetected={handleDuressDetected}
       />
+
+      {/* Emergency Wipe Mode - Always monitoring for triggers */}
+      <WipeMode onWipeTriggered={handleWipeTriggered} />
     </>
   );
 };
