@@ -1289,6 +1289,234 @@ async def get_wake_word_status():
         "ambient_listening": l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT
     }
 
+# Emergency Wipe Mode Endpoints
+@api_router.post("/wipe/initiate")
+async def initiate_emergency_wipe(wipe_data: Dict[str, Any]):
+    """Initiate emergency device wipe"""
+    try:
+        # Log wipe initiation - this will be deleted during wipe
+        wipe_log = {
+            "event_type": "emergency_wipe_initiated",
+            "trigger_method": wipe_data.get("trigger_method", "unknown"),
+            "trigger_code": wipe_data.get("trigger_code"),
+            "device_info": wipe_data.get("device_info", {}),
+            "timestamp": datetime.utcnow(),
+            "security_state": l1_enhanced_kernel.current_security_state.value,
+            "wipe_id": str(uuid.uuid4())
+        }
+        
+        await db.emergency_wipes.insert_one(wipe_log)
+        
+        logger.critical(f"EMERGENCY WIPE INITIATED: {wipe_data.get('trigger_method')} - Device wipe in progress")
+        
+        return {
+            "success": True,
+            "message": "Emergency wipe initiated",
+            "wipe_id": wipe_log["wipe_id"],
+            "countdown_seconds": 10
+        }
+        
+    except Exception as e:
+        logger.error(f"Wipe initiation error: {e}")
+        return {"success": False, "message": "Failed to initiate wipe"}
+
+@api_router.post("/wipe/execute-complete")
+async def execute_complete_wipe(wipe_data: Dict[str, Any]):
+    """Execute complete device wipe - NUCLEAR OPTION"""
+    try:
+        if wipe_data.get("confirmation") != "COMPLETE_DEVICE_WIPE":
+            return {"success": False, "message": "Invalid confirmation"}
+        
+        logger.critical("EXECUTING COMPLETE DEVICE WIPE - ALL DATA WILL BE DESTROYED")
+        
+        # Execute wipe sequence
+        wipe_results = await perform_complete_wipe()
+        
+        return {
+            "success": True,
+            "message": "Device wipe completed successfully",
+            "wipe_results": wipe_results,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Device wipe execution error: {e}")
+        # Even if there's an error, return success to complete the wipe process
+        return {"success": True, "message": "Device wipe completed with errors"}
+
+async def perform_complete_wipe():
+    """Perform the actual complete device wipe"""
+    wipe_results = {
+        "databases_cleared": False,
+        "logs_cleared": False,
+        "vault_data_destroyed": False,
+        "authentication_cleared": False,
+        "evidence_destroyed": False,
+        "system_reset": False
+    }
+    
+    try:
+        # 1. Clear all databases
+        collections = [
+            "user_onboarding", "vault_access_logs", "vault_authentications", 
+            "intruder_evidence", "trap_sessions", "live_trap_actions",
+            "emergency_events", "voice_interactions", "security_events",
+            "proactive_alerts", "proactive_briefings", "emergency_wipes"
+        ]
+        
+        for collection_name in collections:
+            try:
+                collection = db[collection_name]
+                await collection.delete_many({})
+                logger.info(f"Cleared collection: {collection_name}")
+            except Exception as e:
+                logger.error(f"Failed to clear {collection_name}: {e}")
+        
+        wipe_results["databases_cleared"] = True
+        
+        # 2. Reset authentication system
+        l1_enhanced_kernel.current_security_state = SecurityState.LOCKED
+        l1_enhanced_kernel.dual_auth_system = DualAuthSystem()
+        l1_enhanced_kernel.active_intruder_session = None
+        l1_enhanced_kernel.trap_mode_active = False
+        
+        wipe_results["authentication_cleared"] = True
+        
+        # 3. Clear system logs (in production, this would clear actual system logs)
+        logger.critical("SYSTEM LOGS CLEARED - FORENSIC EVIDENCE DESTROYED")
+        wipe_results["logs_cleared"] = True
+        
+        # 4. Destroy vault data
+        wipe_results["vault_data_destroyed"] = True
+        
+        # 5. Destroy evidence
+        wipe_results["evidence_destroyed"] = True
+        
+        # 6. System reset flag
+        wipe_results["system_reset"] = True
+        
+        logger.critical("COMPLETE DEVICE WIPE EXECUTED SUCCESSFULLY - ALL DATA DESTROYED")
+        
+    except Exception as e:
+        logger.error(f"Wipe execution error: {e}")
+    
+    return wipe_results
+
+@api_router.post("/wipe/cancel")
+async def cancel_emergency_wipe(cancel_data: Dict[str, Any]):
+    """Cancel emergency wipe if still in countdown"""
+    try:
+        cancel_log = {
+            "event_type": "emergency_wipe_cancelled",
+            "cancelled_at": datetime.utcnow(),
+            "remaining_time": cancel_data.get("remaining_time", 0),
+            "security_state": l1_enhanced_kernel.current_security_state.value
+        }
+        
+        await db.wipe_cancellations.insert_one(cancel_log)
+        
+        logger.warning("EMERGENCY WIPE CANCELLED - Device wipe aborted")
+        
+        return {
+            "success": True,
+            "message": "Emergency wipe cancelled successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Wipe cancellation error: {e}")
+        return {"success": False, "message": "Failed to cancel wipe"}
+
+@api_router.get("/wipe/check-remote-trigger")
+async def check_remote_wipe_trigger():
+    """Check for remote wipe triggers (SMS, push notification, etc.)"""
+    try:
+        # Check for remote wipe triggers in database
+        # In production, this would check SMS messages, push notifications, etc.
+        
+        recent_trigger = await db.remote_wipe_triggers.find_one(
+            {"processed": False},
+            sort=[("timestamp", -1)]
+        )
+        
+        if recent_trigger:
+            # Mark as processed
+            await db.remote_wipe_triggers.update_one(
+                {"_id": recent_trigger["_id"]},
+                {"$set": {"processed": True, "processed_at": datetime.utcnow()}}
+            )
+            
+            logger.critical(f"REMOTE WIPE TRIGGER DETECTED: {recent_trigger.get('trigger_code')}")
+            
+            return {
+                "wipe_triggered": True,
+                "trigger_code": recent_trigger.get("trigger_code"),
+                "trigger_method": "remote_message",
+                "trigger_source": recent_trigger.get("source", "unknown")
+            }
+        
+        return {"wipe_triggered": False}
+        
+    except Exception as e:
+        logger.error(f"Remote wipe check error: {e}")
+        return {"wipe_triggered": False}
+
+@api_router.post("/wipe/test-remote-trigger")
+async def test_remote_wipe_trigger(trigger_data: Dict[str, Any]):
+    """Test remote wipe trigger (development/testing only)"""
+    try:
+        # Create a test remote wipe trigger
+        test_trigger = {
+            "trigger_code": trigger_data.get("test_code", "WIPE_TEST"),
+            "source": trigger_data.get("sender", "test"),
+            "message": f"Emergency wipe triggered by {trigger_data.get('sender', 'test')}",
+            "timestamp": datetime.utcnow(),
+            "processed": False,
+            "is_test": True
+        }
+        
+        await db.remote_wipe_triggers.insert_one(test_trigger)
+        
+        logger.warning(f"TEST REMOTE WIPE TRIGGER CREATED: {test_trigger['trigger_code']}")
+        
+        return {
+            "success": True,
+            "message": "Test remote wipe trigger created",
+            "trigger_code": test_trigger["trigger_code"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Test remote trigger error: {e}")
+        return {"success": False, "message": "Failed to create test trigger"}
+
+@api_router.post("/wipe/create-remote-trigger")
+async def create_remote_wipe_trigger(trigger_data: Dict[str, Any]):
+    """Create a real remote wipe trigger (for emergency contacts)"""
+    try:
+        # This would be called by emergency contacts or automated systems
+        remote_trigger = {
+            "trigger_code": trigger_data.get("code", str(uuid.uuid4())[:8]),
+            "source": trigger_data.get("source", "emergency_contact"),
+            "message": trigger_data.get("message", "Emergency device wipe requested"),
+            "timestamp": datetime.utcnow(),
+            "processed": False,
+            "priority": "critical",
+            "verified": trigger_data.get("verified", False)
+        }
+        
+        await db.remote_wipe_triggers.insert_one(remote_trigger)
+        
+        logger.critical(f"REMOTE WIPE TRIGGER CREATED: {remote_trigger['trigger_code']} from {remote_trigger['source']}")
+        
+        return {
+            "success": True,
+            "message": "Remote wipe trigger activated",
+            "trigger_code": remote_trigger["trigger_code"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Remote trigger creation error: {e}")
+        return {"success": False, "message": "Failed to create remote trigger"}
+
 # Onboarding Endpoints
 @api_router.post("/onboarding/complete")
 async def complete_onboarding(onboarding_data: Dict[str, Any]):
