@@ -1349,6 +1349,103 @@ async def get_wake_word_status():
         "ambient_listening": l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT
     }
 
+# Beta Launch & User Acquisition Endpoints
+@api_router.post("/beta/signup")
+async def beta_signup(signup_data: Dict[str, Any]):
+    """Handle beta user signup for launch"""
+    try:
+        beta_user = {
+            "email": signup_data.get("email", ""),
+            "signup_timestamp": datetime.utcnow(),
+            "source": signup_data.get("source", "unknown"),
+            "user_agent": signup_data.get("user_agent", ""),
+            "status": "beta_registered",
+            "beta_id": str(uuid.uuid4())
+        }
+        
+        # Check if email already exists
+        existing_user = await db.beta_users.find_one({"email": beta_user["email"]})
+        if existing_user:
+            return {
+                "success": True,
+                "message": "Already registered for beta access",
+                "beta_id": existing_user.get("beta_id"),
+                "status": "existing_user"
+            }
+        
+        # Store new beta user
+        await db.beta_users.insert_one(beta_user)
+        
+        logger.info(f"BETA SIGNUP: New user registered - {beta_user['email']}")
+        
+        return {
+            "success": True,
+            "message": "Successfully registered for Aegis beta access",
+            "beta_id": beta_user["beta_id"],
+            "status": "new_user"
+        }
+        
+    except Exception as e:
+        logger.error(f"Beta signup error: {e}")
+        return {"success": False, "message": "Failed to register for beta"}
+
+@api_router.get("/beta/stats")
+async def get_beta_stats():
+    """Get beta signup statistics for launch tracking"""
+    try:
+        total_signups = await db.beta_users.count_documents({})
+        today_signups = await db.beta_users.count_documents({
+            "signup_timestamp": {"$gte": datetime.utcnow().replace(hour=0, minute=0, second=0)}
+        })
+        
+        # Get signup sources
+        source_pipeline = [
+            {"$group": {"_id": "$source", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        sources = await db.beta_users.aggregate(source_pipeline).to_list(length=None)
+        
+        return {
+            "total_signups": total_signups,
+            "today_signups": today_signups,
+            "signup_sources": sources,
+            "last_updated": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Beta stats error: {e}")
+        return {"error": "Failed to retrieve beta stats"}
+
+@api_router.post("/feedback/submit")
+async def submit_feedback(feedback_data: Dict[str, Any]):
+    """Collect user feedback for product improvement"""
+    try:
+        feedback = {
+            "feedback_id": str(uuid.uuid4()),
+            "user_email": feedback_data.get("email", "anonymous"),
+            "rating": feedback_data.get("rating", 0),
+            "category": feedback_data.get("category", "general"),
+            "message": feedback_data.get("message", ""),
+            "feature_requests": feedback_data.get("feature_requests", []),
+            "user_agent": feedback_data.get("user_agent", ""),
+            "submitted_at": datetime.utcnow(),
+            "status": "new"
+        }
+        
+        await db.user_feedback.insert_one(feedback)
+        
+        logger.info(f"FEEDBACK: New feedback received - Rating: {feedback['rating']}/5")
+        
+        return {
+            "success": True,
+            "message": "Feedback received successfully",
+            "feedback_id": feedback["feedback_id"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Feedback submission error: {e}")
+        return {"success": False, "message": "Failed to submit feedback"}
+
 # AI Workforce Management Endpoints
 @api_router.get("/workforce/status")
 async def get_workforce_status():
