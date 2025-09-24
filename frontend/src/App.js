@@ -647,6 +647,18 @@ const AegisTrapSystem = () => {
     setCurrentApp(appName);
   };
 
+  const handleWipeTriggered = (triggerMethod) => {
+    console.log(`EMERGENCY WIPE TRIGGERED: ${triggerMethod}`);
+    setWipeTriggered(true);
+    
+    // Log the wipe trigger
+    logAction("emergency_wipe_triggered", "wipe_system", {
+      trigger_method: triggerMethod,
+      timestamp: new Date().toISOString(),
+      security_state: authStatus?.security_state
+    });
+  };
+
   const handleOnboardingComplete = () => {
     setOnboardingComplete(true);
   };
