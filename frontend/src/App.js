@@ -718,6 +718,11 @@ const AegisTrapSystem = () => {
     }
   };
 
+  // Show landing page for new visitors
+  if (showLandingPage) {
+    return <LandingPage onGetStarted={handleGetStarted} />;
+  }
+
   // Show wipe complete screen if at /wipe-complete
   if (window.location.pathname === '/wipe-complete') {
     return <WipeCompleteScreen />;
