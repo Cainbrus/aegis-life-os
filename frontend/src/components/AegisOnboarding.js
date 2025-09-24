@@ -77,8 +77,8 @@ const AegisOnboarding = ({ onComplete }) => {
     try {
       // Set up dual patterns
       await axios.post(`${API}/auth/setup-dual-patterns`, {
-        primary_pattern: setupData.primaryPattern,
-        owner_pattern: setupData.ownerPattern,
+        normal_pattern: setupData.normalPattern,
+        owner_code: setupData.ownerCode,
         duress_pattern: setupData.duressPattern
       });
 
