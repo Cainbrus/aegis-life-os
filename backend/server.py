@@ -606,20 +606,20 @@ class L1EnhancedKernelGuardian:
         self.dual_auth_system.failed_attempts = 0
         self.dual_auth_system.last_failed_attempt = None
     
-    async def setup_dual_auth(self, primary_pattern: str, owner_pattern: str, duress_pattern: str = "2-5-8") -> Dict[str, Any]:
-        if len(primary_pattern.split("-")) < 4 or len(owner_pattern.split("-")) < 4:
+    async def setup_dual_auth(self, normal_pattern: str, owner_code: str, duress_pattern: str = "2-5-8") -> Dict[str, Any]:
+        if len(normal_pattern.split("-")) < 4 or len(owner_code.split("-")) < 4:
             return {"success": False, "message": "Patterns must connect at least 4 dots"}
         
-        if primary_pattern == owner_pattern:
-            return {"success": False, "message": "Primary and Owner patterns must be different"}
+        if normal_pattern == owner_code:
+            return {"success": False, "message": "Normal and Owner patterns must be different"}
         
-        self.dual_auth_system.primary_pattern = primary_pattern
-        self.dual_auth_system.owner_pattern = owner_pattern
+        self.dual_auth_system.normal_pattern = normal_pattern
+        self.dual_auth_system.owner_code = owner_code
         self.dual_auth_system.duress_pattern = duress_pattern
         
         return {
             "success": True,
-            "message": "Dual authentication configured with proactive intelligence"
+            "message": "Dual authentication configured - Normal unlock + Owner verification"
         }
 
 # ===============================
