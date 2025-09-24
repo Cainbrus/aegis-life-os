@@ -7,8 +7,8 @@ const AegisOnboarding = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [userConsent, setUserConsent] = useState(false);
   const [setupData, setSetupData] = useState({
-    primaryPattern: '',
-    ownerPattern: '',
+    normalPattern: '',
+    ownerCode: '',
     duressPattern: '2-5-8',
     customWakeName: 'Mate',
     duressPhrase: 'help me please',
