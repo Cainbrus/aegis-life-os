@@ -449,11 +449,10 @@ const AegisOnboarding = ({ onComplete }) => {
           <div className="w-full max-w-6xl">
             {currentStep === 0 && renderWelcome()}
             {currentStep === 1 && renderConstitution()}
-            {currentStep === 2 && renderBehavioralTraining()}
-            {currentStep === 3 && renderPatternSetup()}
-            {currentStep === 4 && renderVoiceSetup()}
-            {currentStep === 5 && renderSecretSetup()}
-            {currentStep === 6 && renderCompletion()}
+            {currentStep === 2 && renderPatternSetup()}
+            {currentStep === 3 && renderVoiceSetup()}
+            {currentStep === 4 && renderSecretSetup()}
+            {currentStep === 5 && renderCompletion()}
           </div>
         </div>
 
