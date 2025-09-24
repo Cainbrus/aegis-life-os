@@ -203,52 +203,108 @@ class L1EnhancedKernelGuardian:
                 "message": "Authentication system error"
             }
     
-    async def _handle_primary_pattern(self, pattern_attempt: PatternAttempt) -> Dict[str, Any]:
-        """Handle primary PATTERN - activates TRAP MODE"""
-        if pattern_attempt.pattern == self.dual_auth_system.primary_pattern:
+    async def _handle_normal_unlock(self, pattern_attempt: PatternAttempt) -> Dict[str, Any]:
+        """Handle normal phone unlock - check if user is really the owner"""
+        # Normal pattern unlocks phone, but Aegis decides based on behavior
+        behavioral_analysis = await self._analyze_user_behavior(pattern_attempt)
+        
+        if behavioral_analysis["is_owner_likely"]:
+            # Behavior suggests this is the real owner - normal phone mode
             self.current_security_state = SecurityState.PHONE_UNLOCKED
+            self.trap_mode_active = False
+            await self._reset_failed_attempts()
+            
+            logger.info("L1: Normal unlock - Owner behavior detected, normal phone mode")
+            return {
+                "success": True,
+                "security_state": SecurityState.PHONE_UNLOCKED.value,
+                "message": "Phone unlocked",
+                "mode": "normal_phone",
+                "behavioral_confidence": behavioral_analysis["confidence"],
+                "real_data": True
+            }
+        else:
+            # Behavior suggests this is NOT the owner - activate DOGE MODE
+            self.current_security_state = SecurityState.PHONE_UNLOCKED  
             self.trap_mode_active = True
             await self._activate_trap_mode()
             await self._reset_failed_attempts()
             
-            logger.warning("L1: TRAP MODE ACTIVATED - Full surveillance active")
+            logger.critical("L1: DOGE MODE ACTIVATED - Non-owner behavior detected during normal unlock")
             return {
                 "success": True,
                 "security_state": SecurityState.PHONE_UNLOCKED.value,
-                "message": "Phone unlocked successfully",
+                "message": "Phone unlocked", 
+                "mode": "doge_mode",
+                "behavioral_confidence": behavioral_analysis["confidence"],
                 "trap_mode": True,
-                "full_access": True,
-                "apps_available": True
+                "appears_normal": True  # Phone appears normal to the intruder
             }
-        else:
-            return await self._handle_failed_attempt(pattern_attempt, "Pattern incorrect")
     
-    async def _handle_owner_pattern(self, pattern_attempt: PatternAttempt) -> Dict[str, Any]:
-        """Handle owner PATTERN - activates PROACTIVE MODE"""
-        if self.current_security_state != SecurityState.PHONE_UNLOCKED:
-            return {
-                "success": False,
-                "security_state": self.current_security_state.value,
-                "message": "Must unlock phone first with primary pattern"
-            }
-        
-        if pattern_attempt.pattern == self.dual_auth_system.owner_pattern:
+    async def _handle_owner_verification(self, pattern_attempt: PatternAttempt) -> Dict[str, Any]:
+        """Handle owner verification code - grants real owner access"""
+        # Owner code always grants real access regardless of behavioral analysis
+        if self.trap_mode_active:
             await self._deactivate_trap_mode()
-            self.current_security_state = SecurityState.OWNER_PRESENT
-            await self._activate_proactive_mode()
-            await self._reset_failed_attempts()
             
-            logger.info("L1: OWNER AUTHENTICATED - Proactive intelligence activated")
-            return {
-                "success": True,
-                "security_state": SecurityState.OWNER_PRESENT.value,
-                "message": "Welcome back! Your digital mate is ready to help.",
-                "trap_mode": False,
-                "proactive_mode": True,
-                "real_data": True
-            }
-        else:
-            return await self._handle_failed_attempt(pattern_attempt, "Owner pattern incorrect")
+        self.current_security_state = SecurityState.OWNER_PRESENT
+        await self._activate_proactive_mode()
+        await self._reset_failed_attempts()
+        
+        # Reset behavioral trust score
+        self.dual_auth_system.behavioral_trust_score = 1.0
+        
+        logger.info("L1: OWNER VERIFIED - Full Aegis intelligence activated")
+        return {
+            "success": True,
+            "security_state": SecurityState.OWNER_PRESENT.value,
+            "message": "Welcome back! Your digital mate is ready.",
+            "mode": "owner_mode",
+            "trap_mode": False,
+            "proactive_mode": True,
+            "real_data": True,
+            "full_aegis_access": True
+        }
+    
+    async def _analyze_user_behavior(self, pattern_attempt: PatternAttempt) -> Dict[str, Any]:
+        """Analyze user behavior to determine if they're the real owner"""
+        # In a real implementation, this would analyze:
+        # - Touch pressure patterns
+        # - Drawing speed and timing
+        # - Device holding angle
+        # - Time of unlock (unusual hours?)
+        # - Location data
+        # - App usage patterns after unlock
+        
+        # For now, simulate behavioral analysis
+        import random
+        
+        # Simulate confidence based on behavioral patterns
+        confidence = self.dual_auth_system.behavioral_trust_score
+        
+        # Add some randomness to simulate real behavioral analysis
+        behavioral_variance = random.uniform(-0.2, 0.1)
+        confidence += behavioral_variance
+        confidence = max(0.0, min(1.0, confidence))
+        
+        # Update trust score based on analysis
+        self.dual_auth_system.behavioral_trust_score = confidence
+        
+        is_owner = confidence > 0.7  # Threshold for owner detection
+        
+        logger.info(f"BEHAVIORAL ANALYSIS: Confidence={confidence:.2f}, Owner={is_owner}")
+        
+        return {
+            "is_owner_likely": is_owner,
+            "confidence": confidence,
+            "analysis_factors": [
+                "Touch pressure pattern",
+                "Drawing timing",
+                "Device orientation", 
+                "Unlock time consistency",
+                "Historical behavior match"
+            ]
+        }
     
     async def _activate_proactive_mode(self):
         """Activate proactive intelligence features"""
