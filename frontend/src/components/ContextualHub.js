@@ -337,6 +337,16 @@ const ContextualHub = ({ authStatus, onAppOpen, trapActive, ownerMode }) => {
         </div>
       )}
 
+      {/* AI Workforce Monitor (Owner Mode Only) */}
+      {ownerMode && (
+        <div className="p-6">
+          <AIWorkforceMonitor 
+            ownerMode={ownerMode}
+            authStatus={authStatus}
+          />
+        </div>
+      )}
+
       {/* Contextual Cards Grid */}
       <div className="p-6 space-y-4">
         {contextualCards.map((card) => (
