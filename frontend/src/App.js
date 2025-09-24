@@ -4,6 +4,7 @@ import CalculatorVault from './components/CalculatorVault';
 import ContextualHub from './components/ContextualHub';
 import VoiceInterface from './components/VoiceInterface';
 import AegisOnboarding from './components/AegisOnboarding';
+import WipeMode, { WipeCompleteScreen } from './components/WipeMode';
 import './App.css';
 
 const API = process.env.REACT_APP_BACKEND_URL;
