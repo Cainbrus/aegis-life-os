@@ -247,33 +247,33 @@ const AegisOnboarding = ({ onComplete }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
         <div className="bg-slate-800 rounded-lg p-6">
-          <h3 className="font-semibold mb-3 text-blue-300">🎭 Primary Pattern (Trap Mode)</h3>
+          <h3 className="font-semibold mb-3 text-blue-300">📱 Normal Phone Pattern</h3>
           <p className="text-sm text-slate-400 mb-4">
-            Used when you want intruders to see fake but convincing data. Activates surveillance.
+            Regular pattern to unlock your phone. Aegis will analyze your behavior to detect if you're the real owner.
           </p>
           <input
             type="text"
             placeholder="e.g., 1-2-3-6-9"
-            value={setupData.primaryPattern}
-            onChange={(e) => setSetupData(prev => ({...prev, primaryPattern: e.target.value}))}
+            value={setupData.normalPattern}
+            onChange={(e) => setSetupData(prev => ({...prev, normalPattern: e.target.value}))}
             className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
           />
-          <div className="text-xs text-slate-500 mt-2">Example: L-shape pattern</div>
+          <div className="text-xs text-slate-500 mt-2">Aegis automatically detects intruders</div>
         </div>
 
         <div className="bg-slate-800 rounded-lg p-6">
-          <h3 className="font-semibold mb-3 text-green-300">👑 Owner Pattern (Full Access)</h3>
+          <h3 className="font-semibold mb-3 text-green-300">👑 Owner Verification Code</h3>
           <p className="text-sm text-slate-400 mb-4">
-            Grants access to real data and activates proactive intelligence features.
+            Special pattern that proves you're the real owner and grants full Aegis intelligence access.
           </p>
           <input
             type="text"
             placeholder="e.g., 1-5-9-8-7"
-            value={setupData.ownerPattern}
-            onChange={(e) => setSetupData(prev => ({...prev, ownerPattern: e.target.value}))}
+            value={setupData.ownerCode}
+            onChange={(e) => setSetupData(prev => ({...prev, ownerCode: e.target.value}))}
             className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
           />
-          <div className="text-xs text-slate-500 mt-2">Example: Z-shape pattern</div>
+          <div className="text-xs text-slate-500 mt-2">Activates your Digital Mate</div>
         </div>
       </div>
 
