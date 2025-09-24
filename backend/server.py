@@ -139,14 +139,15 @@ class PatternAttempt(BaseModel):
     source_ip: Optional[str] = None
 
 class DualAuthSystem(BaseModel):
-    primary_pattern: str = "1-2-3-6-9"  # L-shape pattern
-    owner_pattern: str = "1-5-9-8-7"   # Z-shape pattern
-    duress_pattern: str = "2-5-8"      # Vertical line pattern
+    normal_pattern: str = "1-2-3-6-9"      # Normal phone unlock - appears as regular phone
+    owner_code: str = "1-5-9-8-7"          # Owner verification code - grants real access  
+    duress_pattern: str = "2-5-8"          # Emergency pattern
     max_attempts: int = 3
     lockout_duration: int = 300
     failed_attempts: int = 0
     last_failed_attempt: Optional[datetime] = None
     is_locked_out: bool = False
+    behavioral_trust_score: float = 1.0     # 1.0 = trusted, 0.0 = suspicious
 
 # ===============================
 # L1 ENHANCED KERNEL GUARDIAN
