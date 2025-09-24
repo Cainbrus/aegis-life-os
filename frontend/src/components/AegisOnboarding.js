@@ -416,7 +416,7 @@ const AegisOnboarding = ({ onComplete }) => {
   const canProceed = () => {
     switch (currentStep) {
       case 1: return userConsent;
-      case 2: return setupData.primaryPattern && setupData.ownerPattern;
+      case 2: return setupData.normalPattern && setupData.ownerCode;
       case 3: return setupData.customWakeName && setupData.duressPhrase;
       case 4: return setupData.calculatorCode;
       default: return true;
