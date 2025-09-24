@@ -1289,6 +1289,202 @@ async def get_wake_word_status():
         "ambient_listening": l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT
     }
 
+# AI Workforce Management Endpoints
+@api_router.get("/workforce/status")
+async def get_workforce_status():
+    """Get AI workforce status and activity"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required for workforce monitoring"}
+    
+    try:
+        # Simulate dynamic workforce activity
+        current_time = datetime.utcnow()
+        
+        workforce_status = {
+            "owner_status": "ACTIVE",
+            "manager_status": "COORDINATING", 
+            "workers_active": 8,
+            "total_workers": 12,
+            "current_load": "MODERATE",
+            "last_updated": current_time.isoformat()
+        }
+        
+        # Active jobs being processed by AI workforce
+        active_jobs = [
+            {
+                "id": "job_001",
+                "title": "Analyzing morning schedule conflicts",
+                "assigned_to": "Calendar Agent (L3)",
+                "status": "IN_PROGRESS",
+                "priority": "HIGH",
+                "started_at": "2 minutes ago",
+                "agent_type": "L3_APP_AGENT",
+                "estimated_completion": "30 seconds"
+            },
+            {
+                "id": "job_002",
+                "title": "Processing security threat assessment", 
+                "assigned_to": "Security Specialist (L4)",
+                "status": "ANALYZING",
+                "priority": "CRITICAL",
+                "started_at": "30 seconds ago",
+                "agent_type": "L4_SPECIALIST",
+                "estimated_completion": "1 minute"
+            },
+            {
+                "id": "job_003",
+                "title": "Optimizing photo organization",
+                "assigned_to": "Photos Agent (L3)",
+                "status": "QUEUED",
+                "priority": "LOW", 
+                "started_at": "Pending",
+                "agent_type": "L3_APP_AGENT",
+                "estimated_completion": "5 minutes"
+            },
+            {
+                "id": "job_004",
+                "title": "Learning user communication patterns",
+                "assigned_to": "Behavioral Analyst (L4)",
+                "status": "CONTINUOUS",
+                "priority": "MEDIUM",
+                "started_at": "Always running",
+                "agent_type": "L4_SPECIALIST",
+                "estimated_completion": "Ongoing"
+            }
+        ]
+        
+        # Recent workforce activity log
+        recent_activity = [
+            {
+                "timestamp": current_time.strftime("%H:%M:%S"),
+                "agent": "L2 Manager",
+                "action": "Delegated conflict analysis to Calendar Agent",
+                "type": "DELEGATION",
+                "details": "Schedule optimization requested"
+            },
+            {
+                "timestamp": (current_time - timedelta(seconds=4)).strftime("%H:%M:%S"),
+                "agent": "L1 Owner", 
+                "action": "Approved proactive suggestion deployment",
+                "type": "APPROVAL",
+                "details": "Constitutional compliance verified"
+            },
+            {
+                "timestamp": (current_time - timedelta(seconds=17)).strftime("%H:%M:%S"),
+                "agent": "Security Agent (L4)",
+                "action": "Completed behavioral pattern analysis", 
+                "type": "COMPLETION",
+                "details": "User authentication baseline updated"
+            },
+            {
+                "timestamp": (current_time - timedelta(seconds=40)).strftime("%H:%M:%S"),
+                "agent": "L2 Manager",
+                "action": "Assigned priority scoring to Analytics Worker",
+                "type": "DELEGATION", 
+                "details": "Task queue optimization"
+            },
+            {
+                "timestamp": (current_time - timedelta(seconds=65)).strftime("%H:%M:%S"),
+                "agent": "Photos Agent (L3)",
+                "action": "Detected duplicate photos for cleanup",
+                "type": "DISCOVERY",
+                "details": "Found 23 duplicates for review"
+            }
+        ]
+        
+        return {
+            "workforce_status": workforce_status,
+            "active_jobs": active_jobs,
+            "recent_activity": recent_activity,
+            "hierarchy": {
+                "L1_OWNER": {
+                    "name": "Kernel Guardian",
+                    "role": "Constitutional Oversight & Final Authority", 
+                    "status": "ACTIVE",
+                    "responsibilities": ["Security decisions", "Constitutional compliance", "Workforce supervision"]
+                },
+                "L2_MANAGER": {
+                    "name": "AI Orchestrator",
+                    "role": "Task Coordination & Delegation",
+                    "status": "COORDINATING", 
+                    "responsibilities": ["Task assignment", "Workflow optimization", "Worker management"]
+                },
+                "L3_WORKERS": {
+                    "name": "App Agents",
+                    "role": "Application-Specific Processing",
+                    "count": 6,
+                    "active": 5,
+                    "types": ["Messages", "Photos", "Calendar", "Contacts", "Notes", "Banking"]
+                },
+                "L4_WORKERS": {
+                    "name": "Specialist Agents", 
+                    "role": "Specialized Analysis & Processing",
+                    "count": 6,
+                    "active": 3,
+                    "types": ["Security", "Behavioral", "Content", "Predictive", "Privacy", "Emergency"]
+                }
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Workforce status error: {e}")
+        return {"error": "Failed to retrieve workforce status"}
+
+@api_router.post("/workforce/assign-task")
+async def assign_workforce_task(task_data: Dict[str, Any]):
+    """Assign a new task to the AI workforce"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required for workforce management"}
+    
+    try:
+        # L2 Manager processes the task assignment
+        task_assignment = {
+            "task_id": str(uuid.uuid4()),
+            "title": task_data.get("title", "User-assigned task"),
+            "description": task_data.get("description", ""),
+            "priority": task_data.get("priority", "MEDIUM"),
+            "assigned_by": "Owner (Manual)",
+            "assigned_to": "L2 Manager (Auto-delegating)",
+            "created_at": datetime.utcnow(),
+            "status": "ASSIGNED",
+            "estimated_duration": task_data.get("estimated_duration", "Unknown")
+        }
+        
+        # Store task assignment
+        await db.workforce_tasks.insert_one(task_assignment)
+        
+        # L2 Manager determines optimal agent assignment
+        optimal_agent = determine_optimal_agent(task_data.get("category", "general"))
+        
+        logger.info(f"WORKFORCE: Task assigned - {task_assignment['title']} → {optimal_agent}")
+        
+        return {
+            "success": True,
+            "task_id": task_assignment["task_id"],
+            "assigned_to": optimal_agent,
+            "message": f"Task delegated to {optimal_agent} by L2 Manager"
+        }
+        
+    except Exception as e:
+        logger.error(f"Task assignment error: {e}")
+        return {"success": False, "message": "Failed to assign task"}
+
+def determine_optimal_agent(category):
+    """L2 Manager logic for optimal agent assignment"""
+    agent_assignments = {
+        "security": "Security Specialist (L4)",
+        "photos": "Photos Agent (L3)", 
+        "messages": "Messages Agent (L3)",
+        "calendar": "Calendar Agent (L3)",
+        "analysis": "Behavioral Analyst (L4)",
+        "content": "Content Processor (L4)",
+        "privacy": "Privacy Guardian (L4)",
+        "prediction": "Predictive Engine (L4)",
+        "general": "AI Orchestrator (L2)"
+    }
+    
+    return agent_assignments.get(category, "General Worker (L3)")
+
 # Emergency Wipe Mode Endpoints
 @api_router.post("/wipe/initiate")
 async def initiate_emergency_wipe(wipe_data: Dict[str, Any]):
