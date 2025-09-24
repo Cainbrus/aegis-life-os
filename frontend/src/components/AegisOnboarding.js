@@ -240,8 +240,8 @@ const AegisOnboarding = ({ onComplete }) => {
         <div className="text-6xl mb-4">🔐</div>
         <h2 className="text-3xl font-bold mb-4">Dual Pattern Security</h2>
         <p className="text-slate-300 max-w-2xl mx-auto">
-          Set up your dual authentication patterns. The Primary Pattern activates trap mode, 
-          while the Owner Pattern grants full access to real data.
+          Set up your authentication patterns. Use your Normal Pattern for everyday phone unlocks. 
+          Aegis will automatically detect intruders and switch to Doge Mode with fake data.
         </p>
       </div>
 
