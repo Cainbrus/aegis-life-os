@@ -169,7 +169,7 @@ class L1EnhancedKernelGuardian:
         ]
     
     async def authenticate_with_pattern(self, pattern_attempt: PatternAttempt) -> Dict[str, Any]:
-        """Enhanced dual PATTERN authentication"""
+        """Enhanced authentication with automatic behavioral detection"""
         try:
             if self.dual_auth_system.is_locked_out:
                 if await self._check_lockout_expired():
@@ -185,12 +185,15 @@ class L1EnhancedKernelGuardian:
             
             if pattern_attempt.pattern_type == PatternType.DURESS_PATTERN:
                 return await self._handle_duress_pattern(pattern_attempt)
-            elif pattern_attempt.pattern_type == PatternType.PRIMARY_PATTERN:
-                return await self._handle_primary_pattern(pattern_attempt)
-            elif pattern_attempt.pattern_type == PatternType.OWNER_PATTERN:
-                return await self._handle_owner_pattern(pattern_attempt)
-            else:  # AUTO_DETECT or unknown
-                return await self._handle_auto_detect_pattern(pattern_attempt)
+            else:
+                # Check if it's the owner verification code first
+                if pattern_attempt.pattern == self.dual_auth_system.owner_code:
+                    return await self._handle_owner_verification(pattern_attempt)
+                # Check if it's normal unlock pattern
+                elif pattern_attempt.pattern == self.dual_auth_system.normal_pattern:
+                    return await self._handle_normal_unlock(pattern_attempt)
+                else:
+                    return await self._handle_failed_attempt(pattern_attempt, "Pattern incorrect")
                 
         except Exception as e:
             logger.error(f"L1 PATTERN Authentication error: {e}")
