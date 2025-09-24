@@ -661,6 +661,11 @@ const AegisTrapSystem = () => {
     });
   };
 
+  const handleGetStarted = () => {
+    setShowLandingPage(false);
+    checkOnboardingStatus();
+  };
+
   const handleOnboardingComplete = () => {
     setOnboardingComplete(true);
   };
