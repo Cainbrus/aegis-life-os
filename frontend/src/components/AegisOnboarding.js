@@ -32,11 +32,7 @@ const AegisOnboarding = ({ onComplete }) => {
       title: 'The Aegis Constitution',
       subtitle: 'Our Privacy-First Promise'
     },
-    {
-      id: 'behavioral_training',
-      title: 'Behavioral Baseline',
-      subtitle: 'Teaching Aegis to recognize you'
-    },
+
     {
       id: 'pattern_setup',
       title: 'Dual Pattern Security',
