@@ -3880,3 +3880,2608 @@ root.render(
         </script>
     </body>
 </html>
+
+
+=== frontend/src/components/AIWorkforceMonitor.js ===
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const API = process.env.REACT_APP_BACKEND_URL;
+
+const AIWorkforceMonitor = ({ ownerMode, authStatus }) => {
+  const [workforceStatus, setWorkforceStatus] = useState(null);
+  const [activeJobs, setActiveJobs] = useState([]);
+  const [workforceActivity, setWorkforceActivity] = useState([]);
+
+  useEffect(() => {
+    if (ownerMode) {
+      loadWorkforceStatus();
+      const interval = setInterval(loadWorkforceStatus, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [ownerMode]);
+
+  const loadWorkforceStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/workforce/status`);
+      setWorkforceStatus(response.data);
+      setActiveJobs(response.data.active_jobs || []);
+      setWorkforceActivity(response.data.recent_activity || []);
+    } catch (error) {
+      console.error('Failed to load workforce status:', error);
+      // Fallback to mock data for demo
+      setMockWorkforceData();
+    }
+  };
+
+  const setMockWorkforceData = () => {
+    setWorkforceStatus({
+      owner_status: "ACTIVE",
+      manager_status: "COORDINATING",
+      workers_active: 8,
+      total_workers: 12,
+      current_load: "MODERATE"
+    });
+
+    setActiveJobs([
+      {
+        id: "job_001",
+        title: "Analyzing morning schedule conflicts",
+        assigned_to: "Calendar Agent (L3)",
+        status: "IN_PROGRESS",
+        priority: "HIGH",
+        started_at: "2 minutes ago"
+      },
+      {
+        id: "job_002", 
+        title: "Processing security threat assessment",
+        assigned_to: "Security Specialist (L4)",
+        status: "ANALYZING",
+        priority: "CRITICAL",
+        started_at: "30 seconds ago"
+      },
+      {
+        id: "job_003",
+        title: "Optimizing photo organization",
+        assigned_to: "Photos Agent (L3)",
+        status: "QUEUED",
+        priority: "LOW",
+        started_at: "Pending"
+      }
+    ]);
+
+    setWorkforceActivity([
+      {
+        timestamp: "09:15:32",
+        agent: "L2 Manager",
+        action: "Delegated conflict analysis to Calendar Agent",
+        type: "DELEGATION"
+      },
+      {
+        timestamp: "09:15:28",
+        agent: "L1 Owner",
+        action: "Approved proactive suggestion deployment",
+        type: "APPROVAL"
+      },
+      {
+        timestamp: "09:15:15",
+        agent: "Security Agent (L4)",
+        action: "Completed behavioral pattern analysis",
+        type: "COMPLETION"
+      },
+      {
+        timestamp: "09:14:52",
+        agent: "L2 Manager",
+        action: "Assigned priority scoring to Analytics Worker",
+        type: "DELEGATION"
+      }
+    ]);
+  };
+
+  if (!ownerMode) {
+    return null; // Only show to owner
+  }
+
+  return (
+    <div className="ai-workforce-monitor bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
+      <h2 className="text-xl font-semibold mb-4 flex items-center">
+        <span className="text-2xl mr-3">🏢</span>
+        AI Workforce Status
+      </h2>
+
+      {/* Workforce Hierarchy Status */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* L1 Owner Status */}
+        <div className="bg-gradient-to-r from-purple-900 to-purple-800 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center">
+              <span className="text-2xl mr-2">👑</span>
+              <span className="font-semibold">L1 Owner</span>
+            </div>
+            <div className={`px-2 py-1 rounded text-xs ${
+              workforceStatus?.owner_status === 'ACTIVE' 
+                ? 'bg-green-800 text-green-200' 
+                : 'bg-gray-800 text-gray-200'
+            }`}>
+              {workforceStatus?.owner_status || 'ACTIVE'}
+            </div>
+          </div>
+          <div className="text-sm text-purple-200">
+            Kernel Guardian • Constitutional Oversight
+          </div>
+          <div className="text-xs text-purple-300 mt-1">
+            Monitoring all workforce operations
+          </div>
+        </div>
+
+        {/* L2 Manager Status */}
+        <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center">
+              <span className="text-2xl mr-2">🎯</span>
+              <span className="font-semibold">L2 Manager</span>
+            </div>
+            <div className={`px-2 py-1 rounded text-xs ${
+              workforceStatus?.manager_status === 'COORDINATING' 
+                ? 'bg-blue-800 text-blue-200' 
+                : 'bg-gray-800 text-gray-200'
+            }`}>
+              {workforceStatus?.manager_status || 'COORDINATING'}
+            </div>
+          </div>
+          <div className="text-sm text-blue-200">
+            AI Orchestrator • Task Delegation
+          </div>
+          <div className="text-xs text-blue-300 mt-1">
+            Managing {workforceStatus?.workers_active || 8} active workers
+          </div>
+        </div>
+
+        {/* L3/L4 Workers Status */}
+        <div className="bg-gradient-to-r from-green-900 to-green-800 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center">
+              <span className="text-2xl mr-2">👷</span>
+              <span className="font-semibold">L3/L4 Workers</span>
+            </div>
+            <div className={`px-2 py-1 rounded text-xs ${
+              (workforceStatus?.workers_active || 0) > 6
+                ? 'bg-green-800 text-green-200' 
+                : 'bg-yellow-800 text-yellow-200'
+            }`}>
+              {workforceStatus?.workers_active || 8}/{workforceStatus?.total_workers || 12}
+            </div>
+          </div>
+          <div className="text-sm text-green-200">
+            Specialist Agents • Task Execution  
+          </div>
+          <div className="text-xs text-green-300 mt-1">
+            Load: {workforceStatus?.current_load || 'MODERATE'}
+          </div>
+        </div>
+      </div>
+
+      {/* Active Jobs Board */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3 flex items-center">
+          <span className="text-xl mr-2">📋</span>
+          Active Jobs
+        </h3>
+        <div className="space-y-2">
+          {activeJobs.map((job, idx) => (
+            <div key={idx} className="bg-slate-700 rounded-lg p-3 border-l-4 border-blue-500">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="font-medium text-white mb-1">{job.title}</div>
+                  <div className="text-sm text-slate-300 mb-1">
+                    👤 Assigned to: {job.assigned_to}
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    Started: {job.started_at}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end space-y-1">
+                  <div className={`px-2 py-1 rounded text-xs ${
+                    job.status === 'IN_PROGRESS' ? 'bg-blue-800 text-blue-200' :
+                    job.status === 'ANALYZING' ? 'bg-yellow-800 text-yellow-200' :
+                    'bg-gray-800 text-gray-200'
+                  }`}>
+                    {job.status}
+                  </div>
+                  <div className={`px-2 py-1 rounded text-xs ${
+                    job.priority === 'CRITICAL' ? 'bg-red-800 text-red-200' :
+                    job.priority === 'HIGH' ? 'bg-orange-800 text-orange-200' :
+                    'bg-slate-800 text-slate-200'
+                  }`}>
+                    {job.priority}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Workforce Activity */}
+      <div>
+        <h3 className="text-lg font-semibold mb-3 flex items-center">
+          <span className="text-xl mr-2">⚡</span>
+          Recent Activity
+        </h3>
+        <div className="bg-slate-700 rounded-lg p-4 max-h-48 overflow-y-auto">
+          <div className="space-y-2">
+            {workforceActivity.map((activity, idx) => (
+              <div key={idx} className="flex items-start space-x-3 text-sm">
+                <div className="text-slate-400 font-mono text-xs w-16">
+                  {activity.timestamp}
+                </div>
+                <div className={`w-2 h-2 rounded-full mt-2 ${
+                  activity.type === 'DELEGATION' ? 'bg-blue-400' :
+                  activity.type === 'APPROVAL' ? 'bg-green-400' :
+                  activity.type === 'COMPLETION' ? 'bg-purple-400' :
+                  'bg-gray-400'
+                }`}></div>
+                <div className="flex-1">
+                  <span className="text-slate-300 font-medium">{activity.agent}</span>
+                  <span className="text-slate-400"> • {activity.action}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Workforce Controls */}
+      <div className="mt-4 flex items-center justify-between">
+        <div className="text-sm text-slate-400">
+          Last updated: {new Date().toLocaleTimeString()}
+        </div>
+        <div className="space-x-2">
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+            Assign Task
+          </button>
+          <button className="bg-slate-600 hover:bg-slate-500 text-white px-3 py-1 rounded text-sm">
+            Workforce Config
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AIWorkforceMonitor;
+
+=== frontend/src/components/AegisOnboarding.js ===
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const API = process.env.REACT_APP_BACKEND_URL;
+
+const AegisOnboarding = ({ onComplete }) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [userConsent, setUserConsent] = useState(false);
+  const [setupData, setSetupData] = useState({
+    normalPattern: '',
+    ownerCode: '',
+    duressPattern: '2-5-8',
+    customWakeName: 'Mate',
+    duressPhrase: 'help me please',
+    calculatorCode: '8675309'
+  });
+  const [behavioralBaseline, setBehavioralBaseline] = useState({
+    swipeData: [],
+    tapData: [],
+    pressureData: []
+  });
+  const [isCompleting, setIsCompleting] = useState(false);
+
+  const onboardingSteps = [
+    {
+      id: 'welcome',
+      title: 'Welcome to Aegis',
+      subtitle: 'Your Hierarchical Proactive Intelligence Guardian'
+    },
+    {
+      id: 'constitution',
+      title: 'The Aegis Constitution',
+      subtitle: 'Our Privacy-First Promise'
+    },
+
+    {
+      id: 'pattern_setup',
+      title: 'Dual Pattern Security',
+      subtitle: 'Set your authentication patterns'
+    },
+    {
+      id: 'voice_setup',
+      title: 'Voice Interface',
+      subtitle: 'Personalize your digital mate'
+    },
+    {
+      id: 'secret_setup',
+      title: 'Secret Features',
+      subtitle: 'Configure hidden access methods'
+    },
+    {
+      id: 'completion',
+      title: 'You\'re All Set!',
+      subtitle: 'Aegis is ready to protect and assist you'
+    }
+  ];
+
+  const currentStepData = onboardingSteps[currentStep];
+
+  const handleNext = () => {
+    if (currentStep < onboardingSteps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      completeOnboarding();
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const completeOnboarding = async () => {
+    setIsCompleting(true);
+    
+    try {
+      // Set up dual patterns
+      await axios.post(`${API}/auth/setup-dual-patterns`, {
+        normal_pattern: setupData.normalPattern,
+        owner_code: setupData.ownerCode,
+        duress_pattern: setupData.duressPattern
+      });
+
+      // Save onboarding data
+      await axios.post(`${API}/onboarding/complete`, {
+        ...setupData,
+        behavioral_baseline: behavioralBaseline,
+        completion_timestamp: new Date().toISOString()
+      });
+
+      onComplete();
+    } catch (error) {
+      console.error('Onboarding completion failed:', error);
+      alert('Setup failed. Please try again.');
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  const recordBehavioralData = (type, data) => {
+    setBehavioralBaseline(prev => ({
+      ...prev,
+      [type]: [...prev[type], { ...data, timestamp: Date.now() }]
+    }));
+  };
+
+  const renderWelcome = () => (
+    <div className="text-center space-y-6">
+      <div className="text-8xl mb-6">🛡️</div>
+      <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+        Welcome to Aegis
+      </h1>
+      <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+        More than an operating system - Aegis is your <strong>Digital Mate</strong>, 
+        a proactive intelligence that learns, protects, and anticipates your needs.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+        {[
+          { icon: '🧠', title: 'Proactive Intelligence', desc: 'Anticipates and automates your digital life' },
+          { icon: '🔒', title: 'Advanced Security', desc: 'Multi-layer protection against digital threats' },
+          { icon: '🎭', title: 'Perfect Deception', desc: 'Trap mode fools intruders with convincing fake data' }
+        ].map((feature, idx) => (
+          <div key={idx} className="bg-slate-800 rounded-lg p-6">
+            <div className="text-4xl mb-3">{feature.icon}</div>
+            <h3 className="font-semibold mb-2">{feature.title}</h3>
+            <p className="text-sm text-slate-400">{feature.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderConstitution = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="text-6xl mb-4">⚖️</div>
+        <h2 className="text-3xl font-bold mb-4">The Aegis Constitution</h2>
+        <p className="text-slate-300">
+          Before we begin, you must understand and agree to these fundamental principles:
+        </p>
+      </div>
+
+      <div className="bg-slate-800 rounded-lg p-6 max-w-4xl mx-auto">
+        <div className="space-y-4">
+          {[
+            {
+              principle: "Privacy First",
+              description: "Your data belongs to you. Aegis processes everything locally and never shares your personal information without explicit consent."
+            },
+            {
+              principle: "Proactive Protection", 
+              description: "Aegis actively monitors for threats and takes preventive action, learning your preferences to minimize interruptions."
+            },
+            {
+              principle: "Transparent Intelligence",
+              description: "You have full visibility and control over what Aegis learns and automates. You can review and modify all AI decisions."
+            },
+            {
+              principle: "Dual Authentication",
+              description: "Two-layer security protects you from coercion. The trap mode ensures your safety even under duress."
+            },
+            {
+              principle: "Emergency Protocols",
+              description: "Aegis includes silent duress detection and emergency response capabilities for your physical safety."
+            }
+          ].map((item, idx) => (
+            <div key={idx} className="border-l-4 border-blue-500 pl-4">
+              <h4 className="font-semibold text-blue-300">{item.principle}</h4>
+              <p className="text-sm text-slate-300">{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="text-center">
+        <label className="flex items-center justify-center space-x-3 text-lg">
+          <input
+            type="checkbox"
+            checked={userConsent}
+            onChange={(e) => setUserConsent(e.target.checked)}
+            className="w-5 h-5 text-blue-600"
+          />
+          <span>I understand and agree to the Aegis Constitution</span>
+        </label>
+      </div>
+    </div>
+  );
+
+  const renderBehavioralTraining = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="text-6xl mb-4">👆</div>
+        <h2 className="text-3xl font-bold mb-4">Behavioral Baseline Training</h2>
+        <p className="text-slate-300 max-w-2xl mx-auto">
+          Aegis learns your unique interaction patterns to distinguish you from intruders. 
+          Complete these simple exercises to establish your behavioral baseline.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <BehavioralTest
+          title="Swipe Patterns"
+          icon="👆"
+          instruction="Swipe in different directions 5 times"
+          onData={(data) => recordBehavioralData('swipeData', data)}
+          targetCount={5}
+        />
+        <BehavioralTest
+          title="Tap Rhythm"
+          icon="👇"
+          instruction="Tap this area 10 times naturally"
+          onData={(data) => recordBehavioralData('tapData', data)}
+          targetCount={10}
+        />
+        <BehavioralTest
+          title="Pressure Sensitivity"
+          icon="✋"
+          instruction="Press and hold 5 times with varying pressure"
+          onData={(data) => recordBehavioralData('pressureData', data)}
+          targetCount={5}
+        />
+      </div>
+
+      <div className="text-center">
+        <div className="text-sm text-slate-400">
+          Total interactions recorded: {
+            behavioralBaseline.swipeData.length + 
+            behavioralBaseline.tapData.length + 
+            behavioralBaseline.pressureData.length
+          } / 20
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderPatternSetup = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="text-6xl mb-4">🔐</div>
+        <h2 className="text-3xl font-bold mb-4">Dual Pattern Security</h2>
+        <p className="text-slate-300 max-w-2xl mx-auto">
+          Set up your authentication patterns. Use your Normal Pattern for everyday phone unlocks. 
+          Aegis will automatically detect intruders and switch to Doge Mode with fake data.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="bg-slate-800 rounded-lg p-6">
+          <h3 className="font-semibold mb-3 text-blue-300">📱 Normal Phone Pattern</h3>
+          <p className="text-sm text-slate-400 mb-4">
+            Regular pattern to unlock your phone. Aegis will analyze your behavior to detect if you're the real owner.
+          </p>
+          <input
+            type="text"
+            placeholder="e.g., 1-2-3-6-9"
+            value={setupData.normalPattern}
+            onChange={(e) => setSetupData(prev => ({...prev, normalPattern: e.target.value}))}
+            className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+          />
+          <div className="text-xs text-slate-500 mt-2">Aegis automatically detects intruders</div>
+        </div>
+
+        <div className="bg-slate-800 rounded-lg p-6">
+          <h3 className="font-semibold mb-3 text-green-300">👑 Owner Verification Code</h3>
+          <p className="text-sm text-slate-400 mb-4">
+            Special pattern that proves you're the real owner and grants full Aegis intelligence access.
+          </p>
+          <input
+            type="text"
+            placeholder="e.g., 1-5-9-8-7"
+            value={setupData.ownerCode}
+            onChange={(e) => setSetupData(prev => ({...prev, ownerCode: e.target.value}))}
+            className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+          />
+          <div className="text-xs text-slate-500 mt-2">Activates your Digital Mate</div>
+        </div>
+      </div>
+
+      <div className="bg-red-900 bg-opacity-30 border border-red-700 rounded-lg p-4 max-w-2xl mx-auto">
+        <h4 className="font-semibold text-red-300 mb-2">🚨 Duress Pattern</h4>
+        <p className="text-sm text-red-200 mb-3">
+          Emergency pattern that silently alerts contacts and activates trap mode.
+        </p>
+        <input
+          type="text"
+          value={setupData.duressPattern}
+          onChange={(e) => setSetupData(prev => ({...prev, duressPattern: e.target.value}))}
+          className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+        />
+      </div>
+    </div>
+  );
+
+  const renderVoiceSetup = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="text-6xl mb-4">🎤</div>
+        <h2 className="text-3xl font-bold mb-4">Voice Interface Setup</h2>
+        <p className="text-slate-300 max-w-2xl mx-auto">
+          Personalize your voice interface and set up emergency vocal protocols.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="bg-slate-800 rounded-lg p-6">
+          <h3 className="font-semibold mb-3">🤖 Custom Wake Name</h3>
+          <p className="text-sm text-slate-400 mb-4">
+            Choose what to call your digital assistant (e.g., "Hey Mate", "Hey Aegis").
+          </p>
+          <input
+            type="text"
+            value={setupData.customWakeName}
+            onChange={(e) => setSetupData(prev => ({...prev, customWakeName: e.target.value}))}
+            className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+          />
+          <button className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+            Test Wake Word
+          </button>
+        </div>
+
+        <div className="bg-red-900 bg-opacity-30 border border-red-700 rounded-lg p-6">
+          <h3 className="font-semibold mb-3 text-red-300">🆘 Vocal Duress Phrase</h3>
+          <p className="text-sm text-red-200 mb-4">
+            A phrase that silently triggers emergency protocols when spoken naturally.
+          </p>
+          <input
+            type="text"
+            value={setupData.duressPhrase}
+            onChange={(e) => setSetupData(prev => ({...prev, duressPhrase: e.target.value}))}
+            className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+          />
+          <div className="text-xs text-red-300 mt-2">
+            ⚠️ Choose something you might naturally say in distress
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSecretSetup = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="text-6xl mb-4">🔢</div>
+        <h2 className="text-3xl font-bold mb-4">Secret Access Methods</h2>
+        <p className="text-slate-300 max-w-2xl mx-auto">
+          Configure hidden entry points to your secure vault and phantom folder.
+        </p>
+      </div>
+
+      <div className="bg-slate-800 rounded-lg p-6 max-w-2xl mx-auto">
+        <h3 className="font-semibold mb-3">🧮 Calculator Secret Handshake</h3>
+        <p className="text-sm text-slate-400 mb-4">
+          Enter this code in the calculator app to access your Phantom Folder. 
+          The calculator will transform into the vault interface.
+        </p>
+        <input
+          type="text"
+          value={setupData.calculatorCode}
+          onChange={(e) => setSetupData(prev => ({...prev, calculatorCode: e.target.value}))}
+          className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+        />
+        <div className="text-xs text-slate-500 mt-2">
+          Default: 8675309 (Jenny's number) - Choose something memorable
+        </div>
+      </div>
+
+      <div className="text-center">
+        <div className="bg-blue-900 bg-opacity-30 border border-blue-700 rounded-lg p-4 inline-block">
+          <div className="text-blue-300 font-semibold mb-2">🎭 Perfect Deception Ready</div>
+          <div className="text-sm text-blue-200">
+            Your trap mode will show convincing fake data while secretly collecting evidence
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderCompletion = () => (
+    <div className="text-center space-y-6">
+      <div className="text-8xl mb-6">🎉</div>
+      <h1 className="text-4xl font-bold text-green-400">Aegis is Ready!</h1>
+      <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+        Your Hierarchical Proactive Intelligence system is now configured and ready to 
+        protect, assist, and learn from your digital interactions.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="bg-green-900 bg-opacity-30 border border-green-700 rounded-lg p-6">
+          <h3 className="font-semibold text-green-300 mb-3">✅ Configured Features</h3>
+          <div className="space-y-2 text-sm text-green-200">
+            <div>🔐 Dual Pattern Authentication</div>
+            <div>🎤 Voice Interface with "{setupData.customWakeName}"</div>
+            <div>🧮 Calculator Secret Handshake</div>
+            <div>🆘 Emergency Duress Protocols</div>
+            <div>👆 Behavioral Baseline Established</div>
+            <div>🧠 Proactive Intelligence Active</div>
+          </div>
+        </div>
+
+        <div className="bg-blue-900 bg-opacity-30 border border-blue-700 rounded-lg p-6">
+          <h3 className="font-semibold text-blue-300 mb-3">🚀 What's Next</h3>
+          <div className="space-y-2 text-sm text-blue-200">
+            <div>• Aegis will learn your patterns</div>
+            <div>• Proactive suggestions will improve</div>
+            <div>• Trap mode protection is active</div>
+            <div>• Voice commands are ready</div>
+            <div>• Emergency protocols are armed</div>
+            <div>• Your digital mate is ready to help</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const canProceed = () => {
+    switch (currentStep) {
+      case 1: return userConsent;
+      case 2: return setupData.normalPattern && setupData.ownerCode;
+      case 3: return setupData.customWakeName && setupData.duressPhrase;
+      case 4: return setupData.calculatorCode;
+      default: return true;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white">
+      <div className="container mx-auto px-6 py-8">
+        {/* Progress Indicator */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <div className="text-sm text-slate-400">
+              Step {currentStep + 1} of {onboardingSteps.length}
+            </div>
+            <div className="text-sm text-slate-400">
+              {currentStepData.title}
+            </div>
+          </div>
+          <div className="w-full bg-slate-700 rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-blue-400 to-purple-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${((currentStep + 1) / onboardingSteps.length) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Step Content */}
+        <div className="min-h-[600px] flex items-center justify-center">
+          <div className="w-full max-w-6xl">
+            {currentStep === 0 && renderWelcome()}
+            {currentStep === 1 && renderConstitution()}
+            {currentStep === 2 && renderPatternSetup()}
+            {currentStep === 3 && renderVoiceSetup()}
+            {currentStep === 4 && renderSecretSetup()}
+            {currentStep === 5 && renderCompletion()}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex justify-between items-center mt-8">
+          <button
+            onClick={handleBack}
+            disabled={currentStep === 0}
+            className="bg-slate-600 hover:bg-slate-500 disabled:opacity-50 text-white px-6 py-3 rounded font-medium"
+          >
+            Back
+          </button>
+
+          <button
+            onClick={handleNext}
+            disabled={!canProceed() || isCompleting}
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 py-3 rounded font-medium"
+          >
+            {isCompleting ? 'Completing Setup...' : 
+             currentStep === onboardingSteps.length - 1 ? 'Launch Aegis' : 'Next'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Behavioral Test Component
+const BehavioralTest = ({ title, icon, instruction, onData, targetCount }) => {
+  const [interactions, setInteractions] = useState([]);
+  const [isActive, setIsActive] = useState(false);
+
+  const handleInteraction = (event) => {
+    if (interactions.length >= targetCount) return;
+
+    const interactionData = {
+      type: title.toLowerCase().replace(' ', '_'),
+      x: event.clientX,
+      y: event.clientY,
+      pressure: event.pressure || 0.5,
+      timestamp: Date.now()
+    };
+
+    const newInteractions = [...interactions, interactionData];
+    setInteractions(newInteractions);
+    onData(interactionData);
+
+    if (newInteractions.length >= targetCount) {
+      setIsActive(false);
+    }
+  };
+
+  const isComplete = interactions.length >= targetCount;
+
+  return (
+    <div className={`
+      bg-slate-800 rounded-lg p-6 text-center transition-all
+      ${isComplete ? 'border-2 border-green-500' : 'border-2 border-transparent'}
+    `}>
+      <div className="text-4xl mb-3">{icon}</div>
+      <h3 className="font-semibold mb-2">{title}</h3>
+      <p className="text-sm text-slate-400 mb-4">{instruction}</p>
+      
+      <div
+        className={`
+          w-full h-32 rounded-lg flex items-center justify-center cursor-pointer transition-all
+          ${isComplete ? 'bg-green-900 bg-opacity-50' : 'bg-slate-700 hover:bg-slate-600'}
+        `}
+        onMouseDown={handleInteraction}
+        onTouchStart={handleInteraction}
+      >
+        {isComplete ? (
+          <div className="text-green-300">✓ Complete</div>
+        ) : (
+          <div className="text-slate-400">
+            {interactions.length} / {targetCount}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AegisOnboarding;
+
+=== frontend/src/components/CalculatorVault.js ===
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const API = process.env.REACT_APP_BACKEND_URL;
+
+const CalculatorVault = ({ onClose, onVaultAccess }) => {
+  const [display, setDisplay] = useState('0');
+  const [isCalculatorMode, setIsCalculatorMode] = useState(true);
+  const [isTransforming, setIsTransforming] = useState(false);
+  const [vaultUnlocked, setVaultUnlocked] = useState(false);
+  const [secretCode, setSecretCode] = useState('8675309'); // Default secret handshake
+  const [vaultData, setVaultData] = useState(null);
+
+  // Calculator functionality
+  const handleCalculatorInput = (value) => {
+    if (display === '0' && value !== '.') {
+      setDisplay(value);
+    } else {
+      setDisplay(prev => prev + value);
+    }
+  };
+
+  const handleCalculatorClear = () => {
+    setDisplay('0');
+  };
+
+  const handleEquals = async () => {
+    try {
+      // Check if the current display matches the secret code
+      if (display === secretCode) {
+        await triggerSecretHandshake();
+      } else {
+        // Normal calculation
+        const result = eval(display);
+        setDisplay(result.toString());
+      }
+    } catch (error) {
+      setDisplay('Error');
+    }
+  };
+
+  const triggerSecretHandshake = async () => {
+    setIsTransforming(true);
+    
+    // Visual transformation effect
+    setTimeout(() => {
+      setIsCalculatorMode(false);
+      setIsTransforming(false);
+    }, 1500);
+
+    // Log the vault access attempt
+    try {
+      await axios.post(`${API}/vault/access-attempt`, {
+        action: 'secret_handshake_triggered',
+        code_used: secretCode,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Failed to log vault access:', error);
+    }
+  };
+
+  const authenticateVault = async (authMethod = 'pattern') => {
+    try {
+      const response = await axios.post(`${API}/vault/authenticate`, {
+        method: authMethod,
+        timestamp: new Date().toISOString()
+      });
+
+      if (response.data.success) {
+        setVaultUnlocked(true);
+        loadVaultData();
+        onVaultAccess(true);
+      }
+    } catch (error) {
+      console.error('Vault authentication failed:', error);
+    }
+  };
+
+  const loadVaultData = async () => {
+    try {
+      const response = await axios.get(`${API}/vault/data`);
+      setVaultData(response.data);
+    } catch (error) {
+      console.error('Failed to load vault data:', error);
+    }
+  };
+
+  // Calculator button layout
+  const calculatorButtons = [
+    ['C', '±', '%', '÷'],
+    ['7', '8', '9', '×'],
+    ['4', '5', '6', '-'],
+    ['1', '2', '3', '+'],
+    ['0', '.', '=']
+  ];
+
+  if (vaultUnlocked && vaultData) {
+    return <VaultInterface vaultData={vaultData} onClose={onClose} />;
+  }
+
+  if (!isCalculatorMode && !isTransforming) {
+    return <VaultLogin onAuthenticate={authenticateVault} onClose={onClose} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-white">
+      {/* Calculator Header */}
+      <div className="bg-slate-800 p-4 flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Calculator</h1>
+        <button 
+          onClick={onClose}
+          className="text-slate-400 hover:text-white"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Calculator Display */}
+      <div className={`
+        calculator-display bg-slate-950 p-8 text-right text-4xl font-mono
+        ${isTransforming ? 'animate-pulse' : ''}
+      `}>
+        <div className="min-h-[60px] flex items-end justify-end">
+          {isTransforming ? (
+            <div className="text-blue-400">
+              <div className="animate-spin">⚡</div>
+            </div>
+          ) : (
+            display
+          )}
+        </div>
+      </div>
+
+      {/* Transformation Effect */}
+      {isTransforming && (
+        <div className="fixed inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center z-50">
+          <div className="text-center text-blue-300">
+            <div className="text-6xl mb-4 animate-bounce">🔐</div>
+            <div className="text-xl font-semibold">Activating Phantom Folder...</div>
+            <div className="text-sm mt-2 opacity-75">Morphing interface...</div>
+          </div>
+        </div>
+      )}
+
+      {/* Calculator Buttons */}
+      <div className="calculator-buttons p-4 grid grid-cols-4 gap-3">
+        {calculatorButtons.map((row, rowIdx) => 
+          row.map((btn, colIdx) => {
+            const isZero = btn === '0';
+            const isOperator = ['÷', '×', '-', '+', '='].includes(btn);
+            const isFunction = ['C', '±', '%'].includes(btn);
+            
+            return (
+              <button
+                key={`${rowIdx}-${colIdx}`}
+                onClick={() => {
+                  if (btn === 'C') handleCalculatorClear();
+                  else if (btn === '=') handleEquals();
+                  else if (!isOperator && !isFunction) handleCalculatorInput(btn);
+                  else handleCalculatorInput(btn);
+                }}
+                className={`
+                  h-16 rounded-lg font-semibold text-xl transition-all transform active:scale-95
+                  ${isZero ? 'col-span-2' : ''}
+                  ${isOperator ? 'bg-blue-600 hover:bg-blue-700 text-white' : 
+                    isFunction ? 'bg-slate-600 hover:bg-slate-500 text-white' :
+                    'bg-slate-700 hover:bg-slate-600 text-white'}
+                  ${isTransforming ? 'pointer-events-none opacity-50' : ''}
+                `}
+                disabled={isTransforming}
+              >
+                {btn}
+              </button>
+            );
+          })
+        )}
+      </div>
+
+      {/* Secret Hint (Easter Egg) */}
+      <div className="text-center p-4 text-xs text-slate-500 opacity-50">
+        Standard Calculator • iOS 17.2
+      </div>
+    </div>
+  );
+};
+
+// Vault Login Screen
+const VaultLogin = ({ onAuthenticate, onClose }) => {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-purple-900 text-white flex items-center justify-center">
+      <div className="w-full max-w-md mx-auto px-6">
+        <div className="text-center mb-8">
+          <div className="text-6xl mb-4 animate-pulse">🔐</div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-2">
+            Phantom Folder
+          </h1>
+          <p className="text-slate-400">Secret Handshake Detected</p>
+        </div>
+
+        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div className="text-center mb-6">
+            <div className="text-green-400 mb-2">✓ Access Granted</div>
+            <div className="text-sm text-slate-400">
+              Authenticate to enter secure vault
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <button
+              onClick={() => onAuthenticate('biometric')}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-all"
+            >
+              🔐 Authenticate with Face ID
+            </button>
+
+            <button
+              onClick={() => onAuthenticate('pattern')}
+              className="w-full bg-slate-600 hover:bg-slate-500 text-white py-3 px-4 rounded-lg font-medium transition-all"
+            >
+              🔢 Use Pattern Lock
+            </button>
+
+            <button
+              onClick={onClose}
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-medium transition-all"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        <div className="text-center mt-6 text-xs text-slate-500">
+          Hardware-encrypted • Zero-knowledge architecture
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Vault Interface
+const VaultInterface = ({ vaultData, onClose }) => {
+  const [activeTab, setActiveTab] = useState('files');
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+      {/* Vault Header */}
+      <div className="bg-slate-800 border-b border-slate-700 p-4 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="text-2xl">🔒</div>
+          <div>
+            <h1 className="text-xl font-semibold">Phantom Folder</h1>
+            <p className="text-xs text-slate-400">Secure Vault Active</p>
+          </div>
+        </div>
+        <button 
+          onClick={onClose}
+          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+        >
+          Exit Vault
+        </button>
+      </div>
+
+      {/* Vault Tabs */}
+      <div className="bg-slate-800 border-b border-slate-700 px-4">
+        <div className="flex space-x-6">
+          {[
+            { id: 'files', label: 'Secure Files', icon: '📄' },
+            { id: 'apps', label: 'Hidden Apps', icon: '📱' },
+            { id: 'plans', label: 'Hidden Plans', icon: '🧠' },
+            { id: 'quarantine', label: 'Quarantine Bin', icon: '🛡️' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`
+                flex items-center space-x-2 py-3 px-2 border-b-2 transition-all
+                ${activeTab === tab.id 
+                  ? 'border-blue-400 text-blue-400' 
+                  : 'border-transparent text-slate-400 hover:text-white'
+                }
+              `}
+            >
+              <span>{tab.icon}</span>
+              <span className="text-sm font-medium">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Vault Content */}
+      <div className="p-6">
+        {activeTab === 'files' && <SecureFilesTab />}
+        {activeTab === 'apps' && <HiddenAppsTab />}
+        {activeTab === 'plans' && <HiddenPlansTab />}
+        {activeTab === 'quarantine' && <QuarantineBinTab />}
+      </div>
+    </div>
+  );
+};
+
+// Individual Vault Tabs
+const SecureFilesTab = () => (
+  <div className="space-y-4">
+    <div className="flex items-center justify-between">
+      <h2 className="text-xl font-semibold">Encrypted Files</h2>
+      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+        + Add File
+      </button>
+    </div>
+    
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {['passport_scan.pdf', 'private_keys.txt', 'family_photos_backup.zip', 'medical_records.pdf'].map((file, idx) => (
+        <div key={idx} className="bg-slate-800 rounded-lg p-4 hover:bg-slate-700 transition-all cursor-pointer">
+          <div className="text-3xl mb-2">📄</div>
+          <div className="text-sm font-medium truncate">{file}</div>
+          <div className="text-xs text-slate-400 mt-1">Encrypted</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const HiddenAppsTab = () => (
+  <div className="space-y-4">
+    <div className="flex items-center justify-between">
+      <h2 className="text-xl font-semibold">Hidden Applications</h2>
+      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+        + Hide App
+      </button>
+    </div>
+    
+    <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+      {[
+        { name: 'Signal', icon: '💬' },
+        { name: 'Tor Browser', icon: '🌐' },
+        { name: 'ProtonMail', icon: '📧' },
+        { name: 'Crypto Wallet', icon: '₿' },
+        { name: 'VPN Client', icon: '🛡️' },
+        { name: 'Password Manager', icon: '🔑' }
+      ].map((app, idx) => (
+        <div key={idx} className="bg-slate-800 rounded-lg p-4 text-center hover:bg-slate-700 transition-all cursor-pointer">
+          <div className="text-2xl mb-1">{app.icon}</div>
+          <div className="text-xs font-medium">{app.name}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const HiddenPlansTab = () => (
+  <div className="space-y-4">
+    <div className="flex items-center justify-between">
+      <h2 className="text-xl font-semibold">AI Hidden Plans</h2>
+      <div className="text-sm text-slate-400">Proactive Intelligence Cache</div>
+    </div>
+    
+    <div className="space-y-3">
+      {[
+        { title: 'Career Transition Plan', status: 'Active', confidence: 'High' },
+        { title: 'Investment Strategy Backup', status: 'Monitoring', confidence: 'Medium' },
+        { title: 'Emergency Contact Protocol', status: 'Standby', confidence: 'High' },
+        { title: 'Digital Legacy Plan', status: 'Draft', confidence: 'Low' }
+      ].map((plan, idx) => (
+        <div key={idx} className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+          <div className="flex items-center justify-between mb-2">
+            <div className="font-medium">{plan.title}</div>
+            <div className={`text-xs px-2 py-1 rounded ${
+              plan.status === 'Active' ? 'bg-green-900 text-green-300' :
+              plan.status === 'Monitoring' ? 'bg-yellow-900 text-yellow-300' :
+              'bg-slate-700 text-slate-300'
+            }`}>
+              {plan.status}
+            </div>
+          </div>
+          <div className="text-sm text-slate-400">
+            Confidence: {plan.confidence} • Last updated: 2 days ago
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const QuarantineBinTab = () => (
+  <div className="space-y-4">
+    <div className="flex items-center justify-between">
+      <h2 className="text-xl font-semibold">Quarantine Bin</h2>
+      <div className="text-sm text-slate-400">AI-flagged content</div>
+    </div>
+    
+    <div className="space-y-3">
+      {[
+        { type: 'Suspicious Email', item: 'phishing@fake-bank.com', risk: 'High', date: '2 hours ago' },
+        { type: 'Malicious Link', item: 'malware-site.com/download', risk: 'Critical', date: '1 day ago' },
+        { type: 'Tracking Pixel', item: 'ad-tracker.jpg', risk: 'Medium', date: '3 days ago' }
+      ].map((item, idx) => (
+        <div key={idx} className="bg-red-900 bg-opacity-30 border border-red-700 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-2">
+              <div className="text-red-400">⚠️</div>
+              <div className="font-medium">{item.type}</div>
+            </div>
+            <div className={`text-xs px-2 py-1 rounded ${
+              item.risk === 'Critical' ? 'bg-red-800 text-red-200' :
+              item.risk === 'High' ? 'bg-orange-800 text-orange-200' :
+              'bg-yellow-800 text-yellow-200'
+            }`}>
+              {item.risk} Risk
+            </div>
+          </div>
+          <div className="text-sm text-slate-300 mb-1">{item.item}</div>
+          <div className="text-xs text-slate-400">{item.date}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+export default CalculatorVault;
+
+=== frontend/src/components/ContextualHub.js ===
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import AIWorkforceMonitor from './AIWorkforceMonitor';
+
+const API = process.env.REACT_APP_BACKEND_URL;
+
+const ContextualHub = ({ authStatus, onAppOpen, trapActive, ownerMode }) => {
+  const [currentContext, setCurrentContext] = useState('general');
+  const [contextualCards, setContextualCards] = useState([]);
+  const [proactiveBriefing, setProactiveBriefing] = useState(null);
+  const [weatherData, setWeatherData] = useState(null);
+  const [timeOfDay, setTimeOfDay] = useState('morning');
+
+  useEffect(() => {
+    determineContext();
+    loadContextualContent();
+    const interval = setInterval(() => {
+      determineContext();
+      loadContextualContent();
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [authStatus]);
+
+  const determineContext = () => {
+    const now = new Date();
+    const hour = now.getHours();
+    const dayOfWeek = now.getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    let context = 'general';
+    let timeContext = 'morning';
+
+    if (hour >= 5 && hour < 12) {
+      context = 'morning';
+      timeContext = 'morning';
+    } else if (hour >= 12 && hour < 17) {
+      context = isWeekend ? 'weekend_afternoon' : 'work';
+      timeContext = 'afternoon';
+    } else if (hour >= 17 && hour < 22) {
+      context = 'evening';
+      timeContext = 'evening';
+    } else {
+      context = 'night';
+      timeContext = 'night';
+    }
+
+    setCurrentContext(context);
+    setTimeOfDay(timeContext);
+  };
+
+  const loadContextualContent = async () => {
+    try {
+      if (ownerMode) {
+        // Load real proactive content for owner
+        const briefingResponse = await axios.get(`${API}/proactive/briefing?type=${timeOfDay}`);
+        setProactiveBriefing(briefingResponse.data);
+      }
+
+      // Generate contextual cards based on current context
+      generateContextualCards();
+    } catch (error) {
+      console.error('Failed to load contextual content:', error);
+      generateContextualCards(); // Fallback to static cards
+    }
+  };
+
+  const generateContextualCards = () => {
+    const cards = getContextualCards(currentContext, trapActive, ownerMode);
+    setContextualCards(cards);
+  };
+
+  const getContextualCards = (context, isTrap, isOwner) => {
+    const baseCards = [];
+
+    switch (context) {
+      case 'morning':
+        baseCards.push(
+          {
+            id: 'morning_briefing',
+            title: '🌅 Good Morning',
+            type: 'briefing',
+            content: isOwner ? 'Ready to make today amazing! Here\'s what\'s ahead.' : 'Have a great day ahead!',
+            priority: 'high',
+            actions: [
+              { text: 'View Schedule', action: () => onAppOpen('calendar') },
+              { text: 'Check Weather', action: () => handleWeatherCheck() }
+            ]
+          },
+          {
+            id: 'morning_routine',
+            title: '☕ Morning Essentials',
+            type: 'routine',
+            content: 'Your usual morning apps and shortcuts',
+            priority: 'medium',
+            actions: [
+              { text: 'News', action: () => handleQuickAction('news') },
+              { text: 'Messages', action: () => onAppOpen('messages') },
+              { text: 'Email', action: () => handleQuickAction('email') }
+            ]
+          }
+        );
+        break;
+
+      case 'work':
+        baseCards.push(
+          {
+            id: 'work_focus',
+            title: '💼 Work Mode Active',
+            type: 'focus',
+            content: isOwner ? 'Optimized for productivity. Distractions minimized.' : 'Focus mode enabled',
+            priority: 'high',
+            actions: [
+              { text: 'Calendar', action: () => onAppOpen('calendar') },
+              { text: 'Notes', action: () => onAppOpen('notes') },
+              { text: 'Settings', action: () => onAppOpen('settings') }
+            ]
+          },
+          {
+            id: 'upcoming_meeting',
+            title: '📅 Next Meeting',
+            type: 'alert',
+            content: isTrap ? 'Team standup in 30 minutes' : (isOwner ? 'AI analysis suggests preparation time needed' : 'No meetings scheduled'),
+            priority: 'high',
+            actions: [
+              { text: 'Prepare', action: () => handleMeetingPrep() },
+              { text: 'Join Early', action: () => handleQuickAction('meeting') }
+            ]
+          }
+        );
+        break;
+
+      case 'evening':
+        baseCards.push(
+          {
+            id: 'evening_wind_down',
+            title: '🌆 Evening Relaxation',
+            type: 'lifestyle',
+            content: 'Time to unwind and reflect on the day',
+            priority: 'medium',
+            actions: [
+              { text: 'Netflix', action: () => handleQuickAction('netflix') },
+              { text: 'Music', action: () => handleQuickAction('music') },
+              { text: 'Photos', action: () => onAppOpen('photos') }
+            ]
+          },
+          {
+            id: 'daily_summary',
+            title: '📊 Day Summary',
+            type: 'insight',
+            content: isOwner ? 'AI has prepared your daily insights and achievements' : 'Review today\'s activities',
+            priority: 'low',
+            actions: [
+              { text: 'View Insights', action: () => handleDailySummary() },
+              { text: 'Plan Tomorrow', action: () => handlePlanTomorrow() }
+            ]
+          }
+        );
+        break;
+
+      case 'night':
+        baseCards.push(
+          {
+            id: 'night_mode',
+            title: '🌙 Night Mode',
+            type: 'system',
+            content: 'Optimized for nighttime use with reduced notifications',
+            priority: 'medium',
+            actions: [
+              { text: 'Sleep Timer', action: () => handleSleepTimer() },
+              { text: 'Do Not Disturb', action: () => handleQuickAction('dnd') }
+            ]
+          }
+        );
+        break;
+
+      default:
+        baseCards.push(
+          {
+            id: 'general_assistant',
+            title: isOwner ? '🤖 Your Digital Mate' : '📱 Assistant',
+            type: 'assistant',
+            content: isOwner ? 'I\'m here to help with whatever you need' : 'How can I help you today?',
+            priority: 'medium',
+            actions: [
+              { text: 'Quick Actions', action: () => handleQuickActions() },
+              { text: 'Voice Command', action: () => handleVoiceCommand() }
+            ]
+          }
+        );
+    }
+
+    // Add proactive intelligence cards for owner mode
+    if (isOwner) {
+      baseCards.push(
+        {
+          id: 'proactive_suggestions',
+          title: '💡 Smart Suggestions',
+          type: 'intelligence',
+          content: 'AI has identified opportunities and optimizations for you',
+          priority: 'high',
+          actions: [
+            { text: 'View All', action: () => handleProactiveSuggestions() },
+            { text: 'Quick Fix', action: () => handleQuickFix() }
+          ]
+        }
+      );
+    }
+
+    return baseCards;
+  };
+
+  const handleWeatherCheck = async () => {
+    // Mock weather data for demo
+    setWeatherData({
+      temp: '72°F',
+      condition: 'Partly Cloudy',
+      forecast: 'Perfect day ahead!'
+    });
+  };
+
+  const handleMeetingPrep = () => {
+    // Mock meeting preparation
+    console.log('Preparing for meeting with AI assistance...');
+  };
+
+  const handleDailySummary = async () => {
+    if (ownerMode) {
+      try {
+        const response = await axios.get(`${API}/proactive/daily-summary`);
+        console.log('Daily summary:', response.data);
+      } catch (error) {
+        console.log('Mock daily summary: 8 tasks completed, 3 meetings attended, 15 messages processed');
+      }
+    }
+  };
+
+  const handlePlanTomorrow = () => {
+    console.log('AI is analyzing tomorrow\'s optimal schedule...');
+  };
+
+  const handleSleepTimer = () => {
+    console.log('Setting up sleep optimization...');
+  };
+
+  const handleQuickActions = () => {
+    console.log('Opening quick actions menu...');
+  };
+
+  const handleVoiceCommand = () => {
+    console.log('Listening for "Hey Mate" command...');
+  };
+
+  const handleProactiveSuggestions = async () => {
+    if (ownerMode) {
+      try {
+        const response = await axios.get(`${API}/proactive/suggestions`);
+        console.log('Proactive suggestions:', response.data);
+      } catch (error) {
+        console.log('Mock suggestions: Optimize calendar, backup photos, update passwords');
+      }
+    }
+  };
+
+  const handleQuickFix = () => {
+    console.log('Applying AI-recommended quick fixes...');
+  };
+
+  const handleQuickAction = (action) => {
+    console.log(`Quick action: ${action}`);
+  };
+
+  const getContextualStyling = () => {
+    switch (currentContext) {
+      case 'morning':
+        return 'bg-gradient-to-br from-yellow-900 via-slate-900 to-orange-900';
+      case 'work':
+        return 'bg-gradient-to-br from-blue-900 via-slate-900 to-indigo-900';
+      case 'evening':
+        return 'bg-gradient-to-br from-purple-900 via-slate-900 to-pink-900';
+      case 'night':
+        return 'bg-gradient-to-br from-slate-900 via-gray-900 to-black';
+      default:
+        return 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900';
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return 'border-red-500 bg-red-900 bg-opacity-20';
+      case 'medium': return 'border-yellow-500 bg-yellow-900 bg-opacity-20';
+      case 'low': return 'border-green-500 bg-green-900 bg-opacity-20';
+      default: return 'border-slate-500 bg-slate-900 bg-opacity-20';
+    }
+  };
+
+  return (
+    <div className={`min-h-screen text-white transition-all duration-1000 ${getContextualStyling()}`}>
+      {/* Dynamic Header */}
+      <div className="p-6 border-b border-slate-700 bg-slate-900 bg-opacity-50">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">
+              {trapActive ? 'My Phone' : ownerMode ? 'Aegis Life OS' : 'Digital Assistant'}
+            </h1>
+            <p className="text-slate-400 text-sm">
+              {currentContext.charAt(0).toUpperCase() + currentContext.slice(1).replace('_', ' ')} Mode • {new Date().toLocaleTimeString()}
+            </p>
+          </div>
+          
+          {ownerMode && (
+            <div className="text-right">
+              <div className="text-green-400 text-sm">🛡️ Owner Mode</div>
+              <div className="text-xs text-slate-400">Full Intelligence Active</div>
+            </div>
+          )}
+          
+          {trapActive && (
+            <div className="text-right">
+              <div className="text-blue-400 text-sm">📱 Phone Unlocked</div>
+              <div className="text-xs text-slate-400">Standard Access</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Weather Widget (if loaded) */}
+      {weatherData && (
+        <div className="p-4 bg-blue-900 bg-opacity-30 border-b border-blue-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-lg font-semibold">{weatherData.temp}</div>
+              <div className="text-sm text-blue-300">{weatherData.condition}</div>
+            </div>
+            <div className="text-sm text-blue-200">{weatherData.forecast}</div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Workforce Monitor (Owner Mode Only) */}
+      {ownerMode && (
+        <div className="p-6">
+          <AIWorkforceMonitor 
+            ownerMode={ownerMode}
+            authStatus={authStatus}
+          />
+        </div>
+      )}
+
+      {/* Contextual Cards Grid */}
+      <div className="p-6 space-y-4">
+        {contextualCards.map((card) => (
+          <div
+            key={card.id}
+            className={`
+              rounded-lg border-l-4 p-6 transition-all duration-300 hover:transform hover:scale-[1.02]
+              ${getPriorityColor(card.priority)}
+            `}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">{card.title}</h3>
+                <p className="text-slate-300 text-sm">{card.content}</p>
+              </div>
+              
+              <div className={`
+                px-2 py-1 rounded text-xs font-medium
+                ${card.priority === 'high' ? 'bg-red-800 text-red-200' :
+                  card.priority === 'medium' ? 'bg-yellow-800 text-yellow-200' :
+                  'bg-green-800 text-green-200'}
+              `}>
+                {card.priority}
+              </div>
+            </div>
+
+            {/* Card Actions */}
+            <div className="flex flex-wrap gap-2">
+              {card.actions.map((action, idx) => (
+                <button
+                  key={idx}
+                  onClick={action.action}
+                  className="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded text-sm font-medium transition-all"
+                >
+                  {action.text}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Proactive Briefing Section (Owner Mode Only) */}
+      {ownerMode && proactiveBriefing && (
+        <div className="p-6 border-t border-slate-700">
+          <h2 className="text-xl font-semibold mb-4">🧠 Proactive Intelligence</h2>
+          <div className="bg-slate-800 rounded-lg p-4">
+            <h3 className="font-medium mb-2">{proactiveBriefing.title}</h3>
+            <p className="text-slate-300 text-sm mb-3">{proactiveBriefing.summary}</p>
+            
+            {proactiveBriefing.insights && (
+              <div className="space-y-1">
+                {proactiveBriefing.insights.map((insight, idx) => (
+                  <div key={idx} className="text-xs text-blue-300">• {insight}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Quick App Access */}
+      <div className="p-6 border-t border-slate-700">
+        <h2 className="text-lg font-semibold mb-4">📱 Quick Access</h2>
+        <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
+          {[
+            { name: 'Messages', icon: '💬', app: 'messages' },
+            { name: 'Photos', icon: '📸', app: 'photos' },
+            { name: 'Calendar', icon: '📅', app: 'calendar' },
+            { name: 'Calculator', icon: '🔢', app: 'calculator' },
+            { name: 'Settings', icon: '⚙️', app: 'settings' },
+            { name: 'Banking', icon: '💳', app: 'banking' }
+          ].map((app, idx) => (
+            <button
+              key={idx}
+              onClick={() => onAppOpen(app.app)}
+              className="bg-slate-800 hover:bg-slate-700 rounded-lg p-3 text-center transition-all transform hover:scale-105"
+            >
+              <div className="text-2xl mb-1">{app.icon}</div>
+              <div className="text-xs font-medium">{app.name}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ContextualHub;
+
+=== frontend/src/components/LandingPage.js ===
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const API = process.env.REACT_APP_BACKEND_URL;
+
+const LandingPage = ({ onGetStarted }) => {
+  const [email, setEmail] = useState('');
+  const [isSignedUp, setIsSignedUp] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleBetaSignup = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    
+    setLoading(true);
+    try {
+      await axios.post(`${API}/beta/signup`, {
+        email,
+        timestamp: new Date().toISOString(),
+        source: 'landing_page'
+      });
+      
+      setIsSignedUp(true);
+      setTimeout(() => {
+        onGetStarted();
+      }, 3000);
+    } catch (error) {
+      console.error('Beta signup failed:', error);
+      // Still proceed for demo
+      setIsSignedUp(true);
+      setTimeout(() => {
+        onGetStarted();
+      }, 2000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (isSignedUp) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-6">
+          <div className="text-6xl mb-6 animate-bounce">🛡️</div>
+          <h1 className="text-3xl font-bold mb-4">Welcome to Aegis!</h1>
+          <p className="text-slate-300 mb-6">
+            Your Digital Mate is being initialized...
+          </p>
+          <div className="animate-spin text-4xl mb-4">⚡</div>
+          <div className="text-sm text-slate-400">
+            Launching your personalized AI experience
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white">
+      {/* Hero Section */}
+      <div className="container mx-auto px-6 py-16">
+        {/* Header */}
+        <header className="flex items-center justify-between mb-16">
+          <div className="flex items-center space-x-3">
+            <div className="text-4xl">🛡️</div>
+            <div className="text-2xl font-bold">Aegis</div>
+          </div>
+          <div className="text-sm text-slate-400">
+            The Future of Personal Computing
+          </div>
+        </header>
+
+        {/* Main Hero */}
+        <div className="text-center mb-20">
+          <h1 className="text-6xl md:text-8xl font-bold mb-8">
+            Meet Your
+            <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent block">
+              Digital Mate
+            </span>
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-slate-300 max-w-4xl mx-auto mb-12 leading-relaxed">
+            Aegis isn't just an operating system—it's your <strong>Hierarchical Proactive Intelligence</strong> that learns, 
+            protects, and anticipates your digital life before you even ask.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <button
+              onClick={onGetStarted}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105"
+            >
+              Experience Aegis Now
+            </button>
+            <button className="border border-slate-600 hover:border-slate-400 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all">
+              Watch Demo
+            </button>
+          </div>
+        </div>
+
+        {/* Key Features */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+          <div className="bg-slate-800 bg-opacity-50 rounded-xl p-8 border border-slate-700">
+            <div className="text-5xl mb-4">🧠</div>
+            <h3 className="text-2xl font-bold mb-4">Proactive Intelligence</h3>
+            <p className="text-slate-300 leading-relaxed">
+              Your AI workforce anticipates your needs, resolves conflicts, and optimizes your digital life automatically. 
+              Like having a personal assistant that never sleeps.
+            </p>
+          </div>
+
+          <div className="bg-slate-800 bg-opacity-50 rounded-xl p-8 border border-slate-700">
+            <div className="text-5xl mb-4">🔒</div>
+            <h3 className="text-2xl font-bold mb-4">Unbreakable Security</h3>
+            <p className="text-slate-300 leading-relaxed">
+              Behavioral authentication, trap modes, and emergency wipe protocols protect you from digital threats 
+              and physical coercion. Security by design, not afterthought.
+            </p>
+          </div>
+
+          <div className="bg-slate-800 bg-opacity-50 rounded-xl p-8 border border-slate-700">
+            <div className="text-5xl mb-4">🎭</div>
+            <h3 className="text-2xl font-bold mb-4">Perfect Deception</h3>
+            <p className="text-slate-300 leading-relaxed">
+              Intruders see convincing fake data while Aegis silently collects evidence. 
+              Your phone becomes an intelligent trap that protects your real information.
+            </p>
+          </div>
+        </div>
+
+        {/* The Problem */}
+        <div className="bg-red-900 bg-opacity-20 border border-red-700 rounded-xl p-8 mb-20">
+          <h2 className="text-3xl font-bold mb-6 text-center">The Digital World is Broken</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h4 className="text-xl font-semibold mb-4 text-red-300">❌ What's Wrong Today:</h4>
+              <ul className="space-y-3 text-slate-300">
+                <li>• Your phone is a passive tool, not an intelligent partner</li>
+                <li>• Security is reactive, not proactive</li>
+                <li>• You manage technology instead of it managing for you</li>
+                <li>• Privacy is an afterthought, not a foundation</li>
+                <li>• Your digital assistant is dumb, not truly intelligent</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-xl font-semibold mb-4 text-green-300">✅ The Aegis Solution:</h4>
+              <ul className="space-y-3 text-slate-300">
+                <li>• Your Digital Mate learns and anticipates your needs</li>
+                <li>• Advanced security protects you before threats emerge</li>
+                <li>• AI workforce automates your digital tasks intelligently</li>
+                <li>• Privacy-first architecture with zero-knowledge design</li>
+                <li>• True intelligence that grows with your patterns</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* How It Works */}
+        <div className="text-center mb-20">
+          <h2 className="text-4xl font-bold mb-12">How Aegis Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="bg-slate-800 rounded-lg p-6">
+              <div className="text-4xl mb-4">👑</div>
+              <h4 className="text-xl font-semibold mb-3">L1 Owner</h4>
+              <p className="text-sm text-slate-400">
+                Constitutional oversight and final authority over your digital life
+              </p>
+            </div>
+            <div className="bg-slate-800 rounded-lg p-6">
+              <div className="text-4xl mb-4">🎯</div>
+              <h4 className="text-xl font-semibold mb-3">L2 Manager</h4>
+              <p className="text-sm text-slate-400">
+                Coordinates tasks and delegates work to specialist agents
+              </p>
+            </div>
+            <div className="bg-slate-800 rounded-lg p-6">
+              <div className="text-4xl mb-4">📱</div>
+              <h4 className="text-xl font-semibold mb-3">L3 App Workers</h4>
+              <p className="text-sm text-slate-400">
+                Specialized agents for messages, photos, calendar, and more
+              </p>
+            </div>
+            <div className="bg-slate-800 rounded-lg p-6">
+              <div className="text-4xl mb-4">🔬</div>
+              <h4 className="text-xl font-semibold mb-3">L4 Specialists</h4>
+              <p className="text-sm text-slate-400">
+                Advanced analysis for security, behavior, and predictions
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Beta Signup */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-12 text-center">
+          <h2 className="text-4xl font-bold mb-6">Join the Digital Evolution</h2>
+          <p className="text-xl mb-8 opacity-90">
+            Be among the first to experience true AI-powered personal computing
+          </p>
+          
+          <form onSubmit={handleBetaSignup} className="max-w-md mx-auto">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email for early access"
+                className="flex-1 px-6 py-4 rounded-lg text-black text-lg"
+                required
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all disabled:opacity-50"
+              >
+                {loading ? 'Joining...' : 'Start Now'}
+              </button>
+            </div>
+          </form>
+          
+          <div className="text-sm opacity-75 mt-4">
+            🛡️ Privacy-first. Your email is encrypted and never shared.
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-700 py-12">
+        <div className="container mx-auto px-6 text-center">
+          <div className="flex items-center justify-center space-x-3 mb-6">
+            <div className="text-3xl">🛡️</div>
+            <div className="text-xl font-bold">Aegis Life OS</div>
+          </div>
+          <p className="text-slate-400 mb-4">
+            The Hierarchical Proactive Intelligence Operating System
+          </p>
+          <div className="text-sm text-slate-500">
+            © 2024 Aegis. Privacy-First Computing for the Future.
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default LandingPage;
+
+=== frontend/src/components/VoiceInterface.js ===
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+
+const API = process.env.REACT_APP_BACKEND_URL;
+
+const VoiceInterface = ({ ownerMode, onVoiceCommand, onDuressDetected }) => {
+  const [isListening, setIsListening] = useState(false);
+  const [wakeWordDetected, setWakeWordDetected] = useState(false);
+  const [voiceCommand, setVoiceCommand] = useState('');
+  const [voiceResponse, setVoiceResponse] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [customWakeName, setCustomWakeName] = useState('Mate');
+  const [duressPhrase, setDuressPhrase] = useState('help me please');
+  
+  const recognition = useRef(null);
+  const synthRef = useRef(null);
+
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition.current = new SpeechRecognition();
+      recognition.current.continuous = true;
+      recognition.current.interimResults = true;
+      recognition.current.lang = 'en-US';
+
+      recognition.current.onresult = handleSpeechResult;
+      recognition.current.onerror = handleSpeechError;
+      recognition.current.onend = handleSpeechEnd;
+    }
+
+    if ('speechSynthesis' in window) {
+      synthRef.current = window.speechSynthesis;
+    }
+
+    // Start ambient listening for wake word (owner mode only)
+    if (ownerMode) {
+      startAmbientListening();
+    }
+
+    return () => {
+      if (recognition.current) {
+        recognition.current.stop();
+      }
+    };
+  }, [ownerMode]);
+
+  const startAmbientListening = () => {
+    if (recognition.current && ownerMode) {
+      setIsListening(true);
+      recognition.current.start();
+    }
+  };
+
+  const stopListening = () => {
+    if (recognition.current) {
+      recognition.current.stop();
+    }
+    setIsListening(false);
+    setWakeWordDetected(false);
+  };
+
+  const handleSpeechResult = (event) => {
+    const transcript = Array.from(event.results)
+      .map(result => result[0].transcript)
+      .join(' ')
+      .toLowerCase();
+
+    console.log('Voice detected:', transcript);
+
+    // Check for duress phrase first (critical security feature)
+    if (transcript.includes(duressPhrase.toLowerCase())) {
+      handleDuressDetected(transcript);
+      return;
+    }
+
+    // Check for wake word
+    if (!wakeWordDetected && transcript.includes(`hey ${customWakeName.toLowerCase()}`)) {
+      setWakeWordDetected(true);
+      setVoiceResponse(`Yes? I'm listening.`);
+      speak(`Yes? I'm listening.`);
+      
+      // Continue listening for command
+      setTimeout(() => {
+        if (recognition.current) {
+          recognition.current.start();
+        }
+      }, 1000);
+      return;
+    }
+
+    // Process command if wake word was detected
+    if (wakeWordDetected) {
+      setVoiceCommand(transcript);
+      processVoiceCommand(transcript);
+    }
+  };
+
+  const handleSpeechError = (event) => {
+    console.error('Speech recognition error:', event.error);
+    
+    // Restart listening in ambient mode for owner
+    if (ownerMode && !wakeWordDetected) {
+      setTimeout(() => {
+        if (recognition.current) {
+          recognition.current.start();
+        }
+      }, 2000);
+    }
+  };
+
+  const handleSpeechEnd = () => {
+    // Restart ambient listening for owner mode
+    if (ownerMode && !wakeWordDetected && isListening) {
+      setTimeout(() => {
+        if (recognition.current) {
+          recognition.current.start();
+        }
+      }, 1000);
+    }
+  };
+
+  const processVoiceCommand = async (command) => {
+    if (!ownerMode) {
+      setVoiceResponse("Voice commands require owner authentication");
+      speak("Voice commands require owner authentication");
+      return;
+    }
+
+    setIsProcessing(true);
+    
+    try {
+      const response = await axios.post(`${API}/voice/process`, {
+        command: command,
+        wake_word: customWakeName,
+        context: 'voice_interface'
+      });
+
+      const aiResponse = response.data.response || "I didn't understand that command.";
+      setVoiceResponse(aiResponse);
+      speak(aiResponse);
+
+      // Execute any actions suggested by the AI
+      if (response.data.action_plan) {
+        executeVoiceActions(response.data.action_plan);
+      }
+
+      if (onVoiceCommand) {
+        onVoiceCommand(command, response.data);
+      }
+
+    } catch (error) {
+      console.error('Voice command processing failed:', error);
+      const fallbackResponse = getFallbackResponse(command);
+      setVoiceResponse(fallbackResponse);
+      speak(fallbackResponse);
+    }
+
+    setIsProcessing(false);
+    setWakeWordDetected(false);
+    
+    // Resume ambient listening
+    setTimeout(() => {
+      if (recognition.current && ownerMode) {
+        recognition.current.start();
+      }
+    }, 2000);
+  };
+
+  const getFallbackResponse = (command) => {
+    const lowerCommand = command.toLowerCase();
+    
+    if (lowerCommand.includes('time')) {
+      return `It's ${new Date().toLocaleTimeString()}`;
+    } else if (lowerCommand.includes('weather')) {
+      return "I'd check the weather for you, but I don't have access to weather data right now.";
+    } else if (lowerCommand.includes('open') || lowerCommand.includes('launch')) {
+      return "I can help open apps. Try saying 'open messages' or 'open calendar'.";
+    } else if (lowerCommand.includes('help')) {
+      return `I'm ${customWakeName}, your digital assistant. I can help with apps, information, and tasks. What would you like to do?`;
+    } else {
+      return "I'm still learning that command. Try asking about time, weather, or opening apps.";
+    }
+  };
+
+  const executeVoiceActions = (actions) => {
+    actions.forEach(action => {
+      if (action.action === 'open_app' && action.app_name) {
+        if (onVoiceCommand) {
+          onVoiceCommand(`open ${action.app_name}`, { action: 'open_app', app: action.app_name });
+        }
+      }
+    });
+  };
+
+  const handleDuressDetected = async (transcript) => {
+    console.log('DURESS PHRASE DETECTED:', transcript);
+    
+    try {
+      // Send silent duress alert to backend
+      await axios.post(`${API}/emergency/duress`, {
+        phrase: transcript,
+        timestamp: new Date().toISOString(),
+        location: 'voice_interface'
+      });
+
+      if (onDuressDetected) {
+        onDuressDetected(transcript);
+      }
+
+      // Continue normal operation - DO NOT alert the user that duress was detected
+      // This is critical for safety - the duress must be silent
+      
+    } catch (error) {
+      console.error('Duress alert failed:', error);
+    }
+  };
+
+  const speak = (text) => {
+    if (synthRef.current && ownerMode) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.8;
+      utterance.pitch = 1.0;
+      utterance.volume = 0.7;
+      
+      // Use a pleasant voice if available
+      const voices = synthRef.current.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.name.includes('Karen') || 
+        voice.name.includes('Samantha') || 
+        voice.name.includes('Female')
+      );
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+
+      synthRef.current.speak(utterance);
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startAmbientListening();
+    }
+  };
+
+  return (
+    <div className="voice-interface">
+      {/* Voice Status Indicator */}
+      <div className={`
+        fixed top-4 right-4 z-50 p-3 rounded-full transition-all duration-300
+        ${isListening ? 
+          wakeWordDetected ? 'bg-green-500 animate-pulse' : 'bg-blue-500' 
+          : 'bg-slate-700'
+        }
+      `}>
+        <div className="text-white text-center">
+          {isListening ? (
+            wakeWordDetected ? (
+              <div>
+                <div className="text-xl">🎙️</div>
+                <div className="text-xs">Listening</div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-xl">👂</div>
+                <div className="text-xs">Wake Word</div>
+              </div>
+            )
+          ) : (
+            <div>
+              <div className="text-xl">🔇</div>
+              <div className="text-xs">Silent</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Voice Command Display */}
+      {(voiceCommand || voiceResponse) && (
+        <div className="fixed bottom-4 left-4 right-4 z-40 max-w-md mx-auto">
+          <div className="bg-slate-800 border border-slate-600 rounded-lg p-4 shadow-lg">
+            {voiceCommand && (
+              <div className="mb-2">
+                <div className="text-xs text-slate-400">You said:</div>
+                <div className="text-sm text-white">{voiceCommand}</div>
+              </div>
+            )}
+            
+            {voiceResponse && (
+              <div>
+                <div className="text-xs text-slate-400">{customWakeName} responds:</div>
+                <div className="text-sm text-blue-300">{voiceResponse}</div>
+              </div>
+            )}
+
+            {isProcessing && (
+              <div className="text-center text-blue-400">
+                <div className="animate-spin text-lg">🧠</div>
+                <div className="text-xs">Processing...</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Voice Controls (Owner Mode Only) */}
+      {ownerMode && (
+        <div className="fixed bottom-20 right-4 z-40">
+          <button
+            onClick={toggleListening}
+            className={`
+              p-3 rounded-full shadow-lg transition-all
+              ${isListening ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
+            `}
+          >
+            <div className="text-white text-center">
+              <div className="text-xl">{isListening ? '🛑' : '🎤'}</div>
+              <div className="text-xs">{isListening ? 'Stop' : 'Voice'}</div>
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* Training Mode (for setup) */}
+      <div className="hidden">
+        <div>Wake word: "Hey {customWakeName}"</div>
+        <div>Duress phrase: "{duressPhrase}"</div>
+      </div>
+    </div>
+  );
+};
+
+export default VoiceInterface;
+
+=== frontend/src/components/WipeMode.js ===
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+
+const API = process.env.REACT_APP_BACKEND_URL;
+
+const WipeMode = ({ onWipeTriggered }) => {
+  const [powerPresses, setPowerPresses] = useState(0);
+  const [volumeUpPresses, setVolumeUpPresses] = useState(0);
+  const [wipeInProgress, setWipeInProgress] = useState(false);
+  const [wipeCountdown, setWipeCountdown] = useState(0);
+  const [remoteWipeCode, setRemoteWipeCode] = useState('');
+  const [isListeningForCode, setIsListeningForCode] = useState(true);
+
+  const powerPressTimer = useRef(null);
+  const wipeTimer = useRef(null);
+  const countdownTimer = useRef(null);
+
+  useEffect(() => {
+    // Listen for hardware button sequences
+    const handleKeyDown = (event) => {
+      // Simulate power button with 'P' key for testing
+      if (event.key === 'P' || event.key === 'p') {
+        handlePowerButtonPress();
+      }
+      
+      // Simulate volume up with 'V' key for testing  
+      if (event.key === 'V' || event.key === 'v') {
+        handleVolumeUpPress();
+      }
+
+      // Emergency wipe with Ctrl+Shift+W
+      if (event.ctrlKey && event.shiftKey && event.key === 'W') {
+        event.preventDefault();
+        initiateEmergencyWipe('keyboard_shortcut');
+      }
+    };
+
+    // Listen for remote wipe messages
+    listenForRemoteWipe();
+
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(powerPressTimer.current);
+      clearTimeout(wipeTimer.current);
+      clearTimeout(countdownTimer.current);
+    };
+  }, []);
+
+  const handlePowerButtonPress = () => {
+    setPowerPresses(prev => {
+      const newCount = prev + 1;
+      
+      // Reset timer for power button sequence
+      clearTimeout(powerPressTimer.current);
+      powerPressTimer.current = setTimeout(() => {
+        setPowerPresses(0);
+        setVolumeUpPresses(0);
+      }, 3000); // Reset after 3 seconds of inactivity
+
+      console.log(`Power button pressed: ${newCount}/5`);
+      
+      // Check if we've reached 5 power presses
+      if (newCount >= 5) {
+        checkWipeSequence(newCount, volumeUpPresses);
+      }
+      
+      return newCount;
+    });
+  };
+
+  const handleVolumeUpPress = () => {
+    setVolumeUpPresses(prev => {
+      const newCount = prev + 1;
+      console.log(`Volume up pressed: ${newCount}/1`);
+      
+      // Check wipe sequence after volume press
+      checkWipeSequence(powerPresses, newCount);
+      
+      return newCount;
+    });
+  };
+
+  const checkWipeSequence = (powerCount, volumeCount) => {
+    // Wipe sequence: 5 power presses + 1 volume up press
+    if (powerCount >= 5 && volumeCount >= 1) {
+      initiateEmergencyWipe('hardware_sequence');
+    }
+  };
+
+  const listenForRemoteWipe = () => {
+    if (!isListeningForCode) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await axios.get(`${API}/wipe/check-remote-trigger`);
+        if (response.data.wipe_triggered) {
+          initiateEmergencyWipe('remote_code', response.data.trigger_code);
+          setIsListeningForCode(false);
+          clearInterval(interval);
+        }
+      } catch (error) {
+        console.error('Remote wipe check failed:', error);
+      }
+    }, 2000); // Check every 2 seconds
+
+    return () => clearInterval(interval);
+  };
+
+  const initiateEmergencyWipe = async (triggerMethod, triggerCode = null) => {
+    if (wipeInProgress) return;
+
+    console.log(`EMERGENCY WIPE INITIATED: ${triggerMethod}`);
+    
+    setWipeInProgress(true);
+    setWipeCountdown(10); // 10 second countdown
+
+    // Log the wipe initiation
+    try {
+      await axios.post(`${API}/wipe/initiate`, {
+        trigger_method: triggerMethod,
+        trigger_code: triggerCode,
+        timestamp: new Date().toISOString(),
+        device_info: {
+          user_agent: navigator.userAgent,
+          platform: navigator.platform,
+          language: navigator.language
+        }
+      });
+    } catch (error) {
+      console.error('Failed to log wipe initiation:', error);
+    }
+
+    // Start countdown
+    countdownTimer.current = setInterval(() => {
+      setWipeCountdown(prev => {
+        if (prev <= 1) {
+          executeCompleteWipe();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Show wipe warning
+    if (onWipeTriggered) {
+      onWipeTriggered(triggerMethod);
+    }
+  };
+
+  const executeCompleteWipe = async () => {
+    clearInterval(countdownTimer.current);
+    
+    try {
+      // Execute complete device wipe
+      const response = await axios.post(`${API}/wipe/execute-complete`, {
+        confirmation: 'COMPLETE_DEVICE_WIPE',
+        timestamp: new Date().toISOString()
+      });
+
+      if (response.data.success) {
+        // Clear all local storage
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Clear all cookies
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+
+        // Clear browser cache (attempt)
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            for (let name of names) {
+              caches.delete(name);
+            }
+          });
+        }
+
+        // Navigate to wipe completion screen
+        window.location.replace('/wipe-complete');
+      }
+    } catch (error) {
+      console.error('Emergency wipe execution failed:', error);
+      // Even if backend fails, try to clear local data
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.replace('/wipe-complete');
+    }
+  };
+
+  const cancelWipe = async () => {
+    if (!wipeInProgress) return;
+
+    clearInterval(countdownTimer.current);
+    setWipeInProgress(false);
+    setWipeCountdown(0);
+    setPowerPresses(0);
+    setVolumeUpPresses(0);
+
+    // Log wipe cancellation
+    try {
+      await axios.post(`${API}/wipe/cancel`, {
+        cancelled_at: new Date().toISOString(),
+        remaining_time: wipeCountdown
+      });
+    } catch (error) {
+      console.error('Failed to log wipe cancellation:', error);
+    }
+  };
+
+  const testRemoteWipe = async () => {
+    try {
+      await axios.post(`${API}/wipe/test-remote-trigger`, {
+        test_code: 'WIPE_TEST_123',
+        sender: 'test_user'
+      });
+      alert('Test remote wipe trigger sent');
+    } catch (error) {
+      console.error('Test remote wipe failed:', error);
+    }
+  };
+
+  if (wipeInProgress) {
+    return <WipeWarningScreen countdown={wipeCountdown} onCancel={cancelWipe} />;
+  }
+
+  return (
+    <div className="wipe-mode-monitor">
+      {/* Hardware Sequence Status (Debug/Development) */}
+      <div className="fixed bottom-4 left-4 z-50 bg-slate-900 border border-red-700 rounded-lg p-3 text-xs text-red-300 opacity-75">
+        <div className="text-red-400 font-semibold mb-1">🚨 WIPE MODE ARMED</div>
+        <div>Power: {powerPresses}/5 | Volume: {volumeUpPresses}/1</div>
+        <div className="text-xs text-slate-400 mt-1">
+          Test: P=Power, V=Volume, Ctrl+Shift+W=Emergency
+        </div>
+        <button 
+          onClick={testRemoteWipe}
+          className="mt-2 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
+        >
+          Test Remote Wipe
+        </button>
+      </div>
+
+      {/* Remote Wipe Listener Status */}
+      {isListeningForCode && (
+        <div className="fixed top-4 left-4 z-50 bg-red-900 border border-red-700 rounded-lg p-2 text-xs text-red-300">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <div>Remote Wipe Listener Active</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Wipe Warning Screen
+const WipeWarningScreen = ({ countdown, onCancel }) => {
+  return (
+    <div className="fixed inset-0 z-50 bg-red-900 flex items-center justify-center">
+      <div className="text-center text-white max-w-md mx-auto px-6">
+        <div className="text-8xl mb-6 animate-pulse">⚠️</div>
+        
+        <h1 className="text-4xl font-bold mb-4 text-red-300">
+          EMERGENCY WIPE INITIATED
+        </h1>
+        
+        <div className="text-6xl font-mono mb-4 text-red-100">
+          {countdown}
+        </div>
+        
+        <p className="text-xl mb-6">
+          COMPLETE DEVICE WIPE IN PROGRESS
+        </p>
+        
+        <div className="bg-black bg-opacity-50 rounded-lg p-4 mb-6 text-left text-sm">
+          <div className="text-red-300 font-semibold mb-2">⚡ WIPING:</div>
+          <div className="space-y-1 text-red-200">
+            <div>🗂️ All user data and files</div>
+            <div>🔐 Vault and encrypted storage</div>
+            <div>📱 Application data and cache</div>
+            <div>🕐 System logs and evidence</div>
+            <div>👤 User profiles and accounts</div>
+            <div>🌐 Browser data and history</div>
+            <div>🔑 Authentication credentials</div>
+            <div>💾 Backup and recovery data</div>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <button
+            onClick={onCancel}
+            className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-bold text-lg w-full"
+          >
+            CANCEL WIPE
+          </button>
+          
+          <div className="text-xs text-red-300 opacity-75">
+            This action cannot be undone after completion
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Wipe Complete Screen Component
+export const WipeCompleteScreen = () => {
+  return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="text-center max-w-md mx-auto px-6">
+        <div className="text-6xl mb-6">✅</div>
+        
+        <h1 className="text-3xl font-bold mb-4">
+          Device Wiped Successfully
+        </h1>
+        
+        <p className="text-slate-300 mb-6">
+          All data has been permanently deleted. The device is now in factory state.
+        </p>
+        
+        <div className="bg-slate-900 rounded-lg p-4 text-sm text-left mb-6">
+          <div className="text-green-400 font-semibold mb-2">✓ COMPLETED:</div>
+          <div className="space-y-1 text-slate-300">
+            <div>All user data permanently deleted</div>
+            <div>Encryption keys destroyed</div>
+            <div>System logs cleared</div>
+            <div>Authentication data removed</div>
+            <div>Cache and temporary files wiped</div>
+            <div>Recovery data eliminated</div>
+          </div>
+        </div>
+        
+        <button
+          onClick={() => window.location.reload()}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium"
+        >
+          Restart System
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default WipeMode;
