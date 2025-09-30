@@ -3713,3 +3713,16 @@ input:focus,
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+=== frontend/src/index.js ===
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
