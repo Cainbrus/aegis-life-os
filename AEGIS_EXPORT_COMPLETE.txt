@@ -2898,3 +2898,818 @@ const App = () => {
 };
 
 export default App;
+
+=== frontend/src/App.css ===
+/* Aegis Life OS - Computer Butter Styling */
+.App {
+  text-align: center;
+}
+
+/* ===========================
+   PATTERN AUTHENTICATION STYLING
+   =========================== */
+
+.pattern-grid {
+  touch-action: none; /* Prevent default touch behaviors */
+  user-select: none;
+}
+
+.pattern-grid .grid {
+  gap: 2rem;
+}
+
+.pattern-dot {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  touch-action: manipulation;
+}
+
+.pattern-dot:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+.pattern-dot.selected {
+  animation: pattern-selected 0.3s ease-out;
+}
+
+.pattern-dot.active {
+  animation: pattern-pulse 1s ease-in-out infinite;
+}
+
+@keyframes pattern-selected {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pattern-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+  }
+}
+
+.pattern-line {
+  position: absolute;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.8), rgba(59, 130, 246, 0.4));
+  height: 2px;
+  border-radius: 1px;
+  transform-origin: left center;
+  animation: line-draw 0.2s ease-out;
+}
+
+@keyframes line-draw {
+  0% { width: 0; opacity: 0; }
+  100% { width: 100%; opacity: 1; }
+}
+
+/* Pattern authentication states */
+.pattern-auth-success {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%);
+  border-color: rgba(34, 197, 94, 0.4);
+  animation: success-glow 2s ease-out;
+}
+
+@keyframes success-glow {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0.1); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.pattern-auth-error {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%);
+  border-color: rgba(239, 68, 68, 0.4);
+  animation: error-shake 0.5s ease-out;
+}
+
+@keyframes error-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Mobile responsive pattern grid */
+@media (max-width: 480px) {
+  .pattern-grid .grid {
+    gap: 1.5rem;
+  }
+  
+  .pattern-dot {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+/* ===========================
+   ENHANCED BEHAVIORAL TRACKING
+   =========================== */
+
+/* Enhanced behavioral data visualization */
+.behavioral-metrics {
+  transition: all 0.3s ease-in-out;
+}
+
+.behavioral-metrics:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+}
+
+/* Micro-gesture tracking indicator */
+.micro-gesture-active {
+  position: relative;
+  overflow: hidden;
+}
+
+.micro-gesture-active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  animation: gesture-scan 2s infinite;
+}
+
+@keyframes gesture-scan {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ===========================
+   CONTEXTUAL INTERFACE SYSTEM
+   =========================== */
+
+/* Context-aware color schemes */
+.context-morning {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.context-work {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.context-evening {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(126, 34, 206, 0.05) 100%);
+  border-color: rgba(147, 51, 234, 0.3);
+}
+
+.context-night {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(67, 56, 202, 0.05) 100%);
+  border-color: rgba(79, 70, 229, 0.3);
+}
+
+/* Contextual cards with adaptive styling */
+.contextual-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.contextual-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.contextual-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: card-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes card-shimmer {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+/* Priority-based card styling */
+.priority-high {
+  border-left-color: #ef4444 !important;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+}
+
+.priority-medium {
+  border-left-color: #f59e0b !important;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+}
+
+.priority-low {
+  border-left-color: #10b981 !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+}
+
+/* ===========================
+   ENHANCED SECURITY STATES
+   =========================== */
+
+/* Owner present state - trust glow */
+.state-owner-present {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%);
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 30px rgba(34, 197, 94, 0.1);
+  animation: trust-glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes trust-glow {
+  from { box-shadow: 0 0 30px rgba(34, 197, 94, 0.1); }
+  to { box-shadow: 0 0 40px rgba(34, 197, 94, 0.2); }
+}
+
+/* Intruder detected state - alert pulsing */
+.state-intruder-detected {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%);
+  border-color: rgba(239, 68, 68, 0.4);
+  animation: intruder-alert 1s ease-in-out infinite;
+}
+
+@keyframes intruder-alert {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
+    border-color: rgba(239, 68, 68, 0.8);
+  }
+}
+
+/* Enhanced decoy mode with sophistication */
+.state-decoy-active {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%);
+  border-color: rgba(251, 191, 36, 0.4);
+  position: relative;
+}
+
+.state-decoy-active::after {
+  content: '🎭';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  opacity: 0.7;
+  animation: decoy-float 3s ease-in-out infinite;
+}
+
+@keyframes decoy-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+/* ===========================
+   CALCULATOR SECRET HANDSHAKE
+   =========================== */
+
+.calculator {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.calculator-display {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  letter-spacing: 1px;
+}
+
+.calculator-buttons button {
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.calculator-buttons button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.calculator-buttons button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.handshake-detected {
+  animation: handshake-pulse 2s ease-in-out infinite;
+}
+
+@keyframes handshake-pulse {
+  0%, 100% { 
+    background-color: rgba(146, 64, 14, 0.3);
+    border-color: rgba(251, 191, 36, 0.5);
+  }
+  50% { 
+    background-color: rgba(146, 64, 14, 0.5);
+    border-color: rgba(251, 191, 36, 0.8);
+  }
+}
+
+/* ===========================
+   PHANTOM FOLDER STYLING
+   =========================== */
+
+.phantom-folder-accessible {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  box-shadow: 0 0 30px rgba(34, 197, 94, 0.15);
+  animation: phantom-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes phantom-glow {
+  from { box-shadow: 0 0 30px rgba(34, 197, 94, 0.15); }
+  to { box-shadow: 0 0 45px rgba(34, 197, 94, 0.25); }
+}
+
+.phantom-folder-locked {
+  background: linear-gradient(135deg, rgba(75, 85, 99, 0.1) 0%, rgba(55, 65, 81, 0.05) 100%);
+  border: 2px solid rgba(75, 85, 99, 0.3);
+  position: relative;
+}
+
+.phantom-folder-locked::before {
+  content: '🔒';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  opacity: 0.3;
+  z-index: 0;
+}
+
+/* ===========================
+   VOICE INTERFACE STYLING
+   =========================== */
+
+.voice-interface {
+  transition: all 0.3s ease;
+}
+
+.voice-listening {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+  border-color: rgba(239, 68, 68, 0.3);
+  animation: voice-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes voice-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
+  }
+}
+
+.voice-inactive {
+  background: linear-gradient(135deg, rgba(75, 85, 99, 0.1) 0%, rgba(55, 65, 81, 0.05) 100%);
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+/* Wake word detection indicator */
+.wake-word-detected {
+  background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+  background-size: 200% 200%;
+  animation: wake-word-shimmer 2s ease-in-out infinite;
+}
+
+@keyframes wake-word-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ===========================
+   PROACTIVE AI ORCHESTRATOR
+   =========================== */
+
+.ai-orchestrator-active {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+  border-color: rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-orchestrator-active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  animation: ai-thinking 3s ease-in-out infinite;
+}
+
+@keyframes ai-thinking {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.goal-processing {
+  animation: goal-pulse 2s ease-in-out infinite;
+}
+
+@keyframes goal-pulse {
+  0%, 100% { 
+    background-color: rgba(30, 41, 59, 1);
+    border-color: rgba(71, 85, 105, 0.5);
+  }
+  50% { 
+    background-color: rgba(51, 65, 85, 1);
+    border-color: rgba(100, 116, 139, 0.8);
+  }
+}
+
+/* ===========================
+   INTRUDER EVIDENCE DISPLAY
+   =========================== */
+
+.intruder-evidence {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+  border-left: 4px solid #ef4444;
+}
+
+.evidence-item {
+  transition: all 0.3s ease;
+  border-left: 2px solid transparent;
+}
+
+.evidence-item:hover {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+  transform: translateX(5px);
+}
+
+.evidence-photo-captured {
+  position: relative;
+}
+
+.evidence-photo-captured::after {
+  content: '📸';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  animation: photo-flash 0.5s ease-in-out;
+}
+
+@keyframes photo-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ===========================
+   AGENT COORDINATION VISUAL
+   =========================== */
+
+.agent-coordination {
+  position: relative;
+}
+
+.agent-coordination::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -10px;
+  width: 20px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.6), rgba(147, 51, 234, 0.6));
+  animation: data-flow 2s ease-in-out infinite;
+}
+
+@keyframes data-flow {
+  0%, 100% { opacity: 0.3; transform: scaleX(0.5); }
+  50% { opacity: 1; transform: scaleX(1.2); }
+}
+
+/* L3 Agent status indicators */
+.agent-messages { border-left-color: #3b82f6; }
+.agent-calendar { border-left-color: #8b5cf6; }
+.agent-photos { border-left-color: #10b981; }
+
+.agent-active::before {
+  content: '●';
+  color: #10b981;
+  margin-right: 8px;
+  animation: agent-heartbeat 2s ease-in-out infinite;
+}
+
+@keyframes agent-heartbeat {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ===========================
+   ADAPTIVE INTERFACE ELEMENTS
+   =========================== */
+
+/* Computer Butter smooth transitions */
+.butter-smooth {
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.butter-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Adaptive mini-settings */
+.mini-settings {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.agent-card:hover .mini-settings {
+  opacity: 1;
+}
+
+.mini-settings-menu {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* ===========================
+   LOADING AND PROCESSING STATES
+   =========================== */
+
+.processing-goal {
+  position: relative;
+  overflow: hidden;
+}
+
+.processing-goal::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+  animation: processing-scan 1.5s infinite;
+}
+
+@keyframes processing-scan {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.loading-dots::after {
+  content: '';
+  animation: loading-dots 1.5s infinite;
+}
+
+@keyframes loading-dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+/* ===========================
+   ARCHITECTURE VISUALIZATION
+   =========================== */
+
+.architecture-tier {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.architecture-tier:hover {
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.tier-l1 {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+}
+
+.tier-l2 {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+}
+
+.tier-l3 {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+}
+
+.tier-l4 {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 0 20px rgba(5, 150, 105, 0.3);
+}
+
+/* Architecture connection lines */
+.architecture-connection::after {
+  content: '→';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(59, 130, 246, 0.6);
+  font-size: 20px;
+  animation: connection-pulse 2s ease-in-out infinite;
+}
+
+@keyframes connection-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.architecture-connection:last-child::after {
+  display: none;
+}
+
+/* ===========================
+   RESPONSIVE DESIGN
+   =========================== */
+
+@media (max-width: 768px) {
+  .contextual-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .agent-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .architecture-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .calculator {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .architecture-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .behavioral-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===========================
+   ACCESSIBILITY ENHANCEMENTS
+   =========================== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .contextual-card,
+  .agent-card,
+  .architecture-tier {
+    border-width: 2px;
+    border-color: currentColor;
+  }
+  
+  .calculator-buttons button {
+    border: 1px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .contextual-card:hover,
+  .agent-card:hover,
+  .butter-hover:hover {
+    transform: none;
+  }
+}
+
+/* ===========================
+   FOCUS STATES
+   =========================== */
+
+button:focus,
+input:focus,
+.calculator-buttons button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.contextual-card:focus-within,
+.agent-card:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 4px;
+}
+
+/* ===========================
+   SCROLLBAR STYLING
+   =========================== */
+
+.contextual-cards::-webkit-scrollbar,
+.evidence-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.contextual-cards::-webkit-scrollbar-track,
+.evidence-list::-webkit-scrollbar-track {
+  background: rgba(51, 65, 85, 0.5);
+  border-radius: 3px;
+}
+
+.contextual-cards::-webkit-scrollbar-thumb,
+.evidence-list::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.7);
+  border-radius: 3px;
+}
+
+.contextual-cards::-webkit-scrollbar-thumb:hover,
+.evidence-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 1);
+}
+
+/* ===========================
+   PRINT STYLES
+   =========================== */
+
+@media print {
+  .voice-interface,
+  .calculator,
+  .mini-settings {
+    display: none;
+  }
+  
+  .contextual-card,
+  .agent-card {
+    break-inside: avoid;
+    border: 1px solid #000;
+    background: white;
+    color: black;
+  }
+}
+
+/* ===========================
+   CUSTOM ANIMATIONS FOR STATES
+   =========================== */
+
+/* Startup sequence animation */
+.aegis-startup {
+  animation: startup-sequence 3s ease-out;
+}
+
+@keyframes startup-sequence {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Constitutional rule enforcement visual */
+.constitution-active {
+  border: 2px solid #dc2626;
+  animation: constitution-pulse 3s ease-in-out infinite;
+}
+
+@keyframes constitution-pulse {
+  0%, 100% { 
+    border-color: #dc2626;
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+  }
+  50% { 
+    border-color: #fca5a5;
+    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+  }
+}
+
+/* Partnership trust indicator */
+.digital-mate-active {
+  background: linear-gradient(45deg, #3b82f6, #8b5cf6, #10b981);
+  background-size: 300% 300%;
+  animation: mate-partnership 4s ease-in-out infinite;
+}
+
+@keyframes mate-partnership {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
