@@ -1,0 +1,50 @@
+# AEGIS LIFE OS - COMPLETE EXPORT
+# Copy this entire file and follow the instructions to recreate your full Aegis system
+
+===== FILE STRUCTURE =====
+aegis-life-os/
+├── backend/
+│   ├── server.py
+│   ├── requirements.txt
+│   └── .env.example
+└── frontend/
+    ├── package.json
+    ├── public/
+    │   └── index.html
+    └── src/
+        ├── index.js
+        ├── App.js
+        ├── App.css
+        └── components/
+            ├── LandingPage.js
+            ├── AegisOnboarding.js
+            ├── CalculatorVault.js
+            ├── ContextualHub.js
+            ├── VoiceInterface.js
+            ├── WipeMode.js
+            └── AIWorkforceMonitor.js
+
+===== INSTRUCTIONS =====
+1. Create GitHub repo: "aegis-life-os"
+2. Create the folder structure above
+3. Copy each file content from sections below
+4. Deploy to Railway (backend) + Vercel (frontend)
+
+===== BACKEND FILES =====
+
+=== backend/requirements.txt ===
+fastapi==0.110.1
+uvicorn==0.25.0
+motor==3.3.1
+pydantic==2.11.9
+python-dotenv==1.1.1
+python-multipart==0.0.20
+emergentintegrations==0.1.0
+
+=== backend/.env.example ===
+MONGO_URL=mongodb+srv://username:password@cluster.mongodb.net/aegis_production
+DB_NAME=aegis_production
+EMERGENT_LLM_KEY=your_emergent_key_here
+PORT=8001
+
+=== backend/server.py ===
