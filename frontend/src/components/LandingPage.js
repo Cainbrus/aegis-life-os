@@ -56,186 +56,224 @@ const LandingPage = ({ onGetStarted }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white">
-      {/* Hero Section */}
-      <div className="container mx-auto px-6 py-16">
-        {/* Header */}
-        <header className="flex items-center justify-between mb-16">
-          <div className="flex items-center space-x-3">
-            <div className="text-4xl">🛡️</div>
-            <div className="text-2xl font-bold">Aegis</div>
-          </div>
-          <div className="text-sm text-slate-400">
-            The Future of Personal Computing
-          </div>
-        </header>
-
-        {/* Main Hero */}
-        <div className="text-center mb-20">
-          <h1 className="text-6xl md:text-8xl font-bold mb-8">
-            Meet Your
-            <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent block">
-              Digital Mate
-            </span>
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-slate-300 max-w-4xl mx-auto mb-12 leading-relaxed">
-            Aegis isn't just an operating system—it's your <strong>Hierarchical Proactive Intelligence</strong> that learns, 
-            protects, and anticipates your digital life before you even ask.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <button
-              onClick={onGetStarted}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105"
-            >
-              Experience Aegis Now
-            </button>
-            <button className="border border-slate-600 hover:border-slate-400 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all">
-              Watch Demo
-            </button>
-          </div>
-        </div>
-
-        {/* Key Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-          <div className="bg-slate-800 bg-opacity-50 rounded-xl p-8 border border-slate-700">
-            <div className="text-5xl mb-4">🧠</div>
-            <h3 className="text-2xl font-bold mb-4">Proactive Intelligence</h3>
-            <p className="text-slate-300 leading-relaxed">
-              Your AI workforce anticipates your needs, resolves conflicts, and optimizes your digital life automatically. 
-              Like having a personal assistant that never sleeps.
-            </p>
-          </div>
-
-          <div className="bg-slate-800 bg-opacity-50 rounded-xl p-8 border border-slate-700">
-            <div className="text-5xl mb-4">🔒</div>
-            <h3 className="text-2xl font-bold mb-4">Unbreakable Security</h3>
-            <p className="text-slate-300 leading-relaxed">
-              Behavioral authentication, trap modes, and emergency wipe protocols protect you from digital threats 
-              and physical coercion. Security by design, not afterthought.
-            </p>
-          </div>
-
-          <div className="bg-slate-800 bg-opacity-50 rounded-xl p-8 border border-slate-700">
-            <div className="text-5xl mb-4">🎭</div>
-            <h3 className="text-2xl font-bold mb-4">Perfect Deception</h3>
-            <p className="text-slate-300 leading-relaxed">
-              Intruders see convincing fake data while Aegis silently collects evidence. 
-              Your phone becomes an intelligent trap that protects your real information.
-            </p>
-          </div>
-        </div>
-
-        {/* The Problem */}
-        <div className="bg-red-900 bg-opacity-20 border border-red-700 rounded-xl p-8 mb-20">
-          <h2 className="text-3xl font-bold mb-6 text-center">The Digital World is Broken</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h4 className="text-xl font-semibold mb-4 text-red-300">❌ What's Wrong Today:</h4>
-              <ul className="space-y-3 text-slate-300">
-                <li>• Your phone is a passive tool, not an intelligent partner</li>
-                <li>• Security is reactive, not proactive</li>
-                <li>• You manage technology instead of it managing for you</li>
-                <li>• Privacy is an afterthought, not a foundation</li>
-                <li>• Your digital assistant is dumb, not truly intelligent</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xl font-semibold mb-4 text-green-300">✅ The Aegis Solution:</h4>
-              <ul className="space-y-3 text-slate-300">
-                <li>• Your Digital Mate learns and anticipates your needs</li>
-                <li>• Advanced security protects you before threats emerge</li>
-                <li>• AI workforce automates your digital tasks intelligently</li>
-                <li>• Privacy-first architecture with zero-knowledge design</li>
-                <li>• True intelligence that grows with your patterns</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* How It Works */}
-        <div className="text-center mb-20">
-          <h2 className="text-4xl font-bold mb-12">How Aegis Works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-slate-800 rounded-lg p-6">
-              <div className="text-4xl mb-4">👑</div>
-              <h4 className="text-xl font-semibold mb-3">L1 Owner</h4>
-              <p className="text-sm text-slate-400">
-                Constitutional oversight and final authority over your digital life
-              </p>
-            </div>
-            <div className="bg-slate-800 rounded-lg p-6">
-              <div className="text-4xl mb-4">🎯</div>
-              <h4 className="text-xl font-semibold mb-3">L2 Manager</h4>
-              <p className="text-sm text-slate-400">
-                Coordinates tasks and delegates work to specialist agents
-              </p>
-            </div>
-            <div className="bg-slate-800 rounded-lg p-6">
-              <div className="text-4xl mb-4">📱</div>
-              <h4 className="text-xl font-semibold mb-3">L3 App Workers</h4>
-              <p className="text-sm text-slate-400">
-                Specialized agents for messages, photos, calendar, and more
-              </p>
-            </div>
-            <div className="bg-slate-800 rounded-lg p-6">
-              <div className="text-4xl mb-4">🔬</div>
-              <h4 className="text-xl font-semibold mb-3">L4 Specialists</h4>
-              <p className="text-sm text-slate-400">
-                Advanced analysis for security, behavior, and predictions
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Beta Signup */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-12 text-center">
-          <h2 className="text-4xl font-bold mb-6">Join the Digital Evolution</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Be among the first to experience true AI-powered personal computing
-          </p>
-          
-          <form onSubmit={handleBetaSignup} className="max-w-md mx-auto">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email for early access"
-                className="flex-1 px-6 py-4 rounded-lg text-black text-lg"
-                required
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all disabled:opacity-50"
-              >
-                {loading ? 'Joining...' : 'Start Now'}
-              </button>
-            </div>
-          </form>
-          
-          <div className="text-sm opacity-75 mt-4">
-            🛡️ Privacy-first. Your email is encrypted and never shared.
-          </div>
+      {/* Neural Network Background Animation */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-10 left-10 w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+          <div className="absolute top-32 left-32 w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute top-20 right-20 w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-700 py-12">
-        <div className="container mx-auto px-6 text-center">
-          <div className="flex items-center justify-center space-x-3 mb-6">
-            <div className="text-3xl">🛡️</div>
-            <div className="text-xl font-bold">Aegis Life OS</div>
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="flex items-center justify-between p-6 border-b border-cyan-500/20 bg-slate-900/50 backdrop-blur-sm">
+          <div className="flex items-center space-x-3">
+            <div className="text-4xl animate-pulse">🛡️</div>
+            <div className="text-2xl font-bold text-cyan-400 font-mono tracking-wider">AEGIS</div>
           </div>
-          <p className="text-slate-400 mb-4">
-            The Hierarchical Proactive Intelligence Operating System
-          </p>
-          <div className="text-sm text-slate-500">
-            © 2024 Aegis. Privacy-First Computing for the Future.
+          <div className="text-sm text-slate-400 font-mono">
+            {new Date().toLocaleTimeString()} | AI STATUS: ACTIVE
+          </div>
+        </header>
+
+        <div className="container mx-auto px-6 py-16 max-w-6xl">
+          {/* Hero Section with AI Animation */}
+          <div className="text-center mb-20">
+            <h1 className="text-6xl md:text-8xl font-bold mb-8 font-mono">
+              <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-pulse">
+                HIERARCHICAL
+              </span>
+              <span className="block bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent" style={{animationDelay: '0.5s'}}>
+                PROACTIVE
+              </span>
+              <span className="block bg-gradient-to-r from-cyan-400 via-green-500 to-blue-500 bg-clip-text text-transparent" style={{animationDelay: '1s'}}>
+                INTELLIGENCE
+              </span>
+            </h1>
+            
+            <div className="relative">
+              <p className="text-xl md:text-2xl text-slate-300 max-w-4xl mx-auto mb-12 leading-relaxed">
+                <span className="text-cyan-400 font-mono">[SYSTEM INITIALIZED]</span> Your Digital Mate - 
+                An advanced AI workforce that learns, protects, and evolves with your digital life.
+              </p>
+              
+              {/* Scanning Line Effect */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-scan"></div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+              <button
+                onClick={onGetStarted}
+                className="ai-button bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 border border-cyan-400/50 shadow-lg shadow-cyan-500/25"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <span>INITIALIZE AEGIS</span>
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* AI Technology Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            <div className="ai-card bg-slate-800/50 rounded-xl p-8 border border-cyan-500/30 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="text-5xl mb-4 text-cyan-400">🧠</div>
+                <h3 className="text-2xl font-bold mb-4 text-cyan-300 font-mono">L1-L4 AI WORKFORCE</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  Hierarchical agents: <span className="text-cyan-400">Owner</span> → 
+                  <span className="text-blue-400"> Manager</span> → 
+                  <span className="text-purple-400"> Workers</span> → 
+                  <span className="text-pink-400"> Specialists</span>
+                </p>
+                <div className="mt-4 flex items-center text-sm text-cyan-400">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+                  NEURAL NETWORK ACTIVE
+                </div>
+              </div>
+            </div>
+
+            <div className="ai-card bg-slate-800/50 rounded-xl p-8 border border-purple-500/30 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="text-5xl mb-4 text-purple-400">🔒</div>
+                <h3 className="text-2xl font-bold mb-4 text-purple-300 font-mono">QUANTUM SECURITY</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  Multi-layer defense: Behavioral auth + Pattern locks + Emergency protocols + Perfect deception modes.
+                </p>
+                <div className="mt-4 flex items-center text-sm text-purple-400">
+                  <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse mr-2"></div>
+                  THREAT DETECTION ONLINE
+                </div>
+              </div>
+            </div>
+
+            <div className="ai-card bg-slate-800/50 rounded-xl p-8 border border-pink-500/30 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="text-5xl mb-4 text-pink-400">🎭</div>
+                <h3 className="text-2xl font-bold mb-4 text-pink-300 font-mono">ADAPTIVE DECEPTION</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  Intruders experience convincing fake reality while AI collects evidence and protects real data.
+                </p>
+                <div className="mt-4 flex items-center text-sm text-pink-400">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse mr-2"></div>
+                  TRAP SYSTEMS ARMED
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Architecture Visualization */}
+          <div className="bg-slate-800/30 border border-cyan-500/20 rounded-xl p-8 mb-20 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-purple-500/5"></div>
+            <h2 className="text-4xl font-bold mb-12 text-center font-mono">
+              <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+                AI ARCHITECTURE MATRIX
+              </span>
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
+              <div className="text-center p-6 border border-cyan-500/30 rounded-lg bg-slate-900/50">
+                <div className="text-4xl mb-4 text-cyan-400">👑</div>
+                <h4 className="text-xl font-semibold mb-3 text-cyan-300 font-mono">L1 OWNER</h4>
+                <p className="text-sm text-slate-400">Constitutional oversight & system governance</p>
+                <div className="mt-3 w-full bg-slate-700 rounded-full h-2">
+                  <div className="bg-cyan-400 h-2 rounded-full w-full animate-pulse"></div>
+                </div>
+              </div>
+              
+              <div className="text-center p-6 border border-blue-500/30 rounded-lg bg-slate-900/50">
+                <div className="text-4xl mb-4 text-blue-400">🎯</div>
+                <h4 className="text-xl font-semibold mb-3 text-blue-300 font-mono">L2 MANAGER</h4>
+                <p className="text-sm text-slate-400">Task coordination & resource allocation</p>
+                <div className="mt-3 w-full bg-slate-700 rounded-full h-2">
+                  <div className="bg-blue-400 h-2 rounded-full w-3/4 animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                </div>
+              </div>
+              
+              <div className="text-center p-6 border border-purple-500/30 rounded-lg bg-slate-900/50">
+                <div className="text-4xl mb-4 text-purple-400">📱</div>
+                <h4 className="text-xl font-semibold mb-3 text-purple-300 font-mono">L3 WORKERS</h4>
+                <p className="text-sm text-slate-400">Application-specific processing agents</p>
+                <div className="mt-3 w-full bg-slate-700 rounded-full h-2">
+                  <div className="bg-purple-400 h-2 rounded-full w-5/6 animate-pulse" style={{animationDelay: '1s'}}></div>
+                </div>
+              </div>
+              
+              <div className="text-center p-6 border border-pink-500/30 rounded-lg bg-slate-900/50">
+                <div className="text-4xl mb-4 text-pink-400">🔬</div>
+                <h4 className="text-xl font-semibold mb-3 text-pink-300 font-mono">L4 SPECIALISTS</h4>
+                <p className="text-sm text-slate-400">Advanced analysis & prediction systems</p>
+                <div className="mt-3 w-full bg-slate-700 rounded-full h-2">
+                  <div className="bg-pink-400 h-2 rounded-full w-2/3 animate-pulse" style={{animationDelay: '1.5s'}}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA Section with Terminal Effect */}
+          <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-cyan-500/30 rounded-xl p-12 text-center relative overflow-hidden">
+            <div className="absolute inset-0 opacity-20">
+              <div className="font-mono text-xs text-green-400 whitespace-pre-wrap leading-relaxed">
+                {`> INITIALIZING AEGIS LIFE OS...
+> LOADING AI WORKFORCE...
+> ESTABLISHING SECURE CONNECTIONS...
+> BEHAVIORAL ANALYSIS: READY
+> PROACTIVE INTELLIGENCE: ONLINE
+> DIGITAL MATE: ACTIVATED`}
+              </div>
+            </div>
+            
+            <div className="relative z-10">
+              <h2 className="text-4xl font-bold mb-6 font-mono">
+                <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+                  JOIN THE AI EVOLUTION
+                </span>
+              </h2>
+              
+              <p className="text-xl mb-8 text-slate-300">
+                Be among the first to experience true AI-powered personal computing
+              </p>
+              
+              <form onSubmit={handleBetaSignup} className="max-w-md mx-auto">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="neural.link@digital.mate"
+                    className="flex-1 px-6 py-4 rounded-lg bg-slate-900/50 border border-cyan-500/30 text-white placeholder-slate-400 font-mono focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/50"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="ai-button bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white px-8 py-4 rounded-lg font-mono font-semibold transition-all disabled:opacity-50 border border-cyan-400/50"
+                  >
+                    {loading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="ai-loading"></div>
+                        PROCESSING...
+                      </div>
+                    ) : (
+                      'INITIALIZE'
+                    )}
+                  </button>
+                </div>
+              </form>
+              
+              <div className="text-sm text-slate-500 mt-4 font-mono">
+                🛡️ QUANTUM-ENCRYPTED • ZERO-KNOWLEDGE ARCHITECTURE • AI-VERIFIED
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   );
 };
