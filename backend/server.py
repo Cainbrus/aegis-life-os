@@ -1942,8 +1942,8 @@ async def verify_calculator_secret(data: Dict[str, Any]):
     try:
         entered_code = data.get("code", "")
         
-        # Get user's configured calculator code
-        user_config = await db.user_onboarding.find_one({}, sort=[("completed_at", -1)])
+        # Get user's configured calculator code (exclude _id)
+        user_config = await db.user_onboarding.find_one({}, {"_id": 0}, sort=[("completed_at", -1)])
         secret_code = user_config.get("calculator_code", "8675309") if user_config else "8675309"
         
         if entered_code == secret_code:
