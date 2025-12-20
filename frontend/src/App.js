@@ -567,21 +567,8 @@ const AegisTrapSystem = () => {
   // Initialize notification system for invisible mode
   const { currentNotification, dismissNotification, handleAction, triggerNotification } = useAegisNotifications();
 
-  useEffect(() => {
-    checkOnboardingStatus();
-    loadAuthStatus();
-    const interval = setInterval(loadAuthStatus, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Check learning status when onboarding is complete
-  useEffect(() => {
-    if (onboardingComplete) {
-      checkLearningStatus();
-    }
-  }, [onboardingComplete]);
-  
-  const checkLearningStatus = async () => {
+  // Define functions first before useEffect hooks
+  const checkLearningStatus = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/learning/status`);
       setLearningStatus(response.data);
@@ -603,9 +590,9 @@ const AegisTrapSystem = () => {
       setLearningStatus({ learning_complete: false, invisible_mode: false });
       setShowLearningMode(true);
     }
-  };
+  }, []);
 
-  const checkOnboardingStatus = async () => {
+  const checkOnboardingStatus = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/onboarding/status`);
       const isComplete = response.data.onboarding_complete;
@@ -621,10 +608,49 @@ const AegisTrapSystem = () => {
       setOnboardingComplete(false);
       setShowLandingPage(true); // Show landing for new users
     }
-  };
+  }, []);
+
+  const loadAuthStatus = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/auth/status`);
+      setAuthStatus(response.data);
+      
+      const isAuth = response.data.security_state !== "STATE_LOCKED";
+      setIsAuthenticated(isAuth);
+    } catch (error) {
+      console.error("Failed to load auth status:", error);
+    }
+  }, []);
+
+  const loadSystemStatus = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/system/trap-status`);
+      setSystemStatus(response.data);
+    } catch (error) {
+      console.error("Failed to load system status:", error);
+    }
+  }, []);
+
+  const loadTrapStatus = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/trap/status`);
+      setTrapStatus(response.data);
+    } catch (error) {
+      console.error("Failed to load trap status:", error);
+    }
+  }, []);
+
+  const loadTrapEvidence = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/trap/evidence`);
+      setTrapEvidence(response.data);
+    } catch (error) {
+      console.error("Failed to load trap evidence:", error);
+    }
+  }, []);
   
   // Handle learning mode completion
-  const handleLearningComplete = () => {
+  const handleLearningComplete = useCallback(() => {
     setShowLearningMode(false);
     setShowInvisibleMode(true);
     setLearningStatus({ learning_complete: true, invisible_mode: true });
@@ -638,12 +664,27 @@ const AegisTrapSystem = () => {
         { id: 'got_it', label: 'Got it!', primary: true }
       ]
     });
-  };
+  }, [triggerNotification]);
   
   // Handle exiting invisible mode (via calculator vault)
-  const handleExitInvisibleMode = () => {
+  const handleExitInvisibleMode = useCallback(() => {
     setShowInvisibleMode(false);
-  };
+  }, []);
+
+  // Now the useEffect hooks
+  useEffect(() => {
+    checkOnboardingStatus();
+    loadAuthStatus();
+    const interval = setInterval(loadAuthStatus, 3000);
+    return () => clearInterval(interval);
+  }, [checkOnboardingStatus, loadAuthStatus]);
+
+  // Check learning status when onboarding is complete
+  useEffect(() => {
+    if (onboardingComplete) {
+      checkLearningStatus();
+    }
+  }, [onboardingComplete, checkLearningStatus]);
 
   // Take photo periodically in trap mode
   useEffect(() => {
@@ -662,22 +703,14 @@ const AegisTrapSystem = () => {
       loadTrapStatus();
       loadTrapEvidence();
     }
-  }, [ownerMode]);
+  }, [ownerMode, loadTrapStatus, loadTrapEvidence]);
 
-  const loadAuthStatus = async () => {
-    try {
-      const response = await axios.get(`${API}/auth/status`);
-      setAuthStatus(response.data);
-      
-      const isAuth = response.data.security_state !== "STATE_LOCKED";
-      setIsAuthenticated(isAuth);
-      
-      if (isAuth) {
-        loadSystemStatus();
-      }
-    } catch (error) {
-      console.error("Failed to load auth status:", error);
+  // Load system status when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadSystemStatus();
     }
+  }, [isAuthenticated, loadSystemStatus]);
   };
 
   const loadSystemStatus = async () => {
