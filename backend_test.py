@@ -972,9 +972,503 @@ class AegisEnhancedSystemTester:
         
         return False
 
+    def test_digital_mate_vault_verify_secret(self) -> bool:
+        """Test Calculator Vault Secret Verification - POST /api/vault/verify-secret"""
+        secret_data = {
+            "code": "8675309"
+        }
+        
+        success, data = self.run_test(
+            "Digital Mate - Vault Secret Verification",
+            "POST",
+            "vault/verify-secret",
+            200,
+            data=secret_data,
+            expected_fields=["success", "message", "vault_unlocked"]
+        )
+        
+        if success:
+            vault_unlocked = data.get("vault_unlocked", False)
+            message = data.get("message", "")
+            
+            if vault_unlocked:
+                print(f"   ✅ Calculator secret code 8675309 verified successfully")
+                return True
+            else:
+                print(f"   ❌ Calculator secret code verification failed: {message}")
+                return False
+        
+        return False
+
+    def test_digital_mate_vault_files(self) -> bool:
+        """Test Vault Files Access - GET /api/vault/files"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping vault files test - requires owner authentication")
+            return True
+            
+        success, data = self.run_test(
+            "Digital Mate - Vault Files Access",
+            "GET",
+            "vault/files",
+            200,
+            expected_fields=["files", "total_count", "vault_stats"]
+        )
+        
+        if success:
+            files = data.get("files", [])
+            total_count = data.get("total_count", 0)
+            vault_stats = data.get("vault_stats", {})
+            
+            print(f"   📁 Vault Files: {total_count} found")
+            print(f"   📊 Vault Stats: {vault_stats}")
+            print(f"   ✅ Vault files endpoint working correctly")
+            return True
+        
+        return False
+
+    def test_digital_mate_vault_upload(self) -> bool:
+        """Test Vault File Upload - POST /api/vault/upload"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping vault upload test - requires owner authentication")
+            return True
+            
+        upload_data = {
+            "filename": "test_document.txt",
+            "file_type": "text/plain",
+            "content": "VGVzdCBkb2N1bWVudCBjb250ZW50",  # Base64 encoded "Test document content"
+            "category": "test",
+            "tags": ["test", "digital_mate"],
+            "is_sensitive": True
+        }
+        
+        success, data = self.run_test(
+            "Digital Mate - Vault File Upload",
+            "POST",
+            "vault/upload",
+            200,
+            data=upload_data,
+            expected_fields=["success", "file_id", "message"]
+        )
+        
+        if success:
+            file_id = data.get("file_id", "")
+            message = data.get("message", "")
+            
+            if file_id:
+                print(f"   ✅ File uploaded to vault successfully: {file_id}")
+                # Store file_id for deletion test
+                self.uploaded_file_id = file_id
+                return True
+            else:
+                print(f"   ❌ File upload failed: {message}")
+                return False
+        
+        return False
+
+    def test_digital_mate_vault_delete(self) -> bool:
+        """Test Vault File Deletion - DELETE /api/vault/files/{file_id}"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping vault delete test - requires owner authentication")
+            return True
+            
+        if not hasattr(self, 'uploaded_file_id'):
+            print(f"   ⚠️  Skipping vault delete test - no file uploaded to delete")
+            return True
+            
+        success, data = self.run_test(
+            "Digital Mate - Vault File Deletion",
+            "DELETE",
+            f"vault/files/{self.uploaded_file_id}",
+            200,
+            expected_fields=["success", "message"]
+        )
+        
+        if success:
+            delete_success = data.get("success", False)
+            message = data.get("message", "")
+            
+            if delete_success:
+                print(f"   ✅ File deleted from vault successfully")
+                return True
+            else:
+                print(f"   ❌ File deletion failed: {message}")
+                return False
+        
+        return False
+
+    def test_digital_mate_privacy_analyze(self) -> bool:
+        """Test AI Privacy Analysis - POST /api/privacy/analyze"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping privacy analysis test - requires owner authentication")
+            return True
+            
+        analyze_data = {
+            "content_type": "file",
+            "content_data": {
+                "name": "personal_photo.jpg",
+                "metadata": {"size": "2.4MB", "location": "home"},
+                "preview": "A photo showing family members at a private gathering"
+            }
+        }
+        
+        success, data = self.run_test(
+            "Digital Mate - AI Privacy Analysis",
+            "POST",
+            "privacy/analyze",
+            200,
+            data=analyze_data,
+            expected_fields=["analysis", "guardian_mode", "trust_level"]
+        )
+        
+        if success:
+            analysis = data.get("analysis", {})
+            guardian_mode = data.get("guardian_mode", "")
+            trust_level = data.get("trust_level", 0)
+            
+            sensitivity_score = analysis.get("sensitivity_score", 0)
+            recommended_action = analysis.get("recommended_action", "")
+            
+            print(f"   🔍 Sensitivity Score: {sensitivity_score}")
+            print(f"   🤖 Guardian Mode: {guardian_mode}")
+            print(f"   📊 Trust Level: {trust_level:.2f}")
+            print(f"   💡 Recommended Action: {recommended_action}")
+            print(f"   ✅ AI Privacy analysis working correctly")
+            return True
+        
+        return False
+
+    def test_digital_mate_privacy_feedback(self) -> bool:
+        """Test AI Privacy Feedback - POST /api/privacy/feedback"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping privacy feedback test - requires owner authentication")
+            return True
+            
+        feedback_data = {
+            "content_type": "file",
+            "suggestion": "hide",
+            "decision": "accepted",
+            "preference": "Always hide personal photos automatically"
+        }
+        
+        success, data = self.run_test(
+            "Digital Mate - AI Privacy Feedback",
+            "POST",
+            "privacy/feedback",
+            200,
+            data=feedback_data,
+            expected_fields=["success", "message", "new_trust_level", "learning_mode"]
+        )
+        
+        if success:
+            feedback_success = data.get("success", False)
+            new_trust_level = data.get("new_trust_level", 0)
+            learning_mode = data.get("learning_mode", "")
+            
+            if feedback_success:
+                print(f"   ✅ Privacy feedback recorded successfully")
+                print(f"   📈 New Trust Level: {new_trust_level:.2f}")
+                print(f"   🎓 Learning Mode: {learning_mode}")
+                return True
+            else:
+                print(f"   ❌ Privacy feedback recording failed")
+                return False
+        
+        return False
+
+    def test_digital_mate_privacy_suggestions(self) -> bool:
+        """Test AI Privacy Suggestions - GET /api/privacy/suggestions"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping privacy suggestions test - requires owner authentication")
+            return True
+            
+        success, data = self.run_test(
+            "Digital Mate - AI Privacy Suggestions",
+            "GET",
+            "privacy/suggestions",
+            200,
+            expected_fields=["suggestions", "guardian_mode", "trust_level", "total_pending"]
+        )
+        
+        if success:
+            suggestions = data.get("suggestions", [])
+            total_pending = data.get("total_pending", 0)
+            guardian_mode = data.get("guardian_mode", "")
+            
+            print(f"   💡 Pending Suggestions: {total_pending}")
+            print(f"   🤖 Guardian Mode: {guardian_mode}")
+            print(f"   ✅ Privacy suggestions endpoint working correctly")
+            return True
+        
+        return False
+
+    def test_digital_mate_privacy_stats(self) -> bool:
+        """Test AI Privacy Stats - GET /api/privacy/stats"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping privacy stats test - requires owner authentication")
+            return True
+            
+        success, data = self.run_test(
+            "Digital Mate - AI Privacy Stats",
+            "GET",
+            "privacy/stats",
+            200,
+            expected_fields=["total_analyzed", "acceptance_rate", "trust_level", "learning_mode"]
+        )
+        
+        if success:
+            total_analyzed = data.get("total_analyzed", 0)
+            acceptance_rate = data.get("acceptance_rate", 0)
+            trust_level = data.get("trust_level", 0)
+            learning_mode = data.get("learning_mode", "")
+            
+            print(f"   📊 Total Analyzed: {total_analyzed}")
+            print(f"   📈 Acceptance Rate: {acceptance_rate:.1%}")
+            print(f"   🎯 Trust Level: {trust_level:.1%}")
+            print(f"   🎓 Learning Mode: {learning_mode}")
+            print(f"   ✅ Privacy stats endpoint working correctly")
+            return True
+        
+        return False
+
+    def test_digital_mate_intelligence_briefing(self) -> bool:
+        """Test Proactive Intelligence Briefing - GET /api/intelligence/briefing"""
+        success, data = self.run_test(
+            "Digital Mate - Proactive Intelligence Briefing",
+            "GET",
+            "intelligence/briefing",
+            200,
+            expected_fields=["briefing_type", "title", "summary"]
+        )
+        
+        if success:
+            briefing_type = data.get("briefing_type", "")
+            title = data.get("title", "")
+            summary = data.get("summary", "")
+            insights = data.get("insights", [])
+            action_items = data.get("action_items", [])
+            
+            print(f"   📋 Briefing Type: {briefing_type}")
+            print(f"   📝 Title: {title}")
+            print(f"   💡 Insights: {len(insights)} provided")
+            print(f"   ✅ Action Items: {len(action_items)} provided")
+            print(f"   ✅ Proactive intelligence briefing working correctly")
+            return True
+        
+        return False
+
+    def test_digital_mate_process_goal(self) -> bool:
+        """Test Goal Processing - POST /api/intelligence/process-goal"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping goal processing test - requires owner authentication")
+            return True
+            
+        goal_data = {
+            "goal": "plan a vacation to Japan for next month"
+        }
+        
+        success, data = self.run_test(
+            "Digital Mate - Goal Processing",
+            "POST",
+            "intelligence/process-goal",
+            200,
+            data=goal_data,
+            expected_fields=["goal_id", "plan", "message"]
+        )
+        
+        if success:
+            goal_id = data.get("goal_id", "")
+            plan = data.get("plan", {})
+            message = data.get("message", "")
+            
+            understood_goal = plan.get("understood_goal", "")
+            execution_plan = plan.get("execution_plan", [])
+            
+            print(f"   🎯 Goal ID: {goal_id}")
+            print(f"   🧠 Understood: {understood_goal}")
+            print(f"   📋 Execution Steps: {len(execution_plan)}")
+            print(f"   ✅ Goal processing working correctly")
+            return True
+        
+        return False
+
+    def test_digital_mate_intelligence_chat(self) -> bool:
+        """Test Digital Mate Chat - POST /api/intelligence/chat"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping intelligence chat test - requires owner authentication")
+            return True
+            
+        chat_data = {
+            "message": "What's the weather like and do I have any meetings today?",
+            "context": "general"
+        }
+        
+        success, data = self.run_test(
+            "Digital Mate - Intelligence Chat",
+            "POST",
+            "intelligence/chat",
+            200,
+            data=chat_data,
+            expected_fields=["status", "response"]
+        )
+        
+        if success:
+            status = data.get("status", "")
+            response = data.get("response", "")
+            suggestions = data.get("suggestions", [])
+            
+            print(f"   💬 Chat Response: {response[:100]}...")
+            print(f"   💡 Suggestions: {len(suggestions)} provided")
+            print(f"   ✅ Digital Mate chat working correctly")
+            return True
+        
+        return False
+
+    def test_digital_mate_voice_process(self) -> bool:
+        """Test Voice Command Processing - POST /api/voice/process"""
+        voice_data = {
+            "command": "Hey Mate, check my schedule and remind me about important tasks",
+            "context": {"source": "voice_interface"}
+        }
+        
+        success, data = self.run_test(
+            "Digital Mate - Voice Command Processing",
+            "POST",
+            "voice/process",
+            200,
+            data=voice_data,
+            expected_fields=["understood_command", "intent", "response_text"]
+        )
+        
+        if success:
+            understood_command = data.get("understood_command", "")
+            intent = data.get("intent", "")
+            response_text = data.get("response_text", "")
+            confidence = data.get("confidence", 0)
+            
+            print(f"   🎤 Understood: {understood_command}")
+            print(f"   🎯 Intent: {intent}")
+            print(f"   📊 Confidence: {confidence:.2f}")
+            print(f"   💬 Response: {response_text[:100]}...")
+            print(f"   ✅ Voice command processing working correctly")
+            return True
+        
+        return False
+
+    def test_digital_mate_wake_detected(self) -> bool:
+        """Test Wake Word Detection - POST /api/voice/wake-detected"""
+        wake_data = {
+            "wake_word": "mate"
+        }
+        
+        success, data = self.run_test(
+            "Digital Mate - Wake Word Detection",
+            "POST",
+            "voice/wake-detected",
+            200,
+            data=wake_data,
+            expected_fields=["success", "message", "ready_for_command"]
+        )
+        
+        if success:
+            wake_success = data.get("success", False)
+            ready_for_command = data.get("ready_for_command", False)
+            
+            if wake_success and ready_for_command:
+                print(f"   ✅ Wake word detection working correctly")
+                return True
+            else:
+                print(f"   ❌ Wake word detection not working properly")
+                return False
+        
+        return False
+
+    def test_digital_mate_voice_settings(self) -> bool:
+        """Test Voice Settings - GET /api/voice/settings"""
+        success, data = self.run_test(
+            "Digital Mate - Voice Settings",
+            "GET",
+            "voice/settings",
+            200,
+            expected_fields=["wake_word", "duress_phrase", "voice_enabled"]
+        )
+        
+        if success:
+            wake_word = data.get("wake_word", "")
+            duress_phrase = data.get("duress_phrase", "")
+            voice_enabled = data.get("voice_enabled", False)
+            
+            print(f"   🎤 Wake Word: {wake_word}")
+            print(f"   🚨 Duress Phrase: {duress_phrase}")
+            print(f"   🔊 Voice Enabled: {voice_enabled}")
+            print(f"   ✅ Voice settings endpoint working correctly")
+            return True
+        
+        return False
+
+    def test_digital_mate_voice_settings_update(self) -> bool:
+        """Test Voice Settings Update - PUT /api/voice/settings"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping voice settings update test - requires owner authentication")
+            return True
+            
+        settings_data = {
+            "wake_word": "Mate",
+            "duress_phrase": "help me please"
+        }
+        
+        success, data = self.run_test(
+            "Digital Mate - Voice Settings Update",
+            "PUT",
+            "voice/settings",
+            200,
+            data=settings_data,
+            expected_fields=["success", "message"]
+        )
+        
+        if success:
+            update_success = data.get("success", False)
+            message = data.get("message", "")
+            
+            if update_success:
+                print(f"   ✅ Voice settings updated successfully")
+                return True
+            else:
+                print(f"   ❌ Voice settings update failed: {message}")
+                return False
+        
+        return False
+
+    def test_digital_mate_context_cards(self) -> bool:
+        """Test Dynamic Context Cards - GET /api/context/cards"""
+        success, data = self.run_test(
+            "Digital Mate - Dynamic Context Cards",
+            "GET",
+            "context/cards",
+            200,
+            expected_fields=["cards", "time_context", "generated_at"]
+        )
+        
+        if success:
+            cards = data.get("cards", [])
+            time_context = data.get("time_context", "")
+            generated_at = data.get("generated_at", "")
+            
+            print(f"   🃏 Context Cards: {len(cards)} generated")
+            print(f"   ⏰ Time Context: {time_context}")
+            print(f"   📅 Generated At: {generated_at}")
+            
+            # Check for expected card types
+            card_types = [card.get("type") for card in cards]
+            print(f"   🏷️  Card Types: {', '.join(set(card_types))}")
+            
+            print(f"   ✅ Dynamic context cards working correctly")
+            return True
+        
+        return False
+
     def run_comprehensive_test_suite(self):
         """Run the complete Enhanced Aegis System Test Suite"""
-        print(f"\n🚀 STARTING ENHANCED AEGIS SYSTEM TEST SUITE")
+        print(f"\n🚀 STARTING DIGITAL MATE COMPREHENSIVE TEST SUITE")
         print(f"⏰ Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("=" * 60)
         
@@ -999,8 +1493,36 @@ class AegisEnhancedSystemTester:
         self.test_l3_agents_owner_mode()
         self.test_trap_status_check()
         
-        # Phase 4: New Advanced Features (Priority 2)
-        print(f"\n🚀 PHASE 4: NEW ADVANCED FEATURES (PRIORITY 2)")
+        # Phase 4: DIGITAL MATE - CALCULATOR VAULT SYSTEM (Phase 1)
+        print(f"\n🔐 PHASE 4: DIGITAL MATE - CALCULATOR VAULT SYSTEM")
+        self.test_digital_mate_vault_verify_secret()
+        self.test_digital_mate_vault_files()
+        self.test_digital_mate_vault_upload()
+        self.test_digital_mate_vault_delete()
+        
+        # Phase 5: DIGITAL MATE - AI PRIVACY GUARDIAN (Phase 2)
+        print(f"\n🛡️  PHASE 5: DIGITAL MATE - AI PRIVACY GUARDIAN")
+        self.test_digital_mate_privacy_analyze()
+        self.test_digital_mate_privacy_feedback()
+        self.test_digital_mate_privacy_suggestions()
+        self.test_digital_mate_privacy_stats()
+        
+        # Phase 6: DIGITAL MATE - PROACTIVE INTELLIGENCE (Phase 3)
+        print(f"\n🧠 PHASE 6: DIGITAL MATE - PROACTIVE INTELLIGENCE")
+        self.test_digital_mate_intelligence_briefing()
+        self.test_digital_mate_process_goal()
+        self.test_digital_mate_intelligence_chat()
+        self.test_digital_mate_context_cards()
+        
+        # Phase 7: DIGITAL MATE - VOICE INTERFACE (Phase 4)
+        print(f"\n🎤 PHASE 7: DIGITAL MATE - VOICE INTERFACE")
+        self.test_digital_mate_voice_process()
+        self.test_digital_mate_wake_detected()
+        self.test_digital_mate_voice_settings()
+        self.test_digital_mate_voice_settings_update()
+        
+        # Phase 8: Legacy Advanced Features (Priority 2)
+        print(f"\n🚀 PHASE 8: LEGACY ADVANCED FEATURES")
         self.test_calculator_secret_handshake()
         self.test_phantom_folder_authentication()
         self.test_phantom_folder_data_access()
@@ -1009,26 +1531,26 @@ class AegisEnhancedSystemTester:
         self.test_onboarding_status_check()
         self.test_onboarding_completion()
         
-        # Phase 5: Proactive Intelligence (Priority 3)
-        print(f"\n🧠 PHASE 5: PROACTIVE INTELLIGENCE (PRIORITY 3)")
+        # Phase 9: Legacy Proactive Intelligence (Priority 3)
+        print(f"\n🧠 PHASE 9: LEGACY PROACTIVE INTELLIGENCE")
         self.test_l2_ai_orchestrator()
         self.test_proactive_briefing_generation()
         self.test_wake_word_status()
         
-        # Phase 6: Advanced Pattern Features & Security
-        print(f"\n🔒 PHASE 6: ADVANCED PATTERN FEATURES & SECURITY")
+        # Phase 10: Advanced Pattern Features & Security
+        print(f"\n🔒 PHASE 10: ADVANCED PATTERN FEATURES & SECURITY")
         self.test_duress_pattern_auth()
         self.test_auto_detect_pattern()
         self.test_vault_access_without_auth()
         
-        # Phase 7: Security & Lockout Testing
-        print(f"\n🛡️  PHASE 7: SECURITY & LOCKOUT TESTING")
+        # Phase 11: Security & Lockout Testing
+        print(f"\n🛡️  PHASE 11: SECURITY & LOCKOUT TESTING")
         self.test_failed_authentication_lockout()
         self.test_logout()
         
         # Final Results
         print(f"\n" + "=" * 60)
-        print(f"🏁 ENHANCED AEGIS SYSTEM TEST SUITE COMPLETED")
+        print(f"🏁 DIGITAL MATE COMPREHENSIVE TEST SUITE COMPLETED")
         print(f"📊 Tests Run: {self.tests_run}")
         print(f"✅ Tests Passed: {self.tests_passed}")
         print(f"❌ Tests Failed: {self.tests_run - self.tests_passed}")
@@ -1037,8 +1559,8 @@ class AegisEnhancedSystemTester:
         print(f"⏰ Test completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
         if self.tests_passed == self.tests_run:
-            print(f"\n🎉 ALL TESTS PASSED - ENHANCED AEGIS SYSTEM IS FULLY OPERATIONAL!")
-            print(f"🚀 Complete 'Digital Mate' experience with all advanced features working!")
+            print(f"\n🎉 ALL TESTS PASSED - DIGITAL MATE SYSTEM IS FULLY OPERATIONAL!")
+            print(f"🚀 Complete 'Digital Mate' experience with all 4 phases working!")
             return 0
         else:
             print(f"\n⚠️  SOME TESTS FAILED - REVIEW RESULTS ABOVE")
