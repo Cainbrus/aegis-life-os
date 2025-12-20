@@ -254,7 +254,7 @@ const LandingPage = ({ onGetStarted }) => {
             </div>
           </div>
 
-          {/* AI Architecture Visualization - BOLDER */}
+          {/* AI Architecture Visualization - WITH DIGITAL ICONS */}
           <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-2 border-cyan-500/30 rounded-2xl p-10 mb-16 relative overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.1)]">
             <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-purple-500/5"></div>
             <div className="absolute top-0 left-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>
@@ -267,7 +267,9 @@ const LandingPage = ({ onGetStarted }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
               <div className="text-center p-6 border-2 border-cyan-500/40 rounded-xl bg-black/50 hover:border-cyan-400 transition-all hover:shadow-[0_0_30px_rgba(6,182,212,0.3)]">
-                <div className="text-5xl mb-4 drop-shadow-[0_0_15px_rgba(6,182,212,0.8)]">👑</div>
+                <div className="flex justify-center mb-4">
+                  <DigitalCrown size={60} />
+                </div>
                 <h4 className="text-xl font-black mb-3 text-cyan-400">L1 OWNER</h4>
                 <p className="text-sm text-slate-400">Constitutional oversight & system governance</p>
                 <div className="mt-4 w-full bg-slate-800 rounded-full h-3 overflow-hidden">
@@ -276,7 +278,9 @@ const LandingPage = ({ onGetStarted }) => {
               </div>
               
               <div className="text-center p-6 border-2 border-blue-500/40 rounded-xl bg-black/50 hover:border-blue-400 transition-all hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-                <div className="text-5xl mb-4 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]">🎯</div>
+                <div className="flex justify-center mb-4">
+                  <DigitalTarget size={60} />
+                </div>
                 <h4 className="text-xl font-black mb-3 text-blue-400">L2 MANAGER</h4>
                 <p className="text-sm text-slate-400">Task coordination & resource allocation</p>
                 <div className="mt-4 w-full bg-slate-800 rounded-full h-3 overflow-hidden">
@@ -284,21 +288,25 @@ const LandingPage = ({ onGetStarted }) => {
                 </div>
               </div>
               
-              <div className="text-center p-6 border border-purple-500/30 rounded-lg bg-slate-900/50">
-                <div className="text-4xl mb-4 text-purple-400">📱</div>
-                <h4 className="text-xl font-semibold mb-3 text-purple-300 font-mono">L3 WORKERS</h4>
+              <div className="text-center p-6 border-2 border-purple-500/40 rounded-xl bg-black/50 hover:border-purple-400 transition-all hover:shadow-[0_0_30px_rgba(168,85,247,0.3)]">
+                <div className="flex justify-center mb-4">
+                  <DigitalGear size={60} />
+                </div>
+                <h4 className="text-xl font-black mb-3 text-purple-400">L3 WORKERS</h4>
                 <p className="text-sm text-slate-400">Application-specific processing agents</p>
-                <div className="mt-3 w-full bg-slate-700 rounded-full h-2">
-                  <div className="bg-purple-400 h-2 rounded-full w-5/6 animate-pulse" style={{animationDelay: '1s'}}></div>
+                <div className="mt-4 w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                  <div className="bg-gradient-to-r from-purple-400 to-purple-300 h-3 rounded-full w-5/6 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.8)]" style={{animationDelay: '1s'}}></div>
                 </div>
               </div>
               
-              <div className="text-center p-6 border border-pink-500/30 rounded-lg bg-slate-900/50">
-                <div className="text-4xl mb-4 text-pink-400">🔬</div>
-                <h4 className="text-xl font-semibold mb-3 text-pink-300 font-mono">L4 SPECIALISTS</h4>
+              <div className="text-center p-6 border-2 border-pink-500/40 rounded-xl bg-black/50 hover:border-pink-400 transition-all hover:shadow-[0_0_30px_rgba(236,72,153,0.3)]">
+                <div className="flex justify-center mb-4">
+                  <DigitalChip size={60} />
+                </div>
+                <h4 className="text-xl font-black mb-3 text-pink-400">L4 SPECIALISTS</h4>
                 <p className="text-sm text-slate-400">Advanced analysis & prediction systems</p>
-                <div className="mt-3 w-full bg-slate-700 rounded-full h-2">
-                  <div className="bg-pink-400 h-2 rounded-full w-2/3 animate-pulse" style={{animationDelay: '1.5s'}}></div>
+                <div className="mt-4 w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                  <div className="bg-gradient-to-r from-pink-400 to-pink-300 h-3 rounded-full w-2/3 animate-pulse shadow-[0_0_10px_rgba(236,72,153,0.8)]" style={{animationDelay: '1.5s'}}></div>
                 </div>
               </div>
             </div>
