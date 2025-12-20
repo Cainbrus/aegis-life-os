@@ -574,7 +574,50 @@ const AegisTrapSystem = () => {
   const capturePhoto = useSilentPhotoCapture(trapActive);
   
   // Initialize notification system for invisible mode
-  const { currentNotification, dismissNotification, handleAction, triggerNotification } = useAegisNotifications();
+  const { currentNotification, dismissNotification, handleAction: baseHandleAction, triggerNotification } = useAegisNotifications();
+
+  // Custom action handler that opens interactive screens
+  const handleAction = useCallback((actionId) => {
+    // Handle special actions that open screens
+    switch(actionId) {
+      case 'view':
+      case 'View Summary':
+        if (currentNotification?.title?.includes('Meeting')) {
+          setShowMeetingSummary(true);
+        }
+        break;
+      case 'tasks':
+      case 'See Tasks':
+        setShowMeetingSummary(true);
+        break;
+      case 'track':
+      case 'Track Location':
+        if (currentNotification?.type === 'family') {
+          setShowFamilyTracker(true);
+        }
+        break;
+      case 'Show Breakdown':
+        setShowFinanceDashboard(true);
+        break;
+      case 'taken':
+      case 'I\'ve Taken It':
+        setShowHealthDashboard(true);
+        break;
+      case 'Full Schedule':
+      case 'details':
+        setShowCalendar(true);
+        break;
+      case 'chat':
+      case 'Yeah, let\'s talk':
+        setShowChat(true);
+        break;
+      default:
+        // Default behavior - just dismiss
+        break;
+    }
+    // Always call base handler to dismiss notification
+    baseHandleAction(actionId);
+  }, [baseHandleAction, currentNotification]);
 
   // Define functions first before useEffect hooks
   const checkLearningStatus = useCallback(async () => {
