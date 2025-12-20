@@ -383,6 +383,24 @@ export const useAegisNotifications = () => {
   // Demo notifications for investor presentations - memoized
   const demoNotifications = useMemo(() => [
     {
+      type: 'urgent',
+      title: '⏰ Wake Up - Route Change!',
+      message: 'Hey, I woke you up 20 mins early. There\'s a crash on your usual route - I found an alternative but it adds 20 mins. You need to leave by 7:40 to make your 9am meeting.',
+      actions: [
+        { id: 'directions', label: 'Show New Route', primary: true },
+        { id: 'snooze', label: 'Snooze 5 mins' }
+      ]
+    },
+    {
+      type: 'calendar',
+      title: '📝 Meeting Summary Ready',
+      message: 'Your 10am Team Meeting just ended. I\'ve written up a summary, booked your follow-up for Thursday 2pm, and created your action items list. 4 tasks due before next meeting.',
+      actions: [
+        { id: 'view', label: 'View Summary', primary: true },
+        { id: 'tasks', label: 'See Tasks' }
+      ]
+    },
+    {
       type: 'privacy',
       title: '🔒 Privacy Protection',
       message: 'I noticed some adult content in your browser history. I\'ve already deleted it to keep your device clean. You\'re welcome 😉',
@@ -411,11 +429,20 @@ export const useAegisNotifications = () => {
     },
     {
       type: 'calendar',
-      title: '📅 Upcoming Meeting',
-      message: 'Team Meeting in 15 minutes. Conference Room B. I\'ve prepared your notes - want me to display them?',
+      title: '📋 Action Items Reminder',
+      message: 'You have 2 tasks due tomorrow from your Monday meeting: "Send proposal draft" and "Review budget numbers". Want me to block time for these?',
       actions: [
-        { id: 'prepare', label: 'Show Notes', primary: true },
-        { id: 'dismiss', label: 'Dismiss' }
+        { id: 'block', label: 'Block 2 Hours', primary: true },
+        { id: 'later', label: 'Remind Me Later' }
+      ]
+    },
+    {
+      type: 'urgent',
+      title: '🚗 Traffic Alert',
+      message: 'Leave NOW if you want to make your 2pm client meeting. Accident on M1 - I\'ve found a route through back roads that saves 15 mins.',
+      actions: [
+        { id: 'navigate', label: 'Start Navigation', primary: true },
+        { id: 'call', label: 'Call to Reschedule' }
       ]
     },
     {
@@ -443,6 +470,15 @@ export const useAegisNotifications = () => {
       actions: [
         { id: 'cleanup', label: 'Yes, Clean Up', primary: true },
         { id: 'later', label: 'Maybe Later' }
+      ]
+    },
+    {
+      type: 'calendar',
+      title: '☕ Morning Briefing',
+      message: 'Good morning! You have 3 meetings today. First one at 10am. Weather is rainy - leave 10 mins early. Also, Mum\'s birthday is in 2 days.',
+      actions: [
+        { id: 'details', label: 'Full Schedule', primary: true },
+        { id: 'gift', label: 'Gift Ideas for Mum' }
       ]
     },
     {
