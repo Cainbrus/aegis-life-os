@@ -2903,6 +2903,295 @@ async def get_contextual_cards():
         logger.error(f"Contextual cards error: {e}")
         return {"cards": [], "error": str(e)}
 
+# ===============================
+# LEARNING MODE ENDPOINTS
+# 7-Day Deep Learning System
+# ===============================
+
+@api_router.get("/learning/progress")
+async def get_learning_progress():
+    """Get current learning progress"""
+    try:
+        progress = await db.aegis_learning.find_one({}, {"_id": 0}, sort=[("updated_at", -1)])
+        
+        if not progress:
+            return {
+                "current_day": 1,
+                "progress": 0,
+                "behavior_data": {},
+                "learning_complete": False
+            }
+        
+        return progress
+        
+    except Exception as e:
+        logger.error(f"Learning progress error: {e}")
+        return {"current_day": 1, "progress": 0, "learning_complete": False}
+
+@api_router.post("/learning/save")
+async def save_learning_progress(data: Dict[str, Any]):
+    """Save learning progress"""
+    try:
+        learning_record = {
+            "current_day": data.get("current_day", 1),
+            "progress": data.get("progress", 0),
+            "behavior_data": data.get("behavior_data", {}),
+            "phase": data.get("phase", "introduction"),
+            "learning_complete": False,
+            "updated_at": datetime.utcnow()
+        }
+        
+        # Upsert learning record
+        await db.aegis_learning.update_one(
+            {},
+            {"$set": learning_record},
+            upsert=True
+        )
+        
+        logger.info(f"Learning progress saved - Day {learning_record['current_day']}, Progress {learning_record['progress']}%")
+        
+        return {"success": True, "message": "Progress saved"}
+        
+    except Exception as e:
+        logger.error(f"Save learning error: {e}")
+        return {"success": False, "message": str(e)}
+
+@api_router.post("/learning/complete")
+async def complete_learning(data: Dict[str, Any]):
+    """Mark learning as complete - Aegis goes invisible"""
+    try:
+        behavior_data = data.get("behavior_data", {})
+        
+        # Save final learning data
+        learning_record = {
+            "current_day": 7,
+            "progress": 100,
+            "behavior_data": behavior_data,
+            "learning_complete": True,
+            "invisible_mode": True,
+            "completed_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        await db.aegis_learning.update_one(
+            {},
+            {"$set": learning_record},
+            upsert=True
+        )
+        
+        # Create user profile based on learned data
+        user_profile = {
+            "profile_id": str(uuid.uuid4()),
+            "routines": behavior_data.get("routines", []),
+            "wake_time": behavior_data.get("wakeUpTime", "07:00"),
+            "sleep_time": behavior_data.get("sleepTime", "23:00"),
+            "work_start": behavior_data.get("workStartTime", "09:00"),
+            "work_end": behavior_data.get("workEndTime", "17:00"),
+            "sensitive_categories": behavior_data.get("sensitiveCategories", []),
+            "trusted_contacts": behavior_data.get("trustedContacts", "").split(",") if isinstance(behavior_data.get("trustedContacts"), str) else [],
+            "frequent_apps": behavior_data.get("frequentApps", []),
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.user_profiles.insert_one(user_profile)
+        
+        logger.info("AEGIS LEARNING COMPLETE - Entering invisible mode")
+        
+        # Send first notification
+        await create_notification({
+            "type": "suggestion",
+            "title": "Aegis is now active",
+            "message": "I'm watching over your phone silently. Access me anytime through the Calculator (enter your secret code).",
+            "actions": [{"id": "ok", "label": "Got it", "primary": True}]
+        })
+        
+        return {
+            "success": True,
+            "message": "Learning complete - Aegis is now invisible",
+            "invisible_mode": True
+        }
+        
+    except Exception as e:
+        logger.error(f"Complete learning error: {e}")
+        return {"success": False, "message": str(e)}
+
+@api_router.get("/learning/status")
+async def get_learning_status():
+    """Check if learning is complete (for invisible mode check)"""
+    try:
+        learning = await db.aegis_learning.find_one({}, {"_id": 0})
+        
+        return {
+            "learning_complete": learning.get("learning_complete", False) if learning else False,
+            "invisible_mode": learning.get("invisible_mode", False) if learning else False
+        }
+        
+    except Exception as e:
+        return {"learning_complete": False, "invisible_mode": False}
+
+# ===============================
+# NOTIFICATION SYSTEM
+# Popups when Aegis needs to tell you something
+# ===============================
+
+async def create_notification(notification_data: Dict[str, Any]):
+    """Create a new notification"""
+    notification = {
+        "id": str(uuid.uuid4()),
+        "type": notification_data.get("type", "info"),
+        "title": notification_data.get("title", "Aegis Alert"),
+        "message": notification_data.get("message", ""),
+        "actions": notification_data.get("actions", []),
+        "read": False,
+        "created_at": datetime.utcnow()
+    }
+    
+    await db.aegis_notifications.insert_one(notification)
+    return notification
+
+@api_router.get("/notifications/pending")
+async def get_pending_notifications():
+    """Get unread notifications"""
+    try:
+        notifications = await db.aegis_notifications.find(
+            {"read": False},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(10)
+        
+        return {"notifications": notifications}
+        
+    except Exception as e:
+        logger.error(f"Notifications error: {e}")
+        return {"notifications": []}
+
+@api_router.post("/notifications/action")
+async def handle_notification_action(data: Dict[str, Any]):
+    """Handle notification action and mark as read"""
+    try:
+        notification_id = data.get("notification_id")
+        action_id = data.get("action_id")
+        
+        # Mark as read
+        await db.aegis_notifications.update_one(
+            {"id": notification_id},
+            {"$set": {"read": True, "action_taken": action_id, "acted_at": datetime.utcnow()}}
+        )
+        
+        return {"success": True}
+        
+    except Exception as e:
+        return {"success": False}
+
+@api_router.post("/notifications/trigger")
+async def trigger_notification(data: Dict[str, Any]):
+    """Manually trigger a notification"""
+    try:
+        notification = await create_notification(data)
+        return {"success": True, "notification": notification}
+    except Exception as e:
+        return {"success": False}
+
+# ===============================
+# CALENDAR SYSTEM
+# Works like real phone calendar
+# ===============================
+
+@api_router.get("/calendar/events")
+async def get_calendar_events():
+    """Get all calendar events"""
+    try:
+        events = await db.calendar_events.find({}, {"_id": 0}).sort("date", 1).to_list(100)
+        return {"events": events}
+    except Exception as e:
+        logger.error(f"Calendar events error: {e}")
+        return {"events": []}
+
+@api_router.post("/calendar/events")
+async def create_calendar_event(event: Dict[str, Any]):
+    """Create a calendar event"""
+    try:
+        event_record = {
+            "id": event.get("id", str(uuid.uuid4())),
+            "title": event.get("title", "Untitled Event"),
+            "date": event.get("date"),
+            "time": event.get("time", ""),
+            "description": event.get("description", ""),
+            "reminder": event.get("reminder", True),
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.calendar_events.insert_one(event_record)
+        
+        # Schedule reminder notification if enabled
+        if event_record["reminder"] and event_record["time"]:
+            logger.info(f"Calendar event created: {event_record['title']} on {event_record['date']}")
+        
+        return {"success": True, "event": event_record}
+        
+    except Exception as e:
+        logger.error(f"Create event error: {e}")
+        return {"success": False}
+
+@api_router.delete("/calendar/events/{event_id}")
+async def delete_calendar_event(event_id: str):
+    """Delete a calendar event"""
+    try:
+        result = await db.calendar_events.delete_one({"id": event_id})
+        return {"success": result.deleted_count > 0}
+    except Exception as e:
+        return {"success": False}
+
+# ===============================
+# SECURITY ALERT TRIGGERS
+# Auto-notifications for security events
+# ===============================
+
+async def trigger_security_alert(alert_type: str, details: Dict[str, Any]):
+    """Trigger a security notification"""
+    notifications = {
+        "wrong_pattern": {
+            "type": "security",
+            "title": "⚠️ Security Alert",
+            "message": f"Someone tried to unlock your phone with wrong pattern. Attempt #{details.get('attempt', 1)}",
+            "actions": [
+                {"id": "view_details", "label": "View Details", "primary": True},
+                {"id": "dismiss", "label": "Dismiss"}
+            ]
+        },
+        "intruder_detected": {
+            "type": "security",
+            "title": "🚨 Intruder Detected",
+            "message": "Unknown person is using your phone. Trap mode activated. Evidence is being collected.",
+            "actions": [
+                {"id": "view_evidence", "label": "View Evidence", "primary": True},
+                {"id": "lock_now", "label": "Lock Now"}
+            ]
+        },
+        "sensitive_content": {
+            "type": "privacy",
+            "title": "🔒 Sensitive Content Detected",
+            "message": f"Aegis detected sensitive content: {details.get('content_type', 'file')}. Should I hide it?",
+            "actions": [
+                {"id": "hide", "label": "Hide It", "primary": True},
+                {"id": "ignore", "label": "Leave It"}
+            ]
+        },
+        "calendar_reminder": {
+            "type": "reminder",
+            "title": "📅 Upcoming Event",
+            "message": f"{details.get('event_title', 'Event')} in {details.get('minutes', 30)} minutes",
+            "actions": [
+                {"id": "view", "label": "View", "primary": True},
+                {"id": "snooze", "label": "Snooze"}
+            ]
+        }
+    }
+    
+    notification_data = notifications.get(alert_type)
+    if notification_data:
+        await create_notification(notification_data)
+        logger.info(f"Security alert triggered: {alert_type}")
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
