@@ -754,19 +754,107 @@ const AegisTrapSystem = () => {
     return <AegisOnboarding onComplete={handleOnboardingComplete} />;
   }
 
-  // Show Pattern interface if not authenticated
+  // Show Pattern interface if not authenticated - WITH DRAMATIC BACKGROUND
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
-        <div className="w-full max-w-lg mx-auto px-6">
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              <AegisLogo size={150} showText={true} />
-            </div>
-            <p className="text-slate-400 mt-4">Pattern Authentication System</p>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center relative overflow-hidden">
+        {/* ANIMATED DIGITAL BACKGROUND */}
+        <div className="fixed inset-0">
+          {/* Dark base */}
+          <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-900 to-black"></div>
+          
+          {/* Large background logo - faded */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-10">
+            <AegisLogo size={600} showText={false} />
           </div>
           
-          <DualPatternAuth onAuthSuccess={handleAuthSuccess} authStatus={authStatus} />
+          {/* Animated grid */}
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA0MCAwIEwgMCAwIDAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzA2YjZkNCIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-40"></div>
+          
+          {/* Floating digital numbers - Matrix style */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {/* Column 1 */}
+            <div className="absolute left-[5%] top-0 text-cyan-500/30 font-mono text-sm animate-float-down" style={{animationDuration: '15s'}}>
+              {Array(20).fill(0).map((_, i) => (
+                <div key={i} className="my-4">{Math.random().toString(2).slice(2, 10)}</div>
+              ))}
+            </div>
+            {/* Column 2 */}
+            <div className="absolute left-[15%] top-[-50%] text-cyan-400/20 font-mono text-xs animate-float-down" style={{animationDuration: '20s', animationDelay: '2s'}}>
+              {Array(25).fill(0).map((_, i) => (
+                <div key={i} className="my-3">{Math.floor(Math.random() * 99999).toString().padStart(5, '0')}</div>
+              ))}
+            </div>
+            {/* Column 3 */}
+            <div className="absolute left-[25%] top-[-20%] text-purple-500/25 font-mono text-sm animate-float-down" style={{animationDuration: '18s', animationDelay: '5s'}}>
+              {Array(20).fill(0).map((_, i) => (
+                <div key={i} className="my-4">{Math.random().toString(16).slice(2, 8).toUpperCase()}</div>
+              ))}
+            </div>
+            {/* Column 4 */}
+            <div className="absolute right-[25%] top-[-30%] text-blue-400/20 font-mono text-xs animate-float-down" style={{animationDuration: '22s', animationDelay: '3s'}}>
+              {Array(25).fill(0).map((_, i) => (
+                <div key={i} className="my-3">{Math.random() > 0.5 ? '█' : '░'}{Math.random() > 0.5 ? '█' : '░'}{Math.random() > 0.5 ? '█' : '░'}{Math.random() > 0.5 ? '█' : '░'}</div>
+              ))}
+            </div>
+            {/* Column 5 */}
+            <div className="absolute right-[15%] top-0 text-cyan-300/30 font-mono text-sm animate-float-down" style={{animationDuration: '16s', animationDelay: '1s'}}>
+              {Array(20).fill(0).map((_, i) => (
+                <div key={i} className="my-4">{String.fromCharCode(65 + Math.floor(Math.random() * 26))}{Math.floor(Math.random() * 9)}{String.fromCharCode(65 + Math.floor(Math.random() * 26))}{Math.floor(Math.random() * 9)}</div>
+              ))}
+            </div>
+            {/* Column 6 */}
+            <div className="absolute right-[5%] top-[-40%] text-purple-400/25 font-mono text-xs animate-float-down" style={{animationDuration: '19s', animationDelay: '4s'}}>
+              {Array(25).fill(0).map((_, i) => (
+                <div key={i} className="my-3">{Math.random().toString(2).slice(2, 14)}</div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Glowing orbs */}
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/20 rounded-full blur-[80px] animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500/20 rounded-full blur-[80px] animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] animate-pulse -translate-x-1/2 -translate-y-1/2" style={{animationDelay: '2s'}}></div>
+          
+          {/* Scan line */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent animate-scan-vertical"></div>
+          </div>
+        </div>
+        
+        {/* Main content */}
+        <div className="w-full max-w-lg mx-auto px-6 relative z-10">
+          <div className="text-center mb-8">
+            {/* Main logo with glow */}
+            <div className="flex justify-center mb-4 relative">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-40 h-40 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+              </div>
+              <AegisLogo size={180} showText={true} />
+            </div>
+            <p className="text-cyan-400/80 mt-4 font-mono text-sm tracking-wider">[ PATTERN AUTHENTICATION SYSTEM ]</p>
+          </div>
+          
+          {/* Pattern auth with glass effect */}
+          <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+            <DualPatternAuth onAuthSuccess={handleAuthSuccess} authStatus={authStatus} />
+          </div>
+          
+          {/* Status bar at bottom */}
+          <div className="mt-6 flex justify-center space-x-6 text-xs font-mono">
+            <div className="flex items-center text-cyan-400/70">
+              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse mr-2"></div>
+              SYSTEM ONLINE
+            </div>
+            <div className="flex items-center text-green-400/70">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+              SECURE
+            </div>
+            <div className="flex items-center text-purple-400/70">
+              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse mr-2"></div>
+              AI READY
+            </div>
+          </div>
         </div>
       </div>
     );
