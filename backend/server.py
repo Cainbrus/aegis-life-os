@@ -2761,7 +2761,7 @@ async def wake_word_detected(data: Dict[str, Any]):
 async def get_voice_settings():
     """Get current voice interface settings"""
     try:
-        user_config = await db.user_onboarding.find_one({}, sort=[("completed_at", -1)])
+        user_config = await db.user_onboarding.find_one({}, {"_id": 0}, sort=[("completed_at", -1)])
         
         return {
             "wake_word": user_config.get("custom_wake_name", "Mate") if user_config else "Mate",
