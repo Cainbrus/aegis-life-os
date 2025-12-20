@@ -145,7 +145,7 @@ const PushNotificationSettings = ({ isAuthenticated = false, onClose }) => {
         {permission === 'denied' && (
           <div className="text-center">
             <p className="text-slate-400 text-sm mb-3">
-              To enable notifications, click the lock icon in your browser's address bar and allow notifications.
+              To enable notifications, click the lock icon in your browser address bar and allow notifications.
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -160,7 +160,7 @@ const PushNotificationSettings = ({ isAuthenticated = false, onClose }) => {
       {/* Notification Types */}
       {hasPermission && (
         <div className="mt-6 pt-6 border-t border-slate-700">
-          <h4 className="text-sm font-medium text-slate-300 mb-4">You'll receive alerts for:</h4>
+          <h4 className="text-sm font-medium text-slate-300 mb-4">You will receive alerts for:</h4>
           <div className="space-y-3">
             {[
               { icon: '🚨', label: 'Security Alerts', desc: 'Intruder detection, suspicious activity' },
