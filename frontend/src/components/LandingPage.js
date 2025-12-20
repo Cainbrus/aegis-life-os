@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import AegisLogo, { AegisLogoCompact } from './AegisLogo';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Hero background image
+const HERO_IMAGE = "https://images.unsplash.com/photo-1682159672286-40790338349b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHw0fHxkaWdpdGFsJTIwaGFuZHNoYWtlJTIwaHVtYW4lMjByb2JvdHxlbnwwfHx8fDE3NjYyMDEzOTh8MA&ixlib=rb-4.1.0&q=85";
 
 const LandingPage = ({ onGetStarted }) => {
   const [email, setEmail] = useState('');
