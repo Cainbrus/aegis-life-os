@@ -741,9 +741,205 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
   );
 };
 
+// EMERGENCY MEDICAL SCREEN - Shows when crash detected or emergency triggered
+export const EmergencyMedicalScreen = ({ userInfo, onCancel }) => {
+  const [countdown, setCountdown] = useState(30);
+  const [calling, setCalling] = useState(false);
+
+  useEffect(() => {
+    if (countdown > 0 && !calling) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0 && !calling) {
+      setCalling(true);
+    }
+  }, [countdown, calling]);
+
+  const defaultUser = {
+    name: 'John Smith',
+    bloodType: 'O+',
+    allergies: 'Penicillin, Peanuts',
+    medications: 'Metformin 500mg',
+    conditions: 'Type 2 Diabetes',
+    emergencyContact: 'Sarah Smith (Wife)',
+    emergencyPhone: '0412 345 678',
+    doctorName: 'Dr. James Wilson',
+    doctorPhone: '02 9876 5432',
+    address: '42 Example Street, Sydney NSW 2000'
+  };
+
+  const user = userInfo || defaultUser;
+
+  return (
+    <div className="min-h-screen bg-red-900 text-white relative overflow-hidden">
+      {/* Pulsing emergency background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-red-800 to-red-950 animate-pulse"></div>
+      
+      <div className="relative z-10 p-4">
+        {/* EMERGENCY HEADER */}
+        <div className="text-center mb-6">
+          <div className="text-6xl mb-2 animate-bounce">🆘</div>
+          <h1 className="text-3xl font-black text-white">EMERGENCY</h1>
+          {!calling ? (
+            <p className="text-red-200 mt-2">Calling 000 in {countdown} seconds...</p>
+          ) : (
+            <p className="text-green-400 mt-2 font-bold animate-pulse">📞 CALLING 000 NOW...</p>
+          )}
+        </div>
+
+        {/* MEDICAL INFO CARD */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 mb-4 border-2 border-white/30">
+          <h2 className="text-xl font-bold text-center mb-4 text-yellow-300">⚕️ MEDICAL INFORMATION</h2>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between border-b border-white/20 pb-2">
+              <span className="text-red-200">NAME:</span>
+              <span className="font-bold text-2xl">{user.name}</span>
+            </div>
+            <div className="flex justify-between border-b border-white/20 pb-2">
+              <span className="text-red-200">BLOOD TYPE:</span>
+              <span className="font-bold text-xl text-yellow-300">{user.bloodType}</span>
+            </div>
+            <div className="border-b border-white/20 pb-2">
+              <span className="text-red-200">ALLERGIES:</span>
+              <p className="font-bold text-orange-300">{user.allergies}</p>
+            </div>
+            <div className="border-b border-white/20 pb-2">
+              <span className="text-red-200">CURRENT MEDICATIONS:</span>
+              <p className="font-bold">{user.medications}</p>
+            </div>
+            <div className="border-b border-white/20 pb-2">
+              <span className="text-red-200">MEDICAL CONDITIONS:</span>
+              <p className="font-bold text-yellow-300">{user.conditions}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* EMERGENCY CONTACTS */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 mb-4 border-2 border-green-500/50">
+          <h2 className="text-lg font-bold text-center mb-3 text-green-300">📞 EMERGENCY CONTACTS</h2>
+          
+          <div className="space-y-3">
+            <button className="w-full bg-green-600 hover:bg-green-500 rounded-xl p-3 flex items-center justify-between transition-colors">
+              <div className="text-left">
+                <p className="font-bold">{user.emergencyContact}</p>
+                <p className="text-green-200 text-sm">{user.emergencyPhone}</p>
+              </div>
+              <span className="text-2xl">📞</span>
+            </button>
+            
+            <button className="w-full bg-blue-600 hover:bg-blue-500 rounded-xl p-3 flex items-center justify-between transition-colors">
+              <div className="text-left">
+                <p className="font-bold">{user.doctorName}</p>
+                <p className="text-blue-200 text-sm">{user.doctorPhone}</p>
+              </div>
+              <span className="text-2xl">🏥</span>
+            </button>
+          </div>
+        </div>
+
+        {/* LOCATION */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 mb-4 border-2 border-cyan-500/50">
+          <h2 className="text-lg font-bold text-center mb-2 text-cyan-300">📍 CURRENT LOCATION</h2>
+          <p className="text-center">{user.address}</p>
+          <p className="text-center text-cyan-300 text-sm mt-1">GPS: -33.8688° S, 151.2093° E</p>
+        </div>
+
+        {/* CANCEL BUTTON */}
+        {!calling && (
+          <button
+            onClick={onCancel}
+            className="w-full bg-gray-700 hover:bg-gray-600 rounded-xl p-4 font-bold text-lg transition-colors"
+          >
+            ✋ I'M OK - CANCEL EMERGENCY
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// LOST PHONE SCREEN - Shows when phone is marked as lost
+export const LostPhoneScreen = ({ ownerInfo, onUnlock }) => {
+  const defaultOwner = {
+    message: 'This phone belongs to me. Please help me get it back!',
+    contactName: 'John Smith',
+    contactEmail: 'john.smith@email.com',
+    contactPhone: '0412 345 678',
+    reward: '$50 reward for safe return'
+  };
+
+  const owner = ownerInfo || defaultOwner;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-yellow-600 via-orange-700 to-red-800 text-white relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA0MCAwIEwgMCAwIDAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
+      </div>
+
+      <div className="relative z-10 p-6 flex flex-col items-center justify-center min-h-screen">
+        {/* LOST PHONE ICON */}
+        <div className="text-8xl mb-4 animate-bounce">📱</div>
+        
+        <h1 className="text-4xl font-black text-center mb-2">LOST PHONE</h1>
+        <p className="text-yellow-200 text-center mb-6">Please help return this phone to its owner</p>
+
+        {/* OWNER MESSAGE */}
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl p-6 mb-6 w-full max-w-sm border-2 border-white/30">
+          <p className="text-center text-lg italic">"{owner.message}"</p>
+        </div>
+
+        {/* CONTACT INFO */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 mb-4 w-full max-w-sm border-2 border-green-400/50">
+          <h2 className="text-lg font-bold text-center mb-4 text-green-300">📞 CONTACT OWNER</h2>
+          
+          <div className="space-y-3">
+            <div className="text-center">
+              <p className="text-yellow-200 text-sm">Owner Name</p>
+              <p className="font-bold text-xl">{owner.contactName}</p>
+            </div>
+            
+            <button className="w-full bg-green-600 hover:bg-green-500 rounded-xl p-3 flex items-center justify-center space-x-2 transition-colors">
+              <span className="text-xl">📞</span>
+              <span className="font-bold">{owner.contactPhone}</span>
+            </button>
+            
+            <button className="w-full bg-blue-600 hover:bg-blue-500 rounded-xl p-3 flex items-center justify-center space-x-2 transition-colors">
+              <span className="text-xl">✉️</span>
+              <span className="font-bold">{owner.contactEmail}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* REWARD */}
+        <div className="bg-green-500/30 backdrop-blur-xl rounded-2xl p-4 mb-6 w-full max-w-sm border-2 border-green-400">
+          <p className="text-center font-bold text-xl text-green-200">🎁 {owner.reward}</p>
+        </div>
+
+        {/* GPS STATUS */}
+        <div className="flex items-center space-x-2 text-yellow-300">
+          <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+          <span className="text-sm">GPS TRACKING ACTIVE - Location shared with owner</span>
+        </div>
+
+        {/* Hidden unlock for owner */}
+        <button
+          onClick={onUnlock}
+          className="mt-8 text-white/30 text-xs underline"
+        >
+          Owner? Enter pattern to unlock
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default {
   AegisNotification,
   AegisCalendar,
   useAegisNotifications,
-  InvisibleHomeScreen
+  InvisibleHomeScreen,
+  EmergencyMedicalScreen,
+  LostPhoneScreen
 };
