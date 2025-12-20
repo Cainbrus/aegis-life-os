@@ -771,13 +771,32 @@ export const useAegisNotifications = () => {
 };
 
 // The "Invisible" home screen - looks like a normal iOS/Android phone
-export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenApp }) => {
+export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenApp, onOpenChat }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [shakeCount, setShakeCount] = useState(0);
+  const [sosTriggered, setSosTriggered] = useState(false);
   
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // SOS Shake Detection (simulated with rapid taps for demo)
+  useEffect(() => {
+    if (shakeCount >= 5) {
+      setSosTriggered(true);
+      setShakeCount(0);
+      // In real app, this would send emergency alerts
+    }
+    
+    // Reset shake count after 2 seconds of no shakes
+    const resetTimer = setTimeout(() => setShakeCount(0), 2000);
+    return () => clearTimeout(resetTimer);
+  }, [shakeCount]);
+
+  const handleSosArea = () => {
+    setShakeCount(prev => prev + 1);
+  };
   
   const timeString = currentTime.toLocaleTimeString('en-US', { 
     hour: '2-digit', 
@@ -803,11 +822,64 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
     { name: 'Music', icon: '🎵', color: 'bg-gradient-to-br from-pink-500 to-red-500' },
     { name: 'Settings', icon: '⚙️', color: 'bg-gray-500' },
     { name: 'Calculator', icon: '🔢', color: 'bg-gray-700', action: 'calculator' }, // SECRET ACCESS TO AEGIS
-    { name: 'Clock', icon: '🕐', color: 'bg-black' },
+    { name: 'Aegis', icon: '💙', color: 'bg-gradient-to-br from-cyan-500 to-blue-600', action: 'chat' }, // CHAT WITH AEGIS
   ];
+
+  // SOS Triggered Screen
+  if (sosTriggered) {
+    return (
+      <div className="min-h-screen bg-red-900 text-white flex flex-col items-center justify-center p-6">
+        <div className="text-8xl mb-4 animate-pulse">🆘</div>
+        <h1 className="text-3xl font-black mb-4">SOS ACTIVATED!</h1>
+        <p className="text-center text-red-200 mb-6">
+          Sending your location to emergency contacts...
+          <br />Live tracking enabled.
+        </p>
+        <div className="w-full max-w-xs space-y-3">
+          <div className="bg-white/10 rounded-xl p-3 flex items-center justify-between">
+            <span>📍 Location sent</span>
+            <span className="text-green-400">✓</span>
+          </div>
+          <div className="bg-white/10 rounded-xl p-3 flex items-center justify-between">
+            <span>📱 Alerting Sarah (Wife)</span>
+            <span className="text-green-400">✓</span>
+          </div>
+          <div className="bg-white/10 rounded-xl p-3 flex items-center justify-between">
+            <span>🏥 Sharing medical info</span>
+            <span className="text-green-400">✓</span>
+          </div>
+        </div>
+        <button
+          onClick={() => setSosTriggered(false)}
+          className="mt-8 bg-white/20 hover:bg-white/30 px-8 py-4 rounded-xl font-bold transition-colors"
+        >
+          ✋ FALSE ALARM - Cancel
+        </button>
+        <button
+          onClick={() => setSosTriggered(false)}
+          className="mt-4 bg-red-600 hover:bg-red-500 px-8 py-4 rounded-xl font-bold transition-colors"
+        >
+          📞 Call 000 Now
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-800 via-slate-900 to-black text-white relative overflow-hidden">
+      {/* SOS Trigger Area - Tap 5 times rapidly */}
+      <div 
+        className="absolute top-0 right-0 w-20 h-20 z-50"
+        onClick={handleSosArea}
+      />
+      
+      {/* Shake counter indicator (subtle) */}
+      {shakeCount > 0 && shakeCount < 5 && (
+        <div className="absolute top-4 right-4 z-50 bg-red-500/20 text-red-400 text-xs px-2 py-1 rounded-full">
+          SOS: {shakeCount}/5
+        </div>
+      )}
+
       {/* Animated wallpaper effect */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/2 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl -translate-x-1/2 animate-pulse"></div>
