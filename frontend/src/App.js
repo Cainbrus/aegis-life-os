@@ -726,7 +726,19 @@ const AegisTrapSystem = () => {
     }
   };
 
-  // Show landing page for new visitors
+  // Show loading while checking status
+  if (showLandingPage === null) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🛡️</div>
+          <div className="text-xl">Initializing Aegis...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show landing page for new visitors (onboarding not complete)
   if (showLandingPage) {
     return <LandingPage onGetStarted={handleGetStarted} />;
   }
@@ -736,21 +748,9 @@ const AegisTrapSystem = () => {
     return <WipeCompleteScreen />;
   }
 
-  // Show onboarding if not completed
+  // Show onboarding if not completed (after clicking "Initialize" from landing)
   if (onboardingComplete === false) {
     return <AegisOnboarding onComplete={handleOnboardingComplete} />;
-  }
-
-  // Show loading if onboarding status is still loading
-  if (onboardingComplete === null) {
-    return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🛡️</div>
-          <div className="text-xl">Initializing Aegis...</div>
-        </div>
-      </div>
-    );
   }
 
   // Show Pattern interface if not authenticated
