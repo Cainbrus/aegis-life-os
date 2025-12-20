@@ -549,6 +549,12 @@ const AegisTrapSystem = () => {
   const [onboardingComplete, setOnboardingComplete] = useState(null);
   const [wipeTriggered, setWipeTriggered] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(null); // null = loading, true = show landing, false = skip landing
+  
+  // LEARNING MODE & INVISIBLE MODE STATES
+  const [learningStatus, setLearningStatus] = useState(null); // { learning_complete: bool, invisible_mode: bool }
+  const [showLearningMode, setShowLearningMode] = useState(false);
+  const [showInvisibleMode, setShowInvisibleMode] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // Determine if trap mode is active
   const trapActive = authStatus?.security_state === "STATE_PHONE_UNLOCKED" && authStatus?.trap_mode;
@@ -557,6 +563,9 @@ const AegisTrapSystem = () => {
   // Initialize trap logging and photo capture
   const logAction = useTrapLogger(trapActive);
   const capturePhoto = useSilentPhotoCapture(trapActive);
+  
+  // Initialize notification system for invisible mode
+  const { currentNotification, dismissNotification, handleAction, triggerNotification } = useAegisNotifications();
 
   useEffect(() => {
     checkOnboardingStatus();
@@ -564,6 +573,37 @@ const AegisTrapSystem = () => {
     const interval = setInterval(loadAuthStatus, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  // Check learning status when onboarding is complete
+  useEffect(() => {
+    if (onboardingComplete) {
+      checkLearningStatus();
+    }
+  }, [onboardingComplete]);
+  
+  const checkLearningStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/learning/status`);
+      setLearningStatus(response.data);
+      
+      // Determine which mode to show
+      if (!response.data.learning_complete) {
+        setShowLearningMode(true);
+        setShowInvisibleMode(false);
+      } else if (response.data.invisible_mode) {
+        setShowLearningMode(false);
+        setShowInvisibleMode(true);
+      } else {
+        setShowLearningMode(false);
+        setShowInvisibleMode(false);
+      }
+    } catch (error) {
+      console.log('Learning status not found - starting fresh');
+      // New user - show learning mode after onboarding
+      setLearningStatus({ learning_complete: false, invisible_mode: false });
+      setShowLearningMode(true);
+    }
+  };
 
   const checkOnboardingStatus = async () => {
     try {
@@ -581,6 +621,28 @@ const AegisTrapSystem = () => {
       setOnboardingComplete(false);
       setShowLandingPage(true); // Show landing for new users
     }
+  };
+  
+  // Handle learning mode completion
+  const handleLearningComplete = () => {
+    setShowLearningMode(false);
+    setShowInvisibleMode(true);
+    setLearningStatus({ learning_complete: true, invisible_mode: true });
+    
+    // Trigger welcome notification for invisible mode
+    triggerNotification({
+      type: 'suggestion',
+      title: '🎉 Aegis Learning Complete!',
+      message: 'I now understand your patterns. I\'ll run invisibly in the background and only alert you when needed. Access me anytime via the Calculator secret code.',
+      actions: [
+        { id: 'got_it', label: 'Got it!', primary: true }
+      ]
+    });
+  };
+  
+  // Handle exiting invisible mode (via calculator vault)
+  const handleExitInvisibleMode = () => {
+    setShowInvisibleMode(false);
   };
 
   // Take photo periodically in trap mode
