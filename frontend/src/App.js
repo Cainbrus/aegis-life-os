@@ -928,6 +928,20 @@ const AegisTrapSystem = () => {
       return <HealthDashboard onClose={() => setShowHealthDashboard(false)} />;
     }
 
+    // Show Push Notification Settings
+    if (showPushSettings) {
+      return (
+        <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            <PushNotificationSettings 
+              isAuthenticated={isAuthenticated && ownerMode}
+              onClose={() => setShowPushSettings(false)}
+            />
+          </div>
+        </div>
+      );
+    }
+
     // Show Chat if requested
     if (showChat) {
       return (
