@@ -1,0 +1,27 @@
+{
+  "name": "Aegis - Your Digital Mate",
+  "short_name": "Aegis",
+  "description": "Hierarchical Proactive Intelligence - Your invisible guardian that protects, assists, and thinks ahead.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#06b6d4",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230f172a' width='192' height='192' rx='32'/><path fill='%2306b6d4' d='M96 24L40 52v44c0 35 24 68 56 84 32-16 56-49 56-84V52L96 24zm0 20l40 20v32c0 26-18 50-40 62-22-12-40-36-40-62V64l40-20z'/><circle fill='%2306b6d4' cx='96' cy='100' r='20'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%230f172a' width='512' height='512' rx='64'/><path fill='%2306b6d4' d='M256 64L107 139v117c0 93 64 181 149 224 85-43 149-131 149-224V139L256 64zm0 53l107 53v85c0 69-48 133-107 165-59-32-107-96-107-165v-85l107-53z'/><circle fill='%2306b6d4' cx='256' cy='267' r='53'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["security", "productivity", "utilities"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
