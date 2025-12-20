@@ -852,6 +852,22 @@ const AegisTrapSystem = () => {
   // Access Aegis via Calculator secret code
   // =============================================
   if (showInvisibleMode && isAuthenticated) {
+    // Show Chat if requested
+    if (showChat) {
+      return (
+        <>
+          <AegisChat onClose={() => setShowChat(false)} />
+          {currentNotification && (
+            <AegisNotification
+              notification={currentNotification}
+              onDismiss={dismissNotification}
+              onAction={handleAction}
+            />
+          )}
+        </>
+      );
+    }
+
     // Show Calendar if requested
     if (showCalendar) {
       return (
@@ -897,6 +913,7 @@ const AegisTrapSystem = () => {
         <InvisibleHomeScreen
           onOpenCalculator={() => setCurrentApp('calculator')}
           onOpenCalendar={() => setShowCalendar(true)}
+          onOpenChat={() => setShowChat(true)}
           onOpenApp={(appName) => {
             // Log app opens even in invisible mode
             logAction("app_opened_invisible_mode", appName, { 
