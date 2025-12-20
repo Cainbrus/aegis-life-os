@@ -385,6 +385,107 @@ const AegisOnboarding = ({ onComplete }) => {
     </div>
   );
 
+  const renderDestroyMode = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="text-6xl mb-4">💀</div>
+        <h2 className="text-3xl font-bold mb-4 text-red-400">Destroy Mode Setup</h2>
+        <p className="text-slate-300 max-w-2xl mx-auto">
+          The ultimate protection. If your phone falls into the wrong hands, 
+          send a secret code to remotely wipe everything and backup your data.
+        </p>
+      </div>
+
+      {/* How it works */}
+      <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-6 max-w-2xl mx-auto">
+        <h3 className="font-semibold text-red-300 mb-4">⚠️ How Destroy Mode Works:</h3>
+        <div className="space-y-3 text-sm">
+          <div className="flex items-start space-x-3">
+            <span className="text-red-400">1.</span>
+            <span className="text-slate-300">Send your secret destroy code via SMS to your phone</span>
+          </div>
+          <div className="flex items-start space-x-3">
+            <span className="text-red-400">2.</span>
+            <span className="text-slate-300">Aegis immediately backs up ALL your data to your secret email</span>
+          </div>
+          <div className="flex items-start space-x-3">
+            <span className="text-red-400">3.</span>
+            <span className="text-slate-300">Complete wipe - photos, messages, apps, everything GONE</span>
+          </div>
+          <div className="flex items-start space-x-3">
+            <span className="text-red-400">4.</span>
+            <span className="text-slate-300">Phone resets to factory settings - looks brand new</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Destroy Code Setup */}
+      <div className="bg-slate-800 rounded-lg p-6 max-w-2xl mx-auto">
+        <h3 className="font-semibold mb-3 text-red-300">🔑 Remote Destroy Code</h3>
+        <p className="text-sm text-slate-400 mb-4">
+          This is the secret code you'll text to your phone to trigger destruction.
+          Make it unique and memorable - you'll need it in an emergency!
+        </p>
+        <input
+          type="text"
+          value={setupData.destroyCode}
+          onChange={(e) => setSetupData(prev => ({...prev, destroyCode: e.target.value}))}
+          placeholder="e.g., DESTROY-AEGIS-NOW-2024"
+          className="w-full bg-slate-700 border border-red-600/50 rounded px-3 py-2 text-white font-mono"
+        />
+        <div className="text-xs text-red-400 mt-2">
+          💡 Tip: Use a phrase no one else would guess
+        </div>
+      </div>
+
+      {/* Backup Email */}
+      <div className="bg-slate-800 rounded-lg p-6 max-w-2xl mx-auto">
+        <h3 className="font-semibold mb-3 text-green-300">📧 Secret Backup Email</h3>
+        <p className="text-sm text-slate-400 mb-4">
+          Before wiping, Aegis will send a complete backup of your data to this email.
+          Use a secret email that ONLY YOU know about.
+        </p>
+        <input
+          type="email"
+          value={setupData.backupEmail}
+          onChange={(e) => setSetupData(prev => ({...prev, backupEmail: e.target.value}))}
+          placeholder="your-secret-backup@email.com"
+          className="w-full bg-slate-700 border border-green-600/50 rounded px-3 py-2 text-white"
+        />
+        <div className="text-xs text-green-400 mt-2">
+          🔒 This email is encrypted and never shown anywhere on the device
+        </div>
+      </div>
+
+      {/* Confirmation Phrase */}
+      <div className="bg-slate-800 rounded-lg p-6 max-w-2xl mx-auto">
+        <h3 className="font-semibold mb-3 text-yellow-300">✋ Safety Confirmation Phrase</h3>
+        <p className="text-sm text-slate-400 mb-4">
+          After receiving the destroy code, Aegis gives you 60 seconds to cancel.
+          Say this phrase to confirm the wipe (prevents accidental triggers).
+        </p>
+        <input
+          type="text"
+          value={setupData.destroyConfirmPhrase}
+          onChange={(e) => setSetupData(prev => ({...prev, destroyConfirmPhrase: e.target.value}))}
+          placeholder="e.g., Confirm total destruction"
+          className="w-full bg-slate-700 border border-yellow-600/50 rounded px-3 py-2 text-white"
+        />
+      </div>
+
+      {/* Warning */}
+      <div className="text-center">
+        <div className="bg-red-900/50 border-2 border-red-500 rounded-lg p-4 inline-block max-w-md">
+          <div className="text-red-300 font-bold mb-2">⚠️ IRREVERSIBLE ACTION</div>
+          <div className="text-sm text-red-200">
+            Once triggered, destroy mode cannot be stopped after confirmation. 
+            Your backup email is your only way to recover data.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderCompletion = () => (
     <div className="text-center space-y-6">
       <div className="text-8xl mb-6">🎉</div>
@@ -402,7 +503,7 @@ const AegisOnboarding = ({ onComplete }) => {
             <div>🎤 Voice Interface with "{setupData.customWakeName}"</div>
             <div>🧮 Calculator Secret Handshake</div>
             <div>🆘 Emergency Duress Protocols</div>
-            <div>👆 Behavioral Baseline Established</div>
+            <div>💀 Destroy Mode Armed</div>
             <div>🧠 Proactive Intelligence Active</div>
           </div>
         </div>
@@ -419,6 +520,15 @@ const AegisOnboarding = ({ onComplete }) => {
           </div>
         </div>
       </div>
+
+      {setupData.destroyCode && (
+        <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-4 max-w-md mx-auto">
+          <div className="text-red-300 font-semibold mb-2">💀 Destroy Mode Ready</div>
+          <div className="text-sm text-red-200">
+            Text "<span className="font-mono">{setupData.destroyCode}</span>" to trigger remote wipe
+          </div>
+        </div>
+      )}
     </div>
   );
 
