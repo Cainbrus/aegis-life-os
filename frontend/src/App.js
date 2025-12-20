@@ -8,7 +8,7 @@ import WipeMode, { WipeCompleteScreen } from './components/WipeMode';
 import LandingPage from './components/LandingPage';
 import './App.css';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Trap logging hook
 const useTrapLogger = (trapActive) => {
