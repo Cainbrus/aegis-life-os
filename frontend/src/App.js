@@ -859,6 +859,26 @@ const AegisTrapSystem = () => {
   // Access Aegis via Calculator secret code
   // =============================================
   if (showInvisibleMode && isAuthenticated) {
+    // Show Meeting Summary
+    if (showMeetingSummary) {
+      return <MeetingSummaryScreen onClose={() => setShowMeetingSummary(false)} />;
+    }
+
+    // Show Financial Dashboard
+    if (showFinanceDashboard) {
+      return <FinancialDashboard onClose={() => setShowFinanceDashboard(false)} />;
+    }
+
+    // Show Family Tracker
+    if (showFamilyTracker) {
+      return <FamilyTrackerDashboard onClose={() => setShowFamilyTracker(false)} />;
+    }
+
+    // Show Health Dashboard
+    if (showHealthDashboard) {
+      return <HealthDashboard onClose={() => setShowHealthDashboard(false)} />;
+    }
+
     // Show Chat if requested
     if (showChat) {
       return (
