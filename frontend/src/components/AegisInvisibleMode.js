@@ -383,39 +383,75 @@ export const useAegisNotifications = () => {
   // Demo notifications for investor presentations - memoized
   const demoNotifications = useMemo(() => [
     {
-      type: 'calendar',
-      title: '📅 Upcoming Meeting',
-      message: 'Team Meeting in 15 minutes. Conference Room B. Shall I prepare your notes?',
+      type: 'privacy',
+      title: '🔒 Privacy Protection',
+      message: 'I noticed some adult content in your browser history. I\'ve already deleted it to keep your device clean. You\'re welcome 😉',
       actions: [
-        { id: 'prepare', label: 'Prepare Notes', primary: true },
-        { id: 'dismiss', label: 'Dismiss' }
+        { id: 'thanks', label: 'Thanks Aegis!', primary: true },
+        { id: 'settings', label: 'Adjust Settings' }
       ]
     },
     {
       type: 'security',
-      title: '🚨 Security Alert',
-      message: 'Unusual login attempt detected from new device. Was this you?',
+      title: '⚠️ Unknown Contact Detected',
+      message: 'You received a message from an unknown number asking for personal info. Want me to delete it or move it to your Hidden Folder for review?',
       actions: [
-        { id: 'yes', label: 'Yes, it was me', primary: false },
-        { id: 'no', label: 'No, block it!', primary: true }
+        { id: 'delete', label: 'Delete It', primary: true },
+        { id: 'hide', label: 'Move to Hidden' }
       ]
     },
     {
       type: 'suggestion',
-      title: '💡 Smart Suggestion',
-      message: 'Based on your schedule, you should leave for your appointment in 20 minutes to avoid traffic.',
+      title: '🎉 Party Content Secured',
+      message: 'I found photos and messages about the party this weekend. I\'ve moved them all to your Hidden Folder so no one sees them accidentally.',
       actions: [
-        { id: 'thanks', label: 'Thanks!', primary: true },
-        { id: 'snooze', label: 'Remind me later' }
+        { id: 'view', label: 'View in Vault', primary: true },
+        { id: 'ok', label: 'Perfect, thanks!' }
+      ]
+    },
+    {
+      type: 'calendar',
+      title: '📅 Upcoming Meeting',
+      message: 'Team Meeting in 15 minutes. Conference Room B. I\'ve prepared your notes - want me to display them?',
+      actions: [
+        { id: 'prepare', label: 'Show Notes', primary: true },
+        { id: 'dismiss', label: 'Dismiss' }
       ]
     },
     {
       type: 'privacy',
-      title: '🔒 Privacy Protection Active',
-      message: 'A new app requested access to your photos. Aegis blocked it based on your preferences.',
+      title: '🛡️ Sensitive Photo Detected',
+      message: 'Someone just sent you a photo that looks private. I\'ve automatically moved it to your secure vault. Only you can access it.',
       actions: [
-        { id: 'review', label: 'Review', primary: true },
-        { id: 'dismiss', label: 'OK' }
+        { id: 'view', label: 'View in Vault', primary: true },
+        { id: 'ok', label: 'Good looking out!' }
+      ]
+    },
+    {
+      type: 'security',
+      title: '🚨 Suspicious App Blocked',
+      message: 'An app tried to access your camera in the background. I blocked it. This doesn\'t seem right - want me to uninstall it?',
+      actions: [
+        { id: 'uninstall', label: 'Uninstall It', primary: true },
+        { id: 'allow', label: 'It\'s OK, Allow' }
+      ]
+    },
+    {
+      type: 'suggestion',
+      title: '💡 Smart Cleanup',
+      message: 'I noticed you have 47 screenshots of conversations. Want me to move the sensitive ones to your Hidden Folder and delete the rest?',
+      actions: [
+        { id: 'cleanup', label: 'Yes, Clean Up', primary: true },
+        { id: 'later', label: 'Maybe Later' }
+      ]
+    },
+    {
+      type: 'privacy',
+      title: '🔐 Late Night Activity Hidden',
+      message: 'I see you were browsing some things at 2am last night. Don\'t worry - I\'ve cleared the history and moved any downloads to your vault.',
+      actions: [
+        { id: 'thanks', label: 'You\'re the best!', primary: true },
+        { id: 'view', label: 'Show me what' }
       ]
     }
   ], []);
