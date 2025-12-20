@@ -566,6 +566,7 @@ const AegisTrapSystem = () => {
   const [showFinanceDashboard, setShowFinanceDashboard] = useState(false);
   const [showFamilyTracker, setShowFamilyTracker] = useState(false);
   const [showHealthDashboard, setShowHealthDashboard] = useState(false);
+  const [showPushSettings, setShowPushSettings] = useState(false);
 
   // Determine if trap mode is active
   const trapActive = authStatus?.security_state === "STATE_PHONE_UNLOCKED" && authStatus?.trap_mode;
@@ -577,6 +578,9 @@ const AegisTrapSystem = () => {
   
   // Initialize notification system for invisible mode
   const { currentNotification, dismissNotification, handleAction: baseHandleAction, triggerNotification } = useAegisNotifications();
+  
+  // Initialize push notifications
+  const pushNotifications = usePushNotifications(isAuthenticated && ownerMode);
 
   // Custom action handler that opens interactive screens
   const handleAction = useCallback((actionId) => {
