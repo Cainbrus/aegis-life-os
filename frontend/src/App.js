@@ -10,6 +10,7 @@ import AegisLogo, { AegisLogoCompact } from './components/AegisLogo';
 import AegisLearningMode from './components/AegisLearningMode';
 import { AegisNotification, AegisCalendar, InvisibleHomeScreen, useAegisNotifications } from './components/AegisInvisibleMode';
 import AegisChat from './components/AegisChat';
+import { MeetingSummaryScreen, FinancialDashboard, FamilyTrackerDashboard, HealthDashboard } from './components/InteractiveScreens';
 import './App.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
