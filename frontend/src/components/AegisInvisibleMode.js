@@ -771,7 +771,7 @@ export const useAegisNotifications = () => {
 };
 
 // The "Invisible" home screen - looks like a normal iOS/Android phone
-export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenApp, onOpenChat }) => {
+export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenApp, onOpenChat, onOpenSettings }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [shakeCount, setShakeCount] = useState(0);
   const [sosTriggered, setSosTriggered] = useState(false);
@@ -820,7 +820,7 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
     { name: 'Calendar', icon: '📅', color: 'bg-white text-red-500', action: 'calendar' },
     { name: 'Notes', icon: '📝', color: 'bg-yellow-400' },
     { name: 'Music', icon: '🎵', color: 'bg-gradient-to-br from-pink-500 to-red-500' },
-    { name: 'Settings', icon: '⚙️', color: 'bg-gray-500' },
+    { name: 'Settings', icon: '⚙️', color: 'bg-gray-500', action: 'settings' }, // Opens notification settings
     { name: 'Calculator', icon: '🔢', color: 'bg-gray-700', action: 'calculator' }, // SECRET ACCESS TO AEGIS
     { name: 'Aegis', icon: '💙', color: 'bg-gradient-to-br from-cyan-500 to-blue-600', action: 'chat' }, // CHAT WITH AEGIS
   ];
