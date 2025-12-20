@@ -1,262 +1,367 @@
 import React from 'react';
 
-// Aegis Digital Mate Logo Component
-// Shield with digital arm shaking human hand
-// "Digital" above, "Mate" below
-// Border text: "Better be safe than sorry"
+// AEGIS DIGITAL MATE - BOLD 3D SHIELD LOGO
+// Dramatic, electronic, "in your face" design
 
 const AegisLogo = ({ size = 200, showText = true, className = "" }) => {
-  const scale = size / 200;
-  
   return (
     <div className={`flex flex-col items-center ${className}`}>
       {showText && (
-        <div className="text-cyan-400 font-bold text-xl tracking-widest mb-2 font-mono animate-pulse">
-          DIGITAL
+        <div className="relative mb-4">
+          <div className="text-3xl font-black tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 animate-pulse drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
+            DIGITAL
+          </div>
+          <div className="absolute inset-0 text-3xl font-black tracking-[0.3em] text-cyan-400 blur-sm opacity-50">
+            DIGITAL
+          </div>
         </div>
       )}
       
-      <svg 
-        width={size} 
-        height={size * 1.1} 
-        viewBox="0 0 200 220" 
-        className="drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]"
-      >
-        {/* Definitions for gradients and filters */}
-        <defs>
-          {/* Shield gradient */}
-          <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#0f172a" />
-            <stop offset="50%" stopColor="#1e3a5f" />
-            <stop offset="100%" stopColor="#0f172a" />
-          </linearGradient>
-          
-          {/* Shield border gradient */}
-          <linearGradient id="borderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#06b6d4" />
-            <stop offset="50%" stopColor="#8b5cf6" />
-            <stop offset="100%" stopColor="#06b6d4" />
-          </linearGradient>
-          
-          {/* Digital arm gradient */}
-          <linearGradient id="digitalArmGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#06b6d4" />
-            <stop offset="100%" stopColor="#3b82f6" />
-          </linearGradient>
-          
-          {/* Human arm gradient */}
-          <linearGradient id="humanArmGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fcd34d" />
-            <stop offset="100%" stopColor="#f59e0b" />
-          </linearGradient>
-          
-          {/* Glow filter */}
-          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-          
-          {/* Circuit pattern */}
-          <pattern id="circuitPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M0 10 L10 10 M10 0 L10 10 M10 10 L20 10" stroke="#06b6d4" strokeWidth="0.5" fill="none" opacity="0.3"/>
-            <circle cx="10" cy="10" r="1" fill="#06b6d4" opacity="0.5"/>
-          </pattern>
-        </defs>
+      <div className="relative" style={{ width: size, height: size * 1.2 }}>
+        {/* Outer glow effects */}
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 blur-3xl opacity-30 animate-pulse"></div>
         
-        {/* Shield shape - outer glow */}
-        <path
-          d="M100 10 L180 40 L180 100 C180 150 140 190 100 210 C60 190 20 150 20 100 L20 40 Z"
-          fill="none"
-          stroke="url(#borderGradient)"
-          strokeWidth="4"
-          filter="url(#glow)"
-          className="animate-pulse"
-        />
-        
-        {/* Shield background */}
-        <path
-          d="M100 15 L175 43 L175 100 C175 147 137 185 100 204 C63 185 25 147 25 100 L25 43 Z"
-          fill="url(#shieldGradient)"
-        />
-        
-        {/* Circuit pattern overlay */}
-        <path
-          d="M100 15 L175 43 L175 100 C175 147 137 185 100 204 C63 185 25 147 25 100 L25 43 Z"
-          fill="url(#circuitPattern)"
-          opacity="0.5"
-        />
-        
-        {/* Shield border */}
-        <path
-          d="M100 15 L175 43 L175 100 C175 147 137 185 100 204 C63 185 25 147 25 100 L25 43 Z"
-          fill="none"
-          stroke="url(#borderGradient)"
-          strokeWidth="3"
-        />
-        
-        {/* Handshake - Digital Arm (left side, coming from shield) */}
-        <g filter="url(#glow)">
-          {/* Digital forearm */}
+        <svg 
+          width={size} 
+          height={size * 1.2} 
+          viewBox="0 0 200 240" 
+          className="relative z-10 drop-shadow-[0_0_30px_rgba(6,182,212,0.6)]"
+        >
+          <defs>
+            {/* 3D Shield gradient - dark metallic */}
+            <linearGradient id="shield3DMain" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#1a1a2e" />
+              <stop offset="25%" stopColor="#16213e" />
+              <stop offset="50%" stopColor="#0f3460" />
+              <stop offset="75%" stopColor="#16213e" />
+              <stop offset="100%" stopColor="#1a1a2e" />
+            </linearGradient>
+            
+            {/* Metallic edge highlight */}
+            <linearGradient id="shieldEdge" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#06b6d4" />
+              <stop offset="30%" stopColor="#ffffff" />
+              <stop offset="50%" stopColor="#06b6d4" />
+              <stop offset="70%" stopColor="#ffffff" />
+              <stop offset="100%" stopColor="#8b5cf6" />
+            </linearGradient>
+            
+            {/* Neon cyan glow */}
+            <linearGradient id="neonCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#22d3ee" />
+              <stop offset="50%" stopColor="#06b6d4" />
+              <stop offset="100%" stopColor="#0891b2" />
+            </linearGradient>
+            
+            {/* Electric purple */}
+            <linearGradient id="electricPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#a855f7" />
+              <stop offset="100%" stopColor="#7c3aed" />
+            </linearGradient>
+            
+            {/* Digital arm - metallic chrome */}
+            <linearGradient id="digitalArmChrome" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#06b6d4" />
+              <stop offset="25%" stopColor="#67e8f9" />
+              <stop offset="50%" stopColor="#06b6d4" />
+              <stop offset="75%" stopColor="#22d3ee" />
+              <stop offset="100%" stopColor="#0891b2" />
+            </linearGradient>
+            
+            {/* Human hand - warm tones */}
+            <linearGradient id="humanHandWarm" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#fbbf24" />
+              <stop offset="50%" stopColor="#f59e0b" />
+              <stop offset="100%" stopColor="#d97706" />
+            </linearGradient>
+            
+            {/* Intense glow filter */}
+            <filter id="intenseGlow" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="4" result="blur1"/>
+              <feGaussianBlur stdDeviation="8" result="blur2"/>
+              <feMerge>
+                <feMergeNode in="blur2"/>
+                <feMergeNode in="blur1"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+            
+            {/* Circuit board pattern */}
+            <pattern id="circuitBold" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+              <rect width="30" height="30" fill="transparent"/>
+              <path d="M0 15 L15 15 L15 0 M15 15 L15 30 M15 15 L30 15" stroke="#06b6d4" strokeWidth="0.8" fill="none" opacity="0.4"/>
+              <circle cx="15" cy="15" r="2" fill="#22d3ee" opacity="0.6"/>
+              <circle cx="0" cy="15" r="1" fill="#06b6d4" opacity="0.4"/>
+              <circle cx="30" cy="15" r="1" fill="#06b6d4" opacity="0.4"/>
+              <circle cx="15" cy="0" r="1" fill="#06b6d4" opacity="0.4"/>
+              <circle cx="15" cy="30" r="1" fill="#06b6d4" opacity="0.4"/>
+            </pattern>
+            
+            {/* Scan line effect */}
+            <pattern id="scanLines" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+              <rect width="4" height="2" fill="rgba(6, 182, 212, 0.1)"/>
+            </pattern>
+          </defs>
+          
+          {/* OUTER SHIELD SHADOW (3D depth) */}
           <path
-            d="M45 95 L70 100 L75 95 L80 100 L85 95"
-            stroke="url(#digitalArmGradient)"
-            strokeWidth="8"
-            strokeLinecap="round"
+            d="M100 15 L180 50 L180 115 C180 170 140 210 100 230 C60 210 20 170 20 115 L20 50 Z"
+            fill="#000"
+            opacity="0.5"
+            transform="translate(5, 5)"
+          />
+          
+          {/* SHIELD BACK LAYER (3D effect) */}
+          <path
+            d="M100 15 L180 50 L180 115 C180 170 140 210 100 230 C60 210 20 170 20 115 L20 50 Z"
+            fill="#0a0a1a"
+            stroke="#1e3a5f"
+            strokeWidth="2"
+          />
+          
+          {/* MAIN SHIELD BODY */}
+          <path
+            d="M100 20 L175 52 L175 113 C175 165 137 203 100 222 C63 203 25 165 25 113 L25 52 Z"
+            fill="url(#shield3DMain)"
+          />
+          
+          {/* Circuit pattern overlay */}
+          <path
+            d="M100 20 L175 52 L175 113 C175 165 137 203 100 222 C63 203 25 165 25 113 L25 52 Z"
+            fill="url(#circuitBold)"
+          />
+          
+          {/* Scan lines overlay */}
+          <path
+            d="M100 20 L175 52 L175 113 C175 165 137 203 100 222 C63 203 25 165 25 113 L25 52 Z"
+            fill="url(#scanLines)"
+          />
+          
+          {/* SHIELD EDGE - NEON BORDER */}
+          <path
+            d="M100 20 L175 52 L175 113 C175 165 137 203 100 222 C63 203 25 165 25 113 L25 52 Z"
             fill="none"
+            stroke="url(#shieldEdge)"
+            strokeWidth="4"
+            filter="url(#intenseGlow)"
           />
           
-          {/* Digital hand */}
+          {/* Inner edge highlight */}
           <path
-            d="M85 95 
-               L95 90 L98 85 L95 90
-               L100 88 L103 82 L100 88
-               L105 90 L108 85 L105 90
-               L108 95 L105 100
-               L95 105 L85 100"
-            fill="url(#digitalArmGradient)"
-            stroke="#0ea5e9"
-            strokeWidth="1"
-          />
-          
-          {/* Circuit lines on digital arm */}
-          <path
-            d="M50 95 L55 92 M55 98 L60 95 M65 100 L70 97"
-            stroke="#22d3ee"
-            strokeWidth="1"
-            opacity="0.8"
-          />
-          
-          {/* LED dots on digital arm */}
-          <circle cx="52" cy="95" r="2" fill="#22d3ee" className="animate-pulse"/>
-          <circle cx="62" cy="97" r="1.5" fill="#22d3ee" className="animate-pulse" style={{animationDelay: '0.5s'}}/>
-          <circle cx="72" cy="96" r="1.5" fill="#06b6d4" className="animate-pulse" style={{animationDelay: '1s'}}/>
-        </g>
-        
-        {/* Handshake - Human Arm (right side) */}
-        <g>
-          {/* Human forearm */}
-          <path
-            d="M155 95 L130 100 L125 98"
-            stroke="url(#humanArmGradient)"
-            strokeWidth="10"
-            strokeLinecap="round"
+            d="M100 28 L168 56 L168 112 C168 158 134 193 100 210 C66 193 32 158 32 112 L32 56 Z"
             fill="none"
-          />
-          
-          {/* Human hand */}
-          <path
-            d="M125 98
-               L115 93 L112 88 L115 93
-               L110 90 L107 84 L110 90
-               L105 92 L102 87 L105 92
-               L103 97 L105 102
-               L115 107 L125 103"
-            fill="url(#humanArmGradient)"
-            stroke="#d97706"
+            stroke="rgba(6, 182, 212, 0.3)"
             strokeWidth="1"
           />
-        </g>
-        
-        {/* Connection spark/energy at handshake point */}
-        <g filter="url(#glow)">
-          <circle cx="105" cy="95" r="8" fill="none" stroke="#22d3ee" strokeWidth="1" opacity="0.5" className="animate-ping"/>
-          <circle cx="105" cy="95" r="4" fill="#22d3ee" opacity="0.8"/>
           
-          {/* Energy lines */}
-          <path d="M105 87 L105 83" stroke="#22d3ee" strokeWidth="1" opacity="0.6"/>
-          <path d="M105 103 L105 107" stroke="#22d3ee" strokeWidth="1" opacity="0.6"/>
-          <path d="M97 95 L93 95" stroke="#22d3ee" strokeWidth="1" opacity="0.6"/>
-          <path d="M113 95 L117 95" stroke="#22d3ee" strokeWidth="1" opacity="0.6"/>
-        </g>
-        
-        {/* Border text - "BETTER BE SAFE THAN SORRY" curved along shield edge */}
-        <defs>
-          <path id="topTextPath" d="M35 55 Q100 25 165 55" fill="none"/>
-          <path id="bottomTextPath" d="M40 170 Q100 200 160 170" fill="none"/>
-        </defs>
-        
-        <text fontSize="8" fill="#94a3b8" fontFamily="monospace" letterSpacing="1">
-          <textPath href="#topTextPath" startOffset="50%" textAnchor="middle">
-            BETTER BE SAFE
-          </textPath>
-        </text>
-        
-        <text fontSize="8" fill="#94a3b8" fontFamily="monospace" letterSpacing="1">
-          <textPath href="#bottomTextPath" startOffset="50%" textAnchor="middle">
-            THAN SORRY
-          </textPath>
-        </text>
-        
-        {/* "A" monogram in center top */}
-        <text x="100" y="65" textAnchor="middle" fontSize="24" fontWeight="bold" fill="url(#borderGradient)" fontFamily="monospace">
-          A
-        </text>
-        
-        {/* Decorative elements */}
-        <circle cx="100" cy="140" r="3" fill="#06b6d4" opacity="0.6" className="animate-pulse"/>
-        <circle cx="60" cy="120" r="2" fill="#8b5cf6" opacity="0.4" className="animate-pulse" style={{animationDelay: '0.3s'}}/>
-        <circle cx="140" cy="120" r="2" fill="#8b5cf6" opacity="0.4" className="animate-pulse" style={{animationDelay: '0.6s'}}/>
-      </svg>
+          {/* "BETTER BE SAFE" - Top arc text */}
+          <defs>
+            <path id="topArc" d="M40 65 Q100 30 160 65" fill="none"/>
+            <path id="bottomArc" d="M45 185 Q100 215 155 185" fill="none"/>
+          </defs>
+          
+          <text fontSize="9" fontWeight="bold" fill="#94a3b8" fontFamily="monospace" letterSpacing="2" filter="url(#intenseGlow)">
+            <textPath href="#topArc" startOffset="50%" textAnchor="middle">
+              BETTER BE SAFE
+            </textPath>
+          </text>
+          
+          <text fontSize="9" fontWeight="bold" fill="#94a3b8" fontFamily="monospace" letterSpacing="2" filter="url(#intenseGlow)">
+            <textPath href="#bottomArc" startOffset="50%" textAnchor="middle">
+              THAN SORRY
+            </textPath>
+          </text>
+          
+          {/* CENTER "A" MONOGRAM - BOLD */}
+          <text x="100" y="75" textAnchor="middle" fontSize="32" fontWeight="900" fill="url(#neonCyan)" fontFamily="monospace" filter="url(#intenseGlow)">
+            A
+          </text>
+          
+          {/* HANDSHAKE SECTION - More detailed and bold */}
+          <g transform="translate(0, 15)">
+            {/* Energy field behind handshake */}
+            <ellipse cx="100" cy="115" rx="45" ry="25" fill="rgba(6, 182, 212, 0.1)" filter="url(#intenseGlow)"/>
+            
+            {/* DIGITAL ARM - Left side (chrome/metallic) */}
+            <g filter="url(#intenseGlow)">
+              {/* Arm base */}
+              <path
+                d="M35 115 L55 112 L65 115 L75 112 L85 115"
+                stroke="url(#digitalArmChrome)"
+                strokeWidth="12"
+                strokeLinecap="round"
+                fill="none"
+              />
+              
+              {/* Mechanical segments */}
+              <rect x="40" y="108" width="8" height="14" rx="2" fill="#0f172a" stroke="#22d3ee" strokeWidth="1"/>
+              <rect x="52" y="108" width="8" height="14" rx="2" fill="#0f172a" stroke="#22d3ee" strokeWidth="1"/>
+              <rect x="64" y="108" width="8" height="14" rx="2" fill="#0f172a" stroke="#22d3ee" strokeWidth="1"/>
+              
+              {/* LED indicators */}
+              <circle cx="44" cy="115" r="2" fill="#22d3ee" className="animate-pulse"/>
+              <circle cx="56" cy="115" r="2" fill="#06b6d4" className="animate-pulse" style={{animationDelay: '0.3s'}}/>
+              <circle cx="68" cy="115" r="2" fill="#22d3ee" className="animate-pulse" style={{animationDelay: '0.6s'}}/>
+              
+              {/* Digital hand */}
+              <path
+                d="M85 115 
+                   L95 108 L98 100 L96 108
+                   L100 106 L103 98 L101 106
+                   L105 108 L108 102 L106 108
+                   L110 115 L106 122
+                   L95 125 L85 120"
+                fill="url(#digitalArmChrome)"
+                stroke="#67e8f9"
+                strokeWidth="1.5"
+              />
+            </g>
+            
+            {/* HUMAN ARM - Right side (warm tones) */}
+            <g>
+              {/* Arm base */}
+              <path
+                d="M165 115 L145 112 L135 115 L125 112 L115 115"
+                stroke="url(#humanHandWarm)"
+                strokeWidth="14"
+                strokeLinecap="round"
+                fill="none"
+              />
+              
+              {/* Human hand */}
+              <path
+                d="M115 115
+                   L105 108 L102 100 L104 108
+                   L100 106 L97 98 L99 106
+                   L95 108 L92 102 L94 108
+                   L90 115 L94 122
+                   L105 125 L115 120"
+                fill="url(#humanHandWarm)"
+                stroke="#fcd34d"
+                strokeWidth="1.5"
+              />
+            </g>
+            
+            {/* CONNECTION POINT - Energy burst */}
+            <g filter="url(#intenseGlow)">
+              {/* Outer rings */}
+              <circle cx="100" cy="115" r="20" fill="none" stroke="#22d3ee" strokeWidth="0.5" opacity="0.3" className="animate-ping"/>
+              <circle cx="100" cy="115" r="15" fill="none" stroke="#06b6d4" strokeWidth="1" opacity="0.5"/>
+              <circle cx="100" cy="115" r="10" fill="none" stroke="#22d3ee" strokeWidth="1.5" opacity="0.7"/>
+              
+              {/* Core energy */}
+              <circle cx="100" cy="115" r="6" fill="#22d3ee" opacity="0.9"/>
+              <circle cx="100" cy="115" r="3" fill="#ffffff"/>
+              
+              {/* Energy sparks */}
+              <path d="M100 100 L100 95 M100 130 L100 135" stroke="#22d3ee" strokeWidth="2" opacity="0.8"/>
+              <path d="M85 115 L80 115 M115 115 L120 115" stroke="#22d3ee" strokeWidth="2" opacity="0.8"/>
+              <path d="M88 103 L83 98 M112 127 L117 132" stroke="#22d3ee" strokeWidth="1.5" opacity="0.6"/>
+              <path d="M112 103 L117 98 M88 127 L83 132" stroke="#22d3ee" strokeWidth="1.5" opacity="0.6"/>
+            </g>
+          </g>
+          
+          {/* Decorative corner accents */}
+          <g opacity="0.8">
+            <path d="M30 70 L30 60 L40 60" stroke="#06b6d4" strokeWidth="2" fill="none"/>
+            <path d="M170 70 L170 60 L160 60" stroke="#8b5cf6" strokeWidth="2" fill="none"/>
+            <path d="M50 195 L40 195 L40 185" stroke="#06b6d4" strokeWidth="2" fill="none"/>
+            <path d="M150 195 L160 195 L160 185" stroke="#8b5cf6" strokeWidth="2" fill="none"/>
+          </g>
+          
+          {/* Pulsing dots at corners */}
+          <circle cx="30" cy="60" r="3" fill="#22d3ee" className="animate-pulse"/>
+          <circle cx="170" cy="60" r="3" fill="#a855f7" className="animate-pulse" style={{animationDelay: '0.5s'}}/>
+          <circle cx="40" cy="195" r="3" fill="#22d3ee" className="animate-pulse" style={{animationDelay: '1s'}}/>
+          <circle cx="160" cy="195" r="3" fill="#a855f7" className="animate-pulse" style={{animationDelay: '1.5s'}}/>
+        </svg>
+      </div>
       
       {showText && (
-        <div className="text-cyan-400 font-bold text-xl tracking-widest mt-2 font-mono animate-pulse">
-          MATE
+        <div className="relative mt-4">
+          <div className="text-4xl font-black tracking-[0.4em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 animate-pulse drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
+            MATE
+          </div>
+          <div className="absolute inset-0 text-4xl font-black tracking-[0.4em] text-cyan-400 blur-sm opacity-50">
+            MATE
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-// Compact logo for header
+// COMPACT HEADER LOGO - Bold version
 export const AegisLogoCompact = ({ size = 50 }) => (
-  <div className="flex items-center space-x-2">
-    <svg 
-      width={size} 
-      height={size} 
-      viewBox="0 0 50 55" 
-      className="drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]"
-    >
-      <defs>
-        <linearGradient id="compactShieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#0f172a" />
-          <stop offset="100%" stopColor="#1e3a5f" />
-        </linearGradient>
-        <linearGradient id="compactBorderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#06b6d4" />
-          <stop offset="100%" stopColor="#8b5cf6" />
-        </linearGradient>
-      </defs>
-      
-      {/* Shield */}
-      <path
-        d="M25 3 L45 12 L45 28 C45 40 35 48 25 53 C15 48 5 40 5 28 L5 12 Z"
-        fill="url(#compactShieldGradient)"
-        stroke="url(#compactBorderGradient)"
-        strokeWidth="2"
-      />
-      
-      {/* Handshake icon simplified */}
-      <path
-        d="M15 28 L22 26 L25 28 L28 26 L35 28"
-        stroke="#06b6d4"
-        strokeWidth="2"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <circle cx="25" cy="28" r="3" fill="#22d3ee" opacity="0.8"/>
-      
-      {/* A letter */}
-      <text x="25" y="20" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#06b6d4" fontFamily="monospace">
-        A
-      </text>
-    </svg>
+  <div className="flex items-center space-x-3 group">
+    <div className="relative">
+      <div className="absolute inset-0 bg-cyan-500 blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
+      <svg 
+        width={size} 
+        height={size * 1.1} 
+        viewBox="0 0 50 55" 
+        className="relative drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]"
+      >
+        <defs>
+          <linearGradient id="compactGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#0f172a" />
+            <stop offset="100%" stopColor="#1e3a5f" />
+          </linearGradient>
+          <linearGradient id="compactEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#06b6d4" />
+            <stop offset="50%" stopColor="#ffffff" />
+            <stop offset="100%" stopColor="#8b5cf6" />
+          </linearGradient>
+          <filter id="compactGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        
+        {/* Shadow */}
+        <path
+          d="M25 5 L45 15 L45 30 C45 42 35 50 25 55 C15 50 5 42 5 30 L5 15 Z"
+          fill="#000"
+          opacity="0.3"
+          transform="translate(2, 2)"
+        />
+        
+        {/* Shield body */}
+        <path
+          d="M25 5 L45 15 L45 30 C45 42 35 50 25 55 C15 50 5 42 5 30 L5 15 Z"
+          fill="url(#compactGrad)"
+          stroke="url(#compactEdge)"
+          strokeWidth="2"
+          filter="url(#compactGlow)"
+        />
+        
+        {/* Handshake simplified */}
+        <path
+          d="M12 30 L20 28 L25 30 L30 28 L38 30"
+          stroke="#06b6d4"
+          strokeWidth="3"
+          strokeLinecap="round"
+          fill="none"
+          filter="url(#compactGlow)"
+        />
+        
+        {/* Center dot */}
+        <circle cx="25" cy="30" r="4" fill="#22d3ee" filter="url(#compactGlow)"/>
+        <circle cx="25" cy="30" r="2" fill="#ffffff"/>
+        
+        {/* A letter */}
+        <text x="25" y="22" textAnchor="middle" fontSize="12" fontWeight="900" fill="#22d3ee" fontFamily="monospace" filter="url(#compactGlow)">
+          A
+        </text>
+      </svg>
+    </div>
     
-    <div className="flex flex-col">
-      <span className="text-cyan-400 font-bold text-xs tracking-wider">DIGITAL</span>
-      <span className="text-cyan-300 font-bold text-lg tracking-widest leading-none">MATE</span>
+    <div className="flex flex-col leading-none">
+      <span className="text-cyan-400 font-black text-sm tracking-widest drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]">DIGITAL</span>
+      <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 font-black text-2xl tracking-wider drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">MATE</span>
     </div>
   </div>
 );
