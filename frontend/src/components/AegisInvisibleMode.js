@@ -405,6 +405,24 @@ export const useAegisNotifications = () => {
       ]
     },
     {
+      type: 'emergency',
+      title: '🚨 CRASH DETECTED!',
+      message: 'I detected a sudden impact. Are you OK? If no response in 30 seconds, I\'m calling 000 and sending your location + medical info to emergency services.',
+      actions: [
+        { id: 'im_ok', label: 'I\'m OK!', primary: true },
+        { id: 'help', label: 'SEND HELP NOW' }
+      ]
+    },
+    {
+      type: 'lost',
+      title: '📱 Lost Phone Mode Active',
+      message: 'Your phone has been marked as lost. GPS is now ON and tracking. Anyone who finds it will see your contact info and reward offer. Location shared with your emergency contacts.',
+      actions: [
+        { id: 'track', label: 'Track Location', primary: true },
+        { id: 'sound', label: 'Play Sound' }
+      ]
+    },
+    {
       type: 'privacy',
       title: '🔒 Privacy Protection',
       message: 'I noticed some adult content in your browser history. I\'ve already deleted it to keep your device clean. You\'re welcome 😉',
