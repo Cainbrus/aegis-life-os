@@ -106,20 +106,7 @@ export const AegisCalendar = ({ onClose }) => {
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [newEvent, setNewEvent] = useState({ title: '', time: '', description: '' });
 
-  useEffect(() => {
-    loadEvents();
-  }, []);
-
-  const loadEvents = async () => {
-    try {
-      const response = await axios.get(`${API}/calendar/events`);
-      setEvents(response.data.events || getDefaultEvents());
-    } catch (error) {
-      setEvents(getDefaultEvents());
-    }
-  };
-
-  const getDefaultEvents = () => {
+  const getDefaultEvents = useCallback(() => {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -128,6 +115,24 @@ export const AegisCalendar = ({ onClose }) => {
     
     return [
       { id: 1, title: '📊 Team Meeting', date: today.toISOString().split('T')[0], time: '10:00', description: 'Weekly sync - Conference Room B', priority: 'high' },
+      { id: 2, title: '🦷 Dentist Appointment', date: tomorrow.toISOString().split('T')[0], time: '14:30', description: 'Regular checkup', priority: 'medium' },
+      { id: 3, title: '🎂 Mom\'s Birthday', date: nextWeek.toISOString().split('T')[0], time: '00:00', description: 'Don\'t forget gift!', priority: 'high' },
+      { id: 4, title: '💼 Client Call', date: today.toISOString().split('T')[0], time: '15:00', description: 'Project review', priority: 'high' },
+      { id: 5, title: '🏋️ Gym Session', date: today.toISOString().split('T')[0], time: '18:00', description: 'Leg day', priority: 'low' },
+    ];
+  }, []);
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const response = await axios.get(`${API}/calendar/events`);
+        setEvents(response.data.events || getDefaultEvents());
+      } catch (error) {
+        setEvents(getDefaultEvents());
+      }
+    };
+    loadEvents();
+  }, [getDefaultEvents]);
       { id: 2, title: '🦷 Dentist Appointment', date: tomorrow.toISOString().split('T')[0], time: '14:30', description: 'Regular checkup', priority: 'medium' },
       { id: 3, title: '🎂 Mom\'s Birthday', date: nextWeek.toISOString().split('T')[0], time: '00:00', description: 'Don\'t forget gift!', priority: 'high' },
       { id: 4, title: '💼 Client Call', date: today.toISOString().split('T')[0], time: '15:00', description: 'Project review', priority: 'high' },
