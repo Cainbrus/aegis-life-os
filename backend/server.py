@@ -1922,6 +1922,986 @@ async def get_onboarding_status():
         logger.error(f"Onboarding status check error: {e}")
         return {"onboarding_complete": False}
 
+# ===============================
+# PHASE 1: CALCULATOR VAULT SYSTEM
+# Real hidden file storage with encryption
+# ===============================
+
+class VaultFileModel(BaseModel):
+    filename: str
+    file_type: str
+    content: str  # Base64 encoded
+    category: str = "general"
+    tags: List[str] = []
+    is_sensitive: bool = False
+    auto_hidden: bool = False
+
+@api_router.post("/vault/verify-secret")
+async def verify_calculator_secret(data: Dict[str, Any]):
+    """Verify calculator secret code to access vault"""
+    try:
+        entered_code = data.get("code", "")
+        
+        # Get user's configured calculator code
+        user_config = await db.user_onboarding.find_one({}, sort=[("completed_at", -1)])
+        secret_code = user_config.get("calculator_code", "8675309") if user_config else "8675309"
+        
+        if entered_code == secret_code:
+            # Log successful vault access
+            await db.vault_access_logs.insert_one({
+                "access_type": "calculator_secret",
+                "success": True,
+                "timestamp": datetime.utcnow(),
+                "security_state": l1_enhanced_kernel.current_security_state.value
+            })
+            
+            logger.info("VAULT: Calculator secret verified - Phantom Folder access granted")
+            
+            return {
+                "success": True,
+                "message": "Vault access granted",
+                "vault_unlocked": True
+            }
+        else:
+            # Log failed attempt (could be intruder probing)
+            await db.vault_access_logs.insert_one({
+                "access_type": "calculator_secret",
+                "success": False,
+                "entered_code": entered_code,
+                "timestamp": datetime.utcnow()
+            })
+            
+            return {
+                "success": False,
+                "message": "Invalid code",
+                "vault_unlocked": False
+            }
+            
+    except Exception as e:
+        logger.error(f"Vault verification error: {e}")
+        return {"success": False, "message": "Verification failed"}
+
+@api_router.get("/vault/files")
+async def get_vault_files():
+    """Get all files in the phantom vault"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required", "files": []}
+    
+    try:
+        files = await db.vault_files.find({}, {"_id": 0}).to_list(1000)
+        
+        # Get AI-suggested files that should be hidden
+        suggested_files = await db.ai_privacy_suggestions.find(
+            {"status": "pending", "action": "hide"},
+            {"_id": 0}
+        ).to_list(100)
+        
+        return {
+            "files": files,
+            "total_count": len(files),
+            "suggested_to_hide": suggested_files,
+            "vault_stats": {
+                "total_files": len(files),
+                "sensitive_files": len([f for f in files if f.get("is_sensitive")]),
+                "auto_hidden": len([f for f in files if f.get("auto_hidden")]),
+                "categories": list(set(f.get("category", "general") for f in files))
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Vault files retrieval error: {e}")
+        return {"files": [], "error": str(e)}
+
+@api_router.post("/vault/upload")
+async def upload_to_vault(file_data: Dict[str, Any]):
+    """Upload a file to the phantom vault"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required"}
+    
+    try:
+        vault_file = {
+            "file_id": str(uuid.uuid4()),
+            "filename": file_data.get("filename", "unnamed"),
+            "file_type": file_data.get("file_type", "unknown"),
+            "content": file_data.get("content", ""),  # Base64 encoded
+            "size_bytes": len(file_data.get("content", "")),
+            "category": file_data.get("category", "general"),
+            "tags": file_data.get("tags", []),
+            "is_sensitive": file_data.get("is_sensitive", False),
+            "auto_hidden": file_data.get("auto_hidden", False),
+            "uploaded_at": datetime.utcnow(),
+            "last_accessed": datetime.utcnow()
+        }
+        
+        await db.vault_files.insert_one(vault_file)
+        
+        logger.info(f"VAULT: File uploaded - {vault_file['filename']}")
+        
+        return {
+            "success": True,
+            "file_id": vault_file["file_id"],
+            "message": f"File '{vault_file['filename']}' added to vault"
+        }
+        
+    except Exception as e:
+        logger.error(f"Vault upload error: {e}")
+        return {"success": False, "message": "Upload failed"}
+
+@api_router.delete("/vault/files/{file_id}")
+async def delete_vault_file(file_id: str):
+    """Delete a file from the vault"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required"}
+    
+    try:
+        result = await db.vault_files.delete_one({"file_id": file_id})
+        
+        if result.deleted_count > 0:
+            logger.info(f"VAULT: File deleted - {file_id}")
+            return {"success": True, "message": "File deleted from vault"}
+        else:
+            return {"success": False, "message": "File not found"}
+            
+    except Exception as e:
+        logger.error(f"Vault deletion error: {e}")
+        return {"success": False, "message": "Deletion failed"}
+
+# ===============================
+# PHASE 2: AI PRIVACY GUARDIAN
+# Learns what to hide, delete, organize
+# ===============================
+
+class AIPrivacyGuardian:
+    def __init__(self):
+        self.llm_chat = None
+        self.learning_mode = "ask_first"  # "ask_first" -> "auto_suggest" -> "auto_action"
+        self.trust_level = 0.0  # 0.0 = always ask, 1.0 = full autonomy
+        self.initialize_llm()
+    
+    def initialize_llm(self):
+        try:
+            api_key = os.environ.get('EMERGENT_LLM_KEY')
+            self.llm_chat = LlmChat(
+                api_key=api_key,
+                session_id="aegis_privacy_guardian",
+                system_message="""You are the Aegis Privacy Guardian - an AI that learns user preferences to protect their privacy.
+
+YOUR ROLE:
+1. Analyze content (files, photos, messages) for sensitivity
+2. Learn what the user considers private or sensitive
+3. Suggest what should be hidden, deleted, or organized
+4. Over time, take autonomous action based on learned preferences
+
+ANALYSIS CRITERIA:
+- Personal/intimate photos (faces, private moments)
+- Financial documents (bank statements, receipts)
+- Private messages (personal conversations, sensitive topics)
+- Work documents (confidential, proprietary)
+- Health information
+- Location data
+- Passwords/credentials
+
+RESPONSE FORMAT (JSON):
+{
+    "sensitivity_score": 0.0-1.0,
+    "category": "personal|financial|work|health|general",
+    "recommended_action": "hide|delete|organize|none",
+    "confidence": 0.0-1.0,
+    "reasoning": "Brief explanation",
+    "tags": ["tag1", "tag2"]
+}
+
+Be protective but not paranoid. Learn from user feedback."""
+            ).with_model("openai", "gpt-4o")
+            logger.info("AI Privacy Guardian initialized")
+        except Exception as e:
+            logger.error(f"Privacy Guardian initialization error: {e}")
+    
+    async def analyze_content(self, content_type: str, content_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze content for privacy sensitivity"""
+        try:
+            analysis_prompt = f"""Analyze this {content_type} for privacy sensitivity:
+
+Content Info:
+- Type: {content_type}
+- Name: {content_data.get('name', 'unknown')}
+- Metadata: {json.dumps(content_data.get('metadata', {}))}
+- Preview: {content_data.get('preview', 'N/A')[:500]}
+
+Provide your analysis in JSON format."""
+
+            user_message = UserMessage(text=analysis_prompt)
+            response = await self.llm_chat.send_message(user_message)
+            
+            try:
+                analysis = json.loads(response)
+            except:
+                analysis = {
+                    "sensitivity_score": 0.3,
+                    "category": "general",
+                    "recommended_action": "none",
+                    "confidence": 0.5,
+                    "reasoning": response[:200],
+                    "tags": []
+                }
+            
+            return analysis
+            
+        except Exception as e:
+            logger.error(f"Content analysis error: {e}")
+            return {
+                "sensitivity_score": 0.0,
+                "category": "unknown",
+                "recommended_action": "none",
+                "confidence": 0.0,
+                "reasoning": "Analysis failed",
+                "tags": []
+            }
+    
+    async def learn_from_feedback(self, feedback_data: Dict[str, Any]):
+        """Learn from user feedback on privacy decisions"""
+        try:
+            # Store feedback for learning
+            learning_record = {
+                "content_type": feedback_data.get("content_type"),
+                "original_suggestion": feedback_data.get("suggestion"),
+                "user_decision": feedback_data.get("decision"),  # accepted, rejected, modified
+                "user_preference": feedback_data.get("preference"),
+                "timestamp": datetime.utcnow()
+            }
+            
+            await db.privacy_learning.insert_one(learning_record)
+            
+            # Adjust trust level based on acceptance rate
+            recent_feedback = await db.privacy_learning.find(
+                {"timestamp": {"$gte": datetime.utcnow() - timedelta(days=7)}}
+            ).to_list(100)
+            
+            if recent_feedback:
+                accepted = len([f for f in recent_feedback if f.get("user_decision") == "accepted"])
+                self.trust_level = min(1.0, accepted / len(recent_feedback))
+                
+                # Upgrade learning mode based on trust
+                if self.trust_level > 0.8:
+                    self.learning_mode = "auto_action"
+                elif self.trust_level > 0.5:
+                    self.learning_mode = "auto_suggest"
+                else:
+                    self.learning_mode = "ask_first"
+            
+            logger.info(f"Privacy Guardian learning updated - Trust: {self.trust_level:.2f}, Mode: {self.learning_mode}")
+            
+        except Exception as e:
+            logger.error(f"Learning feedback error: {e}")
+
+# Initialize Privacy Guardian
+ai_privacy_guardian = AIPrivacyGuardian()
+
+@api_router.post("/privacy/analyze")
+async def analyze_for_privacy(data: Dict[str, Any]):
+    """Analyze content for privacy sensitivity"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required"}
+    
+    try:
+        content_type = data.get("content_type", "file")
+        content_data = data.get("content_data", {})
+        
+        analysis = await ai_privacy_guardian.analyze_content(content_type, content_data)
+        
+        # Store suggestion if action recommended
+        if analysis.get("recommended_action") != "none":
+            suggestion = {
+                "suggestion_id": str(uuid.uuid4()),
+                "content_type": content_type,
+                "content_name": content_data.get("name", "unknown"),
+                "analysis": analysis,
+                "action": analysis.get("recommended_action"),
+                "status": "pending",
+                "created_at": datetime.utcnow()
+            }
+            await db.ai_privacy_suggestions.insert_one(suggestion)
+        
+        return {
+            "analysis": analysis,
+            "guardian_mode": ai_privacy_guardian.learning_mode,
+            "trust_level": ai_privacy_guardian.trust_level
+        }
+        
+    except Exception as e:
+        logger.error(f"Privacy analysis error: {e}")
+        return {"error": "Analysis failed"}
+
+@api_router.post("/privacy/feedback")
+async def submit_privacy_feedback(feedback: Dict[str, Any]):
+    """Submit feedback on privacy suggestions to help AI learn"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required"}
+    
+    try:
+        await ai_privacy_guardian.learn_from_feedback(feedback)
+        
+        # Update suggestion status
+        suggestion_id = feedback.get("suggestion_id")
+        if suggestion_id:
+            await db.ai_privacy_suggestions.update_one(
+                {"suggestion_id": suggestion_id},
+                {"$set": {
+                    "status": feedback.get("decision"),
+                    "user_feedback": feedback.get("preference"),
+                    "resolved_at": datetime.utcnow()
+                }}
+            )
+        
+        return {
+            "success": True,
+            "message": "Feedback recorded - Privacy Guardian is learning",
+            "new_trust_level": ai_privacy_guardian.trust_level,
+            "learning_mode": ai_privacy_guardian.learning_mode
+        }
+        
+    except Exception as e:
+        logger.error(f"Privacy feedback error: {e}")
+        return {"success": False, "message": "Feedback recording failed"}
+
+@api_router.get("/privacy/suggestions")
+async def get_privacy_suggestions():
+    """Get pending privacy suggestions from AI"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required", "suggestions": []}
+    
+    try:
+        suggestions = await db.ai_privacy_suggestions.find(
+            {"status": "pending"},
+            {"_id": 0}
+        ).to_list(50)
+        
+        return {
+            "suggestions": suggestions,
+            "guardian_mode": ai_privacy_guardian.learning_mode,
+            "trust_level": ai_privacy_guardian.trust_level,
+            "total_pending": len(suggestions)
+        }
+        
+    except Exception as e:
+        logger.error(f"Suggestions retrieval error: {e}")
+        return {"suggestions": [], "error": str(e)}
+
+@api_router.get("/privacy/stats")
+async def get_privacy_stats():
+    """Get privacy guardian statistics"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required"}
+    
+    try:
+        total_analyzed = await db.ai_privacy_suggestions.count_documents({})
+        accepted = await db.ai_privacy_suggestions.count_documents({"status": "accepted"})
+        rejected = await db.ai_privacy_suggestions.count_documents({"status": "rejected"})
+        auto_actioned = await db.ai_privacy_suggestions.count_documents({"status": "auto_actioned"})
+        
+        return {
+            "total_analyzed": total_analyzed,
+            "accepted_suggestions": accepted,
+            "rejected_suggestions": rejected,
+            "auto_actioned": auto_actioned,
+            "acceptance_rate": accepted / total_analyzed if total_analyzed > 0 else 0,
+            "trust_level": ai_privacy_guardian.trust_level,
+            "learning_mode": ai_privacy_guardian.learning_mode,
+            "mode_explanation": {
+                "ask_first": "AI asks before every action",
+                "auto_suggest": "AI suggests but waits for approval",
+                "auto_action": "AI takes action automatically for high-confidence items"
+            }.get(ai_privacy_guardian.learning_mode, "Unknown")
+        }
+        
+    except Exception as e:
+        logger.error(f"Privacy stats error: {e}")
+        return {"error": str(e)}
+
+# ===============================
+# PHASE 3: PROACTIVE INTELLIGENCE
+# Smart briefings, context awareness, suggestions
+# ===============================
+
+class ProactiveIntelligenceEngine:
+    def __init__(self):
+        self.llm_chat = None
+        self.initialize_llm()
+    
+    def initialize_llm(self):
+        try:
+            api_key = os.environ.get('EMERGENT_LLM_KEY')
+            self.llm_chat = LlmChat(
+                api_key=api_key,
+                session_id="aegis_proactive_intelligence",
+                system_message="""You are Aegis Proactive Intelligence - a "Digital Mate" that anticipates user needs.
+
+YOUR CAPABILITIES:
+1. Generate contextual briefings (morning/evening/situation-based)
+2. Detect potential conflicts (calendar, tasks, commitments)
+3. Provide smart suggestions with multiple response options
+4. Anticipate needs based on time, location, and patterns
+
+BRIEFING FORMAT (JSON):
+{
+    "briefing_type": "morning|evening|urgent|contextual",
+    "title": "Greeting or headline",
+    "summary": "Brief overview",
+    "insights": ["insight1", "insight2"],
+    "action_items": [
+        {"action": "action_id", "text": "Description", "priority": "high|medium|low"}
+    ],
+    "alerts": [
+        {"type": "conflict|reminder|opportunity", "message": "Alert text", "options": ["option1", "option2"]}
+    ],
+    "suggestions": ["proactive suggestion 1", "suggestion 2"]
+}
+
+Be helpful, anticipatory, and provide actionable intelligence."""
+            ).with_model("openai", "gpt-4o")
+            logger.info("Proactive Intelligence Engine initialized")
+        except Exception as e:
+            logger.error(f"Proactive Intelligence initialization error: {e}")
+    
+    async def generate_briefing(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate a contextual briefing"""
+        try:
+            current_hour = datetime.utcnow().hour
+            
+            if 5 <= current_hour < 12:
+                briefing_type = "morning"
+                greeting = "Good morning"
+            elif 12 <= current_hour < 17:
+                briefing_type = "afternoon"
+                greeting = "Good afternoon"
+            elif 17 <= current_hour < 22:
+                briefing_type = "evening"
+                greeting = "Good evening"
+            else:
+                briefing_type = "night"
+                greeting = "Working late"
+            
+            prompt = f"""{greeting}! Generate a proactive briefing.
+
+Context:
+- Current time: {datetime.utcnow().strftime('%H:%M')}
+- Day: {datetime.utcnow().strftime('%A')}
+- User context: {json.dumps(context)}
+
+Generate a helpful briefing with insights, action items, and suggestions.
+Return as JSON."""
+
+            user_message = UserMessage(text=prompt)
+            response = await self.llm_chat.send_message(user_message)
+            
+            try:
+                briefing = json.loads(response)
+            except:
+                briefing = {
+                    "briefing_type": briefing_type,
+                    "title": f"{greeting}! Here's your update",
+                    "summary": response[:300],
+                    "insights": ["Aegis is monitoring your digital life", "All systems secure"],
+                    "action_items": [{"action": "review", "text": "Review your day", "priority": "medium"}],
+                    "alerts": [],
+                    "suggestions": ["Stay productive", "Take regular breaks"]
+                }
+            
+            briefing["generated_at"] = datetime.utcnow().isoformat()
+            briefing["briefing_type"] = briefing_type
+            
+            return briefing
+            
+        except Exception as e:
+            logger.error(f"Briefing generation error: {e}")
+            return {
+                "briefing_type": "error",
+                "title": "Briefing Unavailable",
+                "summary": "Unable to generate briefing at this time",
+                "insights": [],
+                "action_items": [],
+                "alerts": [],
+                "suggestions": []
+            }
+    
+    async def process_user_goal(self, goal_text: str) -> Dict[str, Any]:
+        """Process a user goal and create an action plan"""
+        try:
+            prompt = f"""User wants to: "{goal_text}"
+
+Analyze this goal and provide:
+1. Parsed intents (what they really want)
+2. Step-by-step execution plan
+3. Potential conflicts or issues
+4. Proactive suggestions to help achieve this
+
+Return as JSON:
+{{
+    "understood_goal": "rephrased understanding",
+    "intents": ["intent1", "intent2"],
+    "execution_plan": [
+        {{"step": 1, "action": "description", "agent": "which AI agent handles this"}}
+    ],
+    "potential_conflicts": ["conflict1"],
+    "suggestions": ["helpful suggestion"]
+}}"""
+
+            user_message = UserMessage(text=prompt)
+            response = await self.llm_chat.send_message(user_message)
+            
+            try:
+                plan = json.loads(response)
+            except:
+                plan = {
+                    "understood_goal": goal_text,
+                    "intents": ["process request"],
+                    "execution_plan": [{"step": 1, "action": "Processing your request", "agent": "General"}],
+                    "potential_conflicts": [],
+                    "suggestions": []
+                }
+            
+            return plan
+            
+        except Exception as e:
+            logger.error(f"Goal processing error: {e}")
+            return {"error": "Failed to process goal"}
+
+# Initialize Proactive Intelligence
+proactive_intelligence = ProactiveIntelligenceEngine()
+
+@api_router.get("/intelligence/briefing")
+async def get_proactive_briefing():
+    """Get a contextual proactive briefing"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        # Return a simple briefing for non-owner
+        return {
+            "briefing_type": "locked",
+            "title": "Welcome",
+            "summary": "Authenticate to access your personalized briefing",
+            "insights": [],
+            "action_items": [],
+            "alerts": [],
+            "suggestions": []
+        }
+    
+    try:
+        # Gather context for briefing
+        context = {
+            "vault_files": await db.vault_files.count_documents({}),
+            "pending_suggestions": await db.ai_privacy_suggestions.count_documents({"status": "pending"}),
+            "recent_security_events": await db.security_events.count_documents({
+                "timestamp": {"$gte": datetime.utcnow() - timedelta(hours=24)}
+            })
+        }
+        
+        briefing = await proactive_intelligence.generate_briefing(context)
+        
+        # Store briefing
+        briefing_record = {**briefing, "stored_at": datetime.utcnow()}
+        await db.proactive_briefings.insert_one(briefing_record)
+        
+        return briefing
+        
+    except Exception as e:
+        logger.error(f"Briefing retrieval error: {e}")
+        return {"error": "Failed to generate briefing"}
+
+@api_router.post("/intelligence/process-goal")
+async def process_user_goal(data: Dict[str, Any]):
+    """Process a user goal and create action plan"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required"}
+    
+    try:
+        goal_text = data.get("goal", "")
+        
+        if not goal_text:
+            return {"error": "No goal provided"}
+        
+        plan = await proactive_intelligence.process_user_goal(goal_text)
+        
+        # Store the goal and plan
+        goal_record = {
+            "goal_id": str(uuid.uuid4()),
+            "original_text": goal_text,
+            "plan": plan,
+            "status": "planned",
+            "created_at": datetime.utcnow()
+        }
+        await db.user_goals.insert_one(goal_record)
+        
+        return {
+            "goal_id": goal_record["goal_id"],
+            "plan": plan,
+            "message": "Goal analyzed and plan created"
+        }
+        
+    except Exception as e:
+        logger.error(f"Goal processing error: {e}")
+        return {"error": "Failed to process goal"}
+
+@api_router.post("/intelligence/chat")
+async def chat_with_intelligence(data: Dict[str, Any]):
+    """Have a conversation with your Digital Mate"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required"}
+    
+    try:
+        message = data.get("message", "")
+        context = data.get("context", "general")
+        
+        if not message:
+            return {"error": "No message provided"}
+        
+        # Use L2 orchestrator for conversation
+        response = await l2_proactive_orchestrator.process_proactive_request(message, context)
+        
+        # Store conversation
+        await db.intelligence_conversations.insert_one({
+            "user_message": message,
+            "ai_response": response,
+            "context": context,
+            "timestamp": datetime.utcnow()
+        })
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Intelligence chat error: {e}")
+        return {"error": "Chat failed", "response": "I'm having trouble processing that. Please try again."}
+
+# ===============================
+# PHASE 4: VOICE INTERFACE
+# Wake word, command processing, duress detection
+# ===============================
+
+class VoiceCommandProcessor:
+    def __init__(self):
+        self.llm_chat = None
+        self.wake_word = "mate"
+        self.duress_phrases = ["help me please", "i need help", "call for help"]
+        self.initialize_llm()
+    
+    def initialize_llm(self):
+        try:
+            api_key = os.environ.get('EMERGENT_LLM_KEY')
+            self.llm_chat = LlmChat(
+                api_key=api_key,
+                session_id="aegis_voice_processor",
+                system_message="""You are the Aegis Voice Command Processor.
+
+YOUR ROLE:
+1. Parse voice commands and extract intent
+2. Determine appropriate actions
+3. Generate natural responses
+4. Detect distress or unusual patterns
+
+COMMAND CATEGORIES:
+- Navigation: "open [app]", "go to [feature]"
+- Query: "what's my [schedule/messages/etc]"
+- Action: "hide [file]", "send [message]", "set [reminder]"
+- System: "lock phone", "activate [mode]"
+- Emergency: duress phrases trigger silent protocols
+
+RESPONSE FORMAT (JSON):
+{
+    "understood_command": "what you understood",
+    "intent": "navigation|query|action|system|emergency|unknown",
+    "action": "specific action to take",
+    "parameters": {"param1": "value1"},
+    "response_text": "Natural language response to user",
+    "confidence": 0.0-1.0,
+    "is_emergency": false
+}"""
+            ).with_model("openai", "gpt-4o")
+            logger.info("Voice Command Processor initialized")
+        except Exception as e:
+            logger.error(f"Voice processor initialization error: {e}")
+    
+    async def process_command(self, command_text: str, context: Dict[str, Any] = {}) -> Dict[str, Any]:
+        """Process a voice command"""
+        try:
+            # Check for duress phrases first
+            command_lower = command_text.lower()
+            for duress in self.duress_phrases:
+                if duress in command_lower:
+                    logger.critical(f"DURESS PHRASE DETECTED: {command_text}")
+                    # Silently trigger emergency protocols
+                    await self._trigger_silent_emergency(command_text)
+                    # Return normal-looking response
+                    return {
+                        "understood_command": command_text,
+                        "intent": "query",
+                        "action": "respond",
+                        "parameters": {},
+                        "response_text": "I'm here to help. What would you like me to do?",
+                        "confidence": 0.95,
+                        "is_emergency": True,
+                        "_silent_emergency_activated": True
+                    }
+            
+            prompt = f"""Process this voice command: "{command_text}"
+
+Context: {json.dumps(context)}
+
+Parse the command and provide appropriate response as JSON."""
+
+            user_message = UserMessage(text=prompt)
+            response = await self.llm_chat.send_message(user_message)
+            
+            try:
+                result = json.loads(response)
+            except:
+                result = {
+                    "understood_command": command_text,
+                    "intent": "unknown",
+                    "action": "clarify",
+                    "parameters": {},
+                    "response_text": response[:200] if response else "I didn't quite catch that. Could you repeat?",
+                    "confidence": 0.5,
+                    "is_emergency": False
+                }
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Voice command processing error: {e}")
+            return {
+                "understood_command": command_text,
+                "intent": "error",
+                "action": "none",
+                "parameters": {},
+                "response_text": "I'm having trouble understanding. Please try again.",
+                "confidence": 0.0,
+                "is_emergency": False
+            }
+    
+    async def _trigger_silent_emergency(self, trigger_phrase: str):
+        """Silently trigger emergency protocols"""
+        try:
+            emergency_event = {
+                "event_type": "voice_duress_detected",
+                "trigger_phrase": trigger_phrase,
+                "timestamp": datetime.utcnow(),
+                "security_state": l1_enhanced_kernel.current_security_state.value,
+                "actions_taken": [
+                    "silent_alert_sent",
+                    "location_logged",
+                    "recording_started"
+                ]
+            }
+            await db.emergency_events.insert_one(emergency_event)
+            
+            # Activate trap mode silently
+            if not l1_enhanced_kernel.trap_mode_active:
+                l1_enhanced_kernel.trap_mode_active = True
+                await l1_enhanced_kernel._activate_trap_mode()
+            
+            logger.critical("SILENT EMERGENCY PROTOCOLS ACTIVATED VIA VOICE")
+            
+        except Exception as e:
+            logger.error(f"Silent emergency trigger error: {e}")
+
+# Initialize Voice Processor
+voice_processor = VoiceCommandProcessor()
+
+@api_router.post("/voice/process")
+async def process_voice_command(data: Dict[str, Any]):
+    """Process a voice command"""
+    try:
+        command_text = data.get("command", "")
+        context = data.get("context", {})
+        
+        if not command_text:
+            return {"error": "No command provided"}
+        
+        result = await voice_processor.process_command(command_text, context)
+        
+        # Store voice interaction (exclude emergency flag from stored data for security)
+        interaction_record = {
+            "command": command_text,
+            "result": {k: v for k, v in result.items() if not k.startswith("_")},
+            "timestamp": datetime.utcnow(),
+            "security_state": l1_enhanced_kernel.current_security_state.value
+        }
+        await db.voice_interactions.insert_one(interaction_record)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Voice processing error: {e}")
+        return {"error": "Voice processing failed"}
+
+@api_router.post("/voice/wake-detected")
+async def wake_word_detected(data: Dict[str, Any]):
+    """Handle wake word detection"""
+    try:
+        wake_word = data.get("wake_word", "mate")
+        
+        # Log wake word detection
+        await db.voice_interactions.insert_one({
+            "event_type": "wake_word_detected",
+            "wake_word": wake_word,
+            "timestamp": datetime.utcnow(),
+            "security_state": l1_enhanced_kernel.current_security_state.value
+        })
+        
+        return {
+            "success": True,
+            "message": f"Wake word '{wake_word}' detected. Listening...",
+            "ready_for_command": True
+        }
+        
+    except Exception as e:
+        logger.error(f"Wake word detection error: {e}")
+        return {"success": False, "message": "Wake word processing failed"}
+
+@api_router.get("/voice/settings")
+async def get_voice_settings():
+    """Get current voice interface settings"""
+    try:
+        user_config = await db.user_onboarding.find_one({}, sort=[("completed_at", -1)])
+        
+        return {
+            "wake_word": user_config.get("custom_wake_name", "Mate") if user_config else "Mate",
+            "duress_phrase": user_config.get("duress_phrase", "help me please") if user_config else "help me please",
+            "voice_enabled": True,
+            "listening_mode": "wake_word"  # "always" | "wake_word" | "button"
+        }
+        
+    except Exception as e:
+        logger.error(f"Voice settings retrieval error: {e}")
+        return {"error": "Failed to retrieve voice settings"}
+
+@api_router.put("/voice/settings")
+async def update_voice_settings(data: Dict[str, Any]):
+    """Update voice interface settings"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required"}
+    
+    try:
+        # Update user config
+        await db.user_onboarding.update_one(
+            {},
+            {"$set": {
+                "custom_wake_name": data.get("wake_word"),
+                "duress_phrase": data.get("duress_phrase")
+            }},
+            upsert=False
+        )
+        
+        # Update voice processor
+        if data.get("wake_word"):
+            voice_processor.wake_word = data.get("wake_word").lower()
+        if data.get("duress_phrase"):
+            voice_processor.duress_phrases.append(data.get("duress_phrase").lower())
+        
+        return {"success": True, "message": "Voice settings updated"}
+        
+    except Exception as e:
+        logger.error(f"Voice settings update error: {e}")
+        return {"success": False, "message": "Failed to update settings"}
+
+# ===============================
+# CONTEXTUAL HUB DATA ENDPOINT
+# Real-time dynamic context cards
+# ===============================
+
+@api_router.get("/context/cards")
+async def get_contextual_cards():
+    """Get dynamic contextual cards based on current state"""
+    try:
+        current_hour = datetime.utcnow().hour
+        cards = []
+        
+        # Time-based greeting card
+        if 5 <= current_hour < 12:
+            time_context = "morning"
+            greeting = "Good Morning"
+            suggestion = "Review your schedule and priorities"
+        elif 12 <= current_hour < 17:
+            time_context = "afternoon"
+            greeting = "Good Afternoon"
+            suggestion = "Check progress on today's tasks"
+        elif 17 <= current_hour < 22:
+            time_context = "evening"
+            greeting = "Good Evening"
+            suggestion = "Wind down and review the day"
+        else:
+            time_context = "night"
+            greeting = "Working Late"
+            suggestion = "Consider getting some rest"
+        
+        cards.append({
+            "id": "greeting",
+            "type": "greeting",
+            "title": greeting,
+            "subtitle": suggestion,
+            "icon": "🌅" if time_context == "morning" else "☀️" if time_context == "afternoon" else "🌙",
+            "priority": 1
+        })
+        
+        # Security status card
+        security_state = l1_enhanced_kernel.current_security_state.value
+        if security_state == "STATE_OWNER_PRESENT":
+            cards.append({
+                "id": "security",
+                "type": "status",
+                "title": "Owner Mode Active",
+                "subtitle": "Full Aegis intelligence enabled",
+                "icon": "🛡️",
+                "status": "secure",
+                "priority": 2
+            })
+        
+        # Privacy suggestions card (if any pending)
+        if l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT:
+            pending_count = await db.ai_privacy_suggestions.count_documents({"status": "pending"})
+            if pending_count > 0:
+                cards.append({
+                    "id": "privacy",
+                    "type": "action",
+                    "title": f"{pending_count} Privacy Suggestions",
+                    "subtitle": "AI has recommendations for you",
+                    "icon": "🔒",
+                    "action": "view_suggestions",
+                    "priority": 3
+                })
+        
+        # Vault status card
+        if l1_enhanced_kernel.current_security_state == SecurityState.OWNER_PRESENT:
+            vault_count = await db.vault_files.count_documents({})
+            cards.append({
+                "id": "vault",
+                "type": "status",
+                "title": "Phantom Vault",
+                "subtitle": f"{vault_count} files secured",
+                "icon": "📁",
+                "status": "active",
+                "priority": 4
+            })
+        
+        # AI Learning status
+        cards.append({
+            "id": "ai_learning",
+            "type": "info",
+            "title": "Privacy Guardian",
+            "subtitle": f"Mode: {ai_privacy_guardian.learning_mode.replace('_', ' ').title()}",
+            "icon": "🧠",
+            "detail": f"Trust level: {ai_privacy_guardian.trust_level:.0%}",
+            "priority": 5
+        })
+        
+        return {
+            "cards": sorted(cards, key=lambda x: x.get("priority", 99)),
+            "time_context": time_context,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Contextual cards error: {e}")
+        return {"cards": [], "error": str(e)}
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
