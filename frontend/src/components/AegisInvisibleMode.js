@@ -133,12 +133,6 @@ export const AegisCalendar = ({ onClose }) => {
     };
     loadEvents();
   }, [getDefaultEvents]);
-      { id: 2, title: '🦷 Dentist Appointment', date: tomorrow.toISOString().split('T')[0], time: '14:30', description: 'Regular checkup', priority: 'medium' },
-      { id: 3, title: '🎂 Mom\'s Birthday', date: nextWeek.toISOString().split('T')[0], time: '00:00', description: 'Don\'t forget gift!', priority: 'high' },
-      { id: 4, title: '💼 Client Call', date: today.toISOString().split('T')[0], time: '15:00', description: 'Project review', priority: 'high' },
-      { id: 5, title: '🏋️ Gym Session', date: today.toISOString().split('T')[0], time: '18:00', description: 'Leg day', priority: 'low' },
-    ];
-  };
 
   const getTodayString = () => new Date().toISOString().split('T')[0];
 
