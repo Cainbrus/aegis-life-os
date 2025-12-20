@@ -24,6 +24,8 @@ export const AegisNotification = ({ notification, onDismiss, onAction }) => {
     switch (notification.type) {
       case 'security':
         return { border: 'border-red-500', bg: 'bg-red-500/10', glow: 'shadow-[0_0_30px_rgba(239,68,68,0.3)]' };
+      case 'urgent':
+        return { border: 'border-orange-500', bg: 'bg-orange-500/10', glow: 'shadow-[0_0_30px_rgba(249,115,22,0.4)]' };
       case 'privacy':
         return { border: 'border-purple-500', bg: 'bg-purple-500/10', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.3)]' };
       case 'reminder':
@@ -41,6 +43,8 @@ export const AegisNotification = ({ notification, onDismiss, onAction }) => {
     switch (notification.type) {
       case 'security':
         return '🚨';
+      case 'urgent':
+        return '⚡';
       case 'privacy':
         return '🔒';
       case 'reminder':
