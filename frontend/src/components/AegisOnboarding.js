@@ -12,7 +12,11 @@ const AegisOnboarding = ({ onComplete }) => {
     duressPattern: '2-5-8',
     customWakeName: 'Mate',
     duressPhrase: 'help me please',
-    calculatorCode: '8675309'
+    calculatorCode: '8675309',
+    // DESTROY MODE settings
+    destroyCode: '',
+    backupEmail: '',
+    destroyConfirmPhrase: ''
   });
   const [behavioralBaseline, setBehavioralBaseline] = useState({
     swipeData: [],
@@ -47,6 +51,11 @@ const AegisOnboarding = ({ onComplete }) => {
       id: 'secret_setup',
       title: 'Secret Features',
       subtitle: 'Configure hidden access methods'
+    },
+    {
+      id: 'destroy_mode',
+      title: '💀 Destroy Mode',
+      subtitle: 'Ultimate protection - Remote wipe & backup'
     },
     {
       id: 'completion',
