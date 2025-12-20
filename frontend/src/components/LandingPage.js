@@ -44,8 +44,8 @@ const LandingPage = ({ onGetStarted }) => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-6">
-          <div className="text-6xl mb-6 animate-bounce">🛡️</div>
-          <h1 className="text-3xl font-bold mb-4">Welcome to Aegis!</h1>
+          <AegisLogo size={150} />
+          <h1 className="text-3xl font-bold mb-4 mt-6">Welcome to Aegis!</h1>
           <p className="text-slate-300 mb-6">
             Your Digital Mate is being initialized...
           </p>
