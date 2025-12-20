@@ -1801,7 +1801,18 @@ class AegisEnhancedSystemTester:
         self.test_digital_mate_voice_settings()
         self.test_digital_mate_voice_settings_update()
         
-        # Phase 8: Legacy Advanced Features (Priority 2)
+        # Phase 8: REAL PUSH NOTIFICATIONS SYSTEM
+        print(f"\n🔔 PHASE 8: REAL PUSH NOTIFICATIONS SYSTEM")
+        self.test_push_notifications_status()
+        self.test_push_notifications_subscribe()
+        self.test_push_notifications_subscribe_invalid()
+        self.test_push_notifications_unsubscribe()
+        self.test_push_notifications_unsubscribe_invalid()
+        self.test_push_notifications_send_without_auth()
+        self.test_push_notifications_send_with_auth()
+        self.test_push_notifications_send_different_types()
+        
+        # Phase 9: Legacy Advanced Features (Priority 2)
         print(f"\n🚀 PHASE 8: LEGACY ADVANCED FEATURES")
         self.test_calculator_secret_handshake()
         self.test_phantom_folder_authentication()
