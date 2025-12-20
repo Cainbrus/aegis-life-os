@@ -760,11 +760,10 @@ const AegisTrapSystem = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
         <div className="w-full max-w-lg mx-auto px-6">
           <div className="text-center mb-8">
-            <div className="text-6xl mb-4">🛡️</div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-2">
-              Aegis Life OS
-            </h1>
-            <p className="text-slate-400">Pattern Authentication System</p>
+            <div className="flex justify-center mb-4">
+              <AegisLogo size={150} showText={true} />
+            </div>
+            <p className="text-slate-400 mt-4">Pattern Authentication System</p>
           </div>
           
           <DualPatternAuth onAuthSuccess={handleAuthSuccess} authStatus={authStatus} />
