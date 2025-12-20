@@ -202,62 +202,79 @@ const LandingPage = ({ onGetStarted }) => {
               </div>
             </div>
 
-            <div className="ai-card bg-slate-800/50 rounded-xl p-8 border border-purple-500/30 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 border-2 border-purple-500/30 overflow-hidden group hover:border-purple-400/60 transition-all hover:shadow-[0_0_40px_rgba(168,85,247,0.3)]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl"></div>
               <div className="relative z-10">
-                <div className="text-5xl mb-4 text-purple-400">🔒</div>
-                <h3 className="text-2xl font-bold mb-4 text-purple-300 font-mono">QUANTUM SECURITY</h3>
+                <div className="text-6xl mb-4 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">🔒</div>
+                <h3 className="text-2xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">QUANTUM SECURITY</h3>
                 <p className="text-slate-300 leading-relaxed">
-                  Multi-layer defense: Behavioral auth + Pattern locks + Emergency protocols + Perfect deception modes.
+                  Multi-layer defense with behavioral auth, pattern locks, and emergency protocols.
                 </p>
-                <div className="mt-4 flex items-center text-sm text-purple-400">
-                  <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse mr-2"></div>
-                  THREAT DETECTION ONLINE
+                <div className="mt-4 flex items-center">
+                  <div className="w-3 h-3 bg-red-400 rounded-full animate-pulse mr-2 shadow-[0_0_10px_rgba(248,113,113,0.8)]"></div>
+                  <span className="text-red-400 font-mono text-sm font-bold">THREAT DETECTION ONLINE</span>
                 </div>
               </div>
             </div>
 
-            <div className="ai-card bg-slate-800/50 rounded-xl p-8 border border-pink-500/30 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 border-2 border-pink-500/30 overflow-hidden group hover:border-pink-400/60 transition-all hover:shadow-[0_0_40px_rgba(236,72,153,0.3)]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl"></div>
               <div className="relative z-10">
-                <div className="text-5xl mb-4 text-pink-400">🎭</div>
-                <h3 className="text-2xl font-bold mb-4 text-pink-300 font-mono">ADAPTIVE DECEPTION</h3>
+                <div className="text-6xl mb-4 drop-shadow-[0_0_20px_rgba(236,72,153,0.8)]">🎭</div>
+                <h3 className="text-2xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-400">ADAPTIVE DECEPTION</h3>
                 <p className="text-slate-300 leading-relaxed">
-                  Intruders experience convincing fake reality while AI collects evidence and protects real data.
+                  Intruders experience fake reality while AI collects evidence and protects your data.
                 </p>
-                <div className="mt-4 flex items-center text-sm text-pink-400">
-                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse mr-2"></div>
-                  TRAP SYSTEMS ARMED
+                <div className="mt-4 flex items-center">
+                  <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse mr-2 shadow-[0_0_10px_rgba(250,204,21,0.8)]"></div>
+                  <span className="text-yellow-400 font-mono text-sm font-bold">TRAP SYSTEMS ARMED</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* AI Architecture Visualization */}
-          <div className="bg-slate-800/30 border border-cyan-500/20 rounded-xl p-8 mb-20 relative overflow-hidden">
+          {/* TECH IMAGE BANNER */}
+          <div className="relative mb-16 rounded-2xl overflow-hidden border-2 border-cyan-500/20">
+            <img 
+              src={TECH_IMAGE} 
+              alt="Circuit Technology" 
+              className="w-full h-48 object-cover opacity-40"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-900/80 via-transparent to-purple-900/80"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-purple-400 drop-shadow-[0_0_30px_rgba(6,182,212,0.5)]">
+                NEXT-GEN DIGITAL PROTECTION
+              </h2>
+            </div>
+          </div>
+
+          {/* AI Architecture Visualization - BOLDER */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-2 border-cyan-500/30 rounded-2xl p-10 mb-16 relative overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.1)]">
             <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-purple-500/5"></div>
-            <h2 className="text-4xl font-bold mb-12 text-center font-mono">
-              <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+            <div className="absolute top-0 left-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>
+            
+            <h2 className="text-4xl md:text-5xl font-black mb-12 text-center">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 drop-shadow-[0_0_20px_rgba(6,182,212,0.5)]">
                 AI ARCHITECTURE MATRIX
               </span>
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
-              <div className="text-center p-6 border border-cyan-500/30 rounded-lg bg-slate-900/50">
-                <div className="text-4xl mb-4 text-cyan-400">👑</div>
-                <h4 className="text-xl font-semibold mb-3 text-cyan-300 font-mono">L1 OWNER</h4>
+              <div className="text-center p-6 border-2 border-cyan-500/40 rounded-xl bg-black/50 hover:border-cyan-400 transition-all hover:shadow-[0_0_30px_rgba(6,182,212,0.3)]">
+                <div className="text-5xl mb-4 drop-shadow-[0_0_15px_rgba(6,182,212,0.8)]">👑</div>
+                <h4 className="text-xl font-black mb-3 text-cyan-400">L1 OWNER</h4>
                 <p className="text-sm text-slate-400">Constitutional oversight & system governance</p>
-                <div className="mt-3 w-full bg-slate-700 rounded-full h-2">
-                  <div className="bg-cyan-400 h-2 rounded-full w-full animate-pulse"></div>
+                <div className="mt-4 w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                  <div className="bg-gradient-to-r from-cyan-400 to-cyan-300 h-3 rounded-full w-full animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.8)]"></div>
                 </div>
               </div>
               
-              <div className="text-center p-6 border border-blue-500/30 rounded-lg bg-slate-900/50">
-                <div className="text-4xl mb-4 text-blue-400">🎯</div>
-                <h4 className="text-xl font-semibold mb-3 text-blue-300 font-mono">L2 MANAGER</h4>
+              <div className="text-center p-6 border-2 border-blue-500/40 rounded-xl bg-black/50 hover:border-blue-400 transition-all hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                <div className="text-5xl mb-4 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]">🎯</div>
+                <h4 className="text-xl font-black mb-3 text-blue-400">L2 MANAGER</h4>
                 <p className="text-sm text-slate-400">Task coordination & resource allocation</p>
-                <div className="mt-3 w-full bg-slate-700 rounded-full h-2">
-                  <div className="bg-blue-400 h-2 rounded-full w-3/4 animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                <div className="mt-4 w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                  <div className="bg-gradient-to-r from-blue-400 to-blue-300 h-3 rounded-full w-3/4 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]" style={{animationDelay: '0.5s'}}></div>
                 </div>
               </div>
               
