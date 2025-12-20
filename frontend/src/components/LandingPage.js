@@ -185,12 +185,14 @@ const LandingPage = ({ onGetStarted }) => {
             </div>
           </div>
 
-          {/* BOLD FEATURE CARDS */}
+          {/* BOLD FEATURE CARDS - WITH DIGITAL ICONS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
             <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 border-2 border-cyan-500/30 overflow-hidden group hover:border-cyan-400/60 transition-all hover:shadow-[0_0_40px_rgba(6,182,212,0.3)]">
               <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/20 rounded-full blur-3xl"></div>
               <div className="relative z-10">
-                <div className="text-6xl mb-4 drop-shadow-[0_0_20px_rgba(6,182,212,0.8)]">🧠</div>
+                <div className="mb-4">
+                  <DigitalBrain size={70} />
+                </div>
                 <h3 className="text-2xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">L1-L4 AI WORKFORCE</h3>
                 <p className="text-slate-300 leading-relaxed">
                   Hierarchical agents working 24/7. <span className="text-cyan-400 font-bold">Owner</span> → <span className="text-blue-400 font-bold">Manager</span> → <span className="text-purple-400 font-bold">Workers</span>
@@ -205,7 +207,9 @@ const LandingPage = ({ onGetStarted }) => {
             <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 border-2 border-purple-500/30 overflow-hidden group hover:border-purple-400/60 transition-all hover:shadow-[0_0_40px_rgba(168,85,247,0.3)]">
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl"></div>
               <div className="relative z-10">
-                <div className="text-6xl mb-4 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]">🔒</div>
+                <div className="mb-4">
+                  <DigitalLock size={70} />
+                </div>
                 <h3 className="text-2xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">QUANTUM SECURITY</h3>
                 <p className="text-slate-300 leading-relaxed">
                   Multi-layer defense with behavioral auth, pattern locks, and emergency protocols.
@@ -220,7 +224,9 @@ const LandingPage = ({ onGetStarted }) => {
             <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 border-2 border-pink-500/30 overflow-hidden group hover:border-pink-400/60 transition-all hover:shadow-[0_0_40px_rgba(236,72,153,0.3)]">
               <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl"></div>
               <div className="relative z-10">
-                <div className="text-6xl mb-4 drop-shadow-[0_0_20px_rgba(236,72,153,0.8)]">🎭</div>
+                <div className="mb-4">
+                  <DigitalMask size={70} />
+                </div>
                 <h3 className="text-2xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-400">ADAPTIVE DECEPTION</h3>
                 <p className="text-slate-300 leading-relaxed">
                   Intruders experience fake reality while AI collects evidence and protects your data.
