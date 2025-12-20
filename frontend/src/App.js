@@ -1004,12 +1004,16 @@ const AegisTrapSystem = () => {
           onOpenCalculator={() => setCurrentApp('calculator')}
           onOpenCalendar={() => setShowCalendar(true)}
           onOpenChat={() => setShowChat(true)}
+          onOpenSettings={() => setShowPushSettings(true)}
           onOpenApp={(appName) => {
             // Log app opens even in invisible mode
             logAction("app_opened_invisible_mode", appName, { 
               timestamp: new Date().toISOString() 
             });
-            // Could show fake apps or redirect to real ones
+            // Handle Settings app specially - open push notification settings
+            if (appName === 'settings') {
+              setShowPushSettings(true);
+            }
           }}
         />
         {/* Always show notifications in invisible mode */}
