@@ -25,7 +25,7 @@ const PushNotificationSettings = ({ isAuthenticated = false, onClose }) => {
           <div className="text-4xl mb-4">🔕</div>
           <h3 className="text-lg font-semibold text-white mb-2">Push Notifications Not Supported</h3>
           <p className="text-slate-400 text-sm">
-            Your browser doesn't support push notifications. Try using a modern browser like Chrome, Firefox, or Edge.
+            Your browser does not support push notifications. Try using a modern browser like Chrome, Firefox, or Edge.
           </p>
         </div>
       </div>
