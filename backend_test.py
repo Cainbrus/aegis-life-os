@@ -1470,6 +1470,282 @@ class AegisEnhancedSystemTester:
         
         return False
 
+    def test_push_notifications_subscribe(self) -> bool:
+        """Test Push Notification Subscription - POST /api/notifications/subscribe"""
+        subscription_data = {
+            "subscription": {
+                "endpoint": "https://fcm.googleapis.com/fcm/send/test-endpoint-123",
+                "keys": {
+                    "p256dh": "test-p256dh-key",
+                    "auth": "test-auth-key"
+                },
+                "expirationTime": None
+            },
+            "user_agent": "Mozilla/5.0 (Test Browser)"
+        }
+        
+        success, data = self.run_test(
+            "Push Notifications - Subscribe",
+            "POST",
+            "notifications/subscribe",
+            200,
+            data=subscription_data,
+            expected_fields=["success", "message", "subscription_id"]
+        )
+        
+        if success:
+            subscribe_success = data.get("success", False)
+            subscription_id = data.get("subscription_id", "")
+            message = data.get("message", "")
+            
+            if subscribe_success and subscription_id:
+                print(f"   ✅ Push subscription registered successfully: {subscription_id}")
+                # Store for unsubscribe test
+                self.test_subscription_endpoint = subscription_data["subscription"]["endpoint"]
+                return True
+            else:
+                print(f"   ❌ Push subscription failed: {message}")
+                return False
+        
+        return False
+
+    def test_push_notifications_subscribe_invalid(self) -> bool:
+        """Test Push Notification Subscription with invalid data"""
+        invalid_subscription_data = {
+            "subscription": {
+                # Missing endpoint - should fail
+                "keys": {
+                    "p256dh": "test-p256dh-key",
+                    "auth": "test-auth-key"
+                }
+            }
+        }
+        
+        success, data = self.run_test(
+            "Push Notifications - Subscribe Invalid Data",
+            "POST",
+            "notifications/subscribe",
+            200,
+            data=invalid_subscription_data,
+            expected_fields=["success", "message"]
+        )
+        
+        if success:
+            subscribe_success = data.get("success", False)
+            message = data.get("message", "")
+            
+            if not subscribe_success and "missing endpoint" in message.lower():
+                print(f"   ✅ Invalid subscription correctly rejected: {message}")
+                return True
+            else:
+                print(f"   ❌ Invalid subscription validation failed")
+                return False
+        
+        return False
+
+    def test_push_notifications_unsubscribe(self) -> bool:
+        """Test Push Notification Unsubscription - POST /api/notifications/unsubscribe"""
+        if not hasattr(self, 'test_subscription_endpoint'):
+            print(f"   ⚠️  Skipping unsubscribe test - no subscription endpoint available")
+            return True
+            
+        unsubscribe_data = {
+            "endpoint": self.test_subscription_endpoint
+        }
+        
+        success, data = self.run_test(
+            "Push Notifications - Unsubscribe",
+            "POST",
+            "notifications/unsubscribe",
+            200,
+            data=unsubscribe_data,
+            expected_fields=["success", "message"]
+        )
+        
+        if success:
+            unsubscribe_success = data.get("success", False)
+            message = data.get("message", "")
+            
+            if unsubscribe_success:
+                print(f"   ✅ Push unsubscription successful: {message}")
+                return True
+            else:
+                print(f"   ❌ Push unsubscription failed: {message}")
+                return False
+        
+        return False
+
+    def test_push_notifications_unsubscribe_invalid(self) -> bool:
+        """Test Push Notification Unsubscription with invalid endpoint"""
+        unsubscribe_data = {
+            "endpoint": "https://invalid-endpoint-that-does-not-exist.com"
+        }
+        
+        success, data = self.run_test(
+            "Push Notifications - Unsubscribe Invalid Endpoint",
+            "POST",
+            "notifications/unsubscribe",
+            200,
+            data=unsubscribe_data,
+            expected_fields=["success", "message"]
+        )
+        
+        if success:
+            unsubscribe_success = data.get("success", False)
+            message = data.get("message", "")
+            
+            if not unsubscribe_success and "not found" in message.lower():
+                print(f"   ✅ Invalid unsubscription correctly handled: {message}")
+                return True
+            else:
+                print(f"   ❌ Invalid unsubscription validation failed")
+                return False
+        
+        return False
+
+    def test_push_notifications_status(self) -> bool:
+        """Test Push Notification Status - GET /api/notifications/push-status"""
+        success, data = self.run_test(
+            "Push Notifications - Status Check",
+            "GET",
+            "notifications/push-status",
+            200,
+            expected_fields=["push_enabled", "active_subscriptions", "total_subscriptions"]
+        )
+        
+        if success:
+            push_enabled = data.get("push_enabled", False)
+            active_subscriptions = data.get("active_subscriptions", 0)
+            total_subscriptions = data.get("total_subscriptions", 0)
+            vapid_configured = data.get("vapid_configured", False)
+            
+            print(f"   📊 Push Enabled: {push_enabled}")
+            print(f"   📱 Active Subscriptions: {active_subscriptions}")
+            print(f"   📈 Total Subscriptions: {total_subscriptions}")
+            print(f"   🔑 VAPID Configured: {vapid_configured}")
+            
+            if push_enabled:
+                print(f"   ✅ Push notification status endpoint working correctly")
+                return True
+            else:
+                print(f"   ❌ Push notifications not enabled")
+                return False
+        
+        return False
+
+    def test_push_notifications_send_without_auth(self) -> bool:
+        """Test Push Notification Send without owner authentication (should fail)"""
+        # Ensure we're not in owner mode
+        if self.current_security_state == "STATE_OWNER_PRESENT":
+            self.test_logout()
+        
+        push_data = {
+            "title": "Test Notification",
+            "body": "This should fail without owner authentication",
+            "type": "security"
+        }
+        
+        success, data = self.run_test(
+            "Push Notifications - Send Without Auth",
+            "POST",
+            "notifications/send-push",
+            200,
+            data=push_data,
+            expected_fields=["error"]
+        )
+        
+        if success:
+            error = data.get("error", "")
+            
+            if "owner authentication required" in error.lower():
+                print(f"   ✅ Push send correctly requires owner authentication")
+                return True
+            else:
+                print(f"   ❌ SECURITY ISSUE - Push send allowed without owner auth")
+                return False
+        
+        return False
+
+    def test_push_notifications_send_with_auth(self) -> bool:
+        """Test Push Notification Send with owner authentication"""
+        # Ensure we're in owner mode
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            self.test_owner_pattern_auth()
+        
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping push send test - requires owner authentication")
+            return True
+        
+        push_data = {
+            "title": "Aegis Security Alert",
+            "body": "Test push notification from Aegis Life OS",
+            "type": "security"
+        }
+        
+        success, data = self.run_test(
+            "Push Notifications - Send With Owner Auth",
+            "POST",
+            "notifications/send-push",
+            200,
+            data=push_data,
+            expected_fields=["success", "message", "notification_id"]
+        )
+        
+        if success:
+            send_success = data.get("success", False)
+            notification_id = data.get("notification_id", "")
+            message = data.get("message", "")
+            
+            if send_success and notification_id:
+                print(f"   ✅ Push notification sent successfully: {notification_id}")
+                print(f"   📨 Message: {message}")
+                return True
+            else:
+                print(f"   ❌ Push notification send failed: {message}")
+                return False
+        
+        return False
+
+    def test_push_notifications_send_different_types(self) -> bool:
+        """Test Push Notification Send with different notification types"""
+        if self.current_security_state != "STATE_OWNER_PRESENT":
+            print(f"   ⚠️  Skipping push types test - requires owner authentication")
+            return True
+        
+        notification_types = [
+            {"type": "info", "title": "Information", "body": "General information notification"},
+            {"type": "warning", "title": "Warning", "body": "Warning notification test"},
+            {"type": "emergency", "title": "Emergency", "body": "Emergency notification test"}
+        ]
+        
+        all_success = True
+        
+        for i, notification in enumerate(notification_types):
+            success, data = self.run_test(
+                f"Push Notifications - Type {notification['type'].upper()}",
+                "POST",
+                "notifications/send-push",
+                200,
+                data=notification,
+                expected_fields=["success", "notification_id"]
+            )
+            
+            if success:
+                send_success = data.get("success", False)
+                notification_id = data.get("notification_id", "")
+                
+                if send_success and notification_id:
+                    print(f"   ✅ {notification['type'].upper()} notification sent: {notification_id}")
+                else:
+                    print(f"   ❌ {notification['type'].upper()} notification failed")
+                    all_success = False
+            else:
+                all_success = False
+            
+            time.sleep(0.5)  # Brief pause between notifications
+        
+        return all_success
+
     def run_comprehensive_test_suite(self):
         """Run the complete Enhanced Aegis System Test Suite"""
         print(f"\n🚀 STARTING DIGITAL MATE COMPREHENSIVE TEST SUITE")
