@@ -1021,20 +1021,38 @@ const AegisTrapSystem = () => {
   if (currentApp) {
     if (currentApp === 'calculator') {
       return (
-        <CalculatorVault 
-          onClose={() => setCurrentApp(null)}
-          onVaultAccess={handleVaultAccess}
-        />
+        <>
+          <CalculatorVault 
+            onClose={() => setCurrentApp(null)}
+            onVaultAccess={handleVaultAccess}
+          />
+          {currentNotification && (
+            <AegisNotification
+              notification={currentNotification}
+              onDismiss={dismissNotification}
+              onAction={handleAction}
+            />
+          )}
+        </>
       );
     }
     
     return (
-      <TrapApp 
-        appName={currentApp}
-        onClose={() => setCurrentApp(null)}
-        logAction={logAction}
-        capturePhoto={capturePhoto}
-      />
+      <>
+        <TrapApp 
+          appName={currentApp}
+          onClose={() => setCurrentApp(null)}
+          logAction={logAction}
+          capturePhoto={capturePhoto}
+        />
+        {currentNotification && (
+          <AegisNotification
+            notification={currentNotification}
+            onDismiss={dismissNotification}
+            onAction={handleAction}
+          />
+        )}
+      </>
     );
   }
 
@@ -1057,6 +1075,15 @@ const AegisTrapSystem = () => {
 
       {/* Emergency Wipe Mode - Always monitoring for triggers */}
       <WipeMode onWipeTriggered={handleWipeTriggered} />
+      
+      {/* Notification overlay - always visible */}
+      {currentNotification && (
+        <AegisNotification
+          notification={currentNotification}
+          onDismiss={dismissNotification}
+          onAction={handleAction}
+        />
+      )}
     </>
   );
 };
