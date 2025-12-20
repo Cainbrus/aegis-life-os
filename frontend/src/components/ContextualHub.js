@@ -2,14 +2,18 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AIWorkforceMonitor from './AIWorkforceMonitor';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const ContextualHub = ({ authStatus, onAppOpen, trapActive, ownerMode }) => {
   const [currentContext, setCurrentContext] = useState('general');
   const [contextualCards, setContextualCards] = useState([]);
   const [proactiveBriefing, setProactiveBriefing] = useState(null);
-  const [weatherData, setWeatherData] = useState(null);
-  const [timeOfDay, setTimeOfDay] = useState('morning');
+  const [privacyStats, setPrivacyStats] = useState(null);
+  const [chatMessage, setChatMessage] = useState('');
+  const [chatResponse, setChatResponse] = useState(null);
+  const [isThinking, setIsThinking] = useState(false);
+  const [goalInput, setGoalInput] = useState('');
+  const [goalPlan, setGoalPlan] = useState(null);
 
   useEffect(() => {
     determineContext();
@@ -20,7 +24,7 @@ const ContextualHub = ({ authStatus, onAppOpen, trapActive, ownerMode }) => {
     }, 60000); // Update every minute
 
     return () => clearInterval(interval);
-  }, [authStatus]);
+  }, [authStatus, ownerMode]);
 
   const determineContext = () => {
     const now = new Date();
@@ -29,245 +33,127 @@ const ContextualHub = ({ authStatus, onAppOpen, trapActive, ownerMode }) => {
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
     let context = 'general';
-    let timeContext = 'morning';
 
     if (hour >= 5 && hour < 12) {
       context = 'morning';
-      timeContext = 'morning';
     } else if (hour >= 12 && hour < 17) {
       context = isWeekend ? 'weekend_afternoon' : 'work';
-      timeContext = 'afternoon';
     } else if (hour >= 17 && hour < 22) {
       context = 'evening';
-      timeContext = 'evening';
     } else {
       context = 'night';
-      timeContext = 'night';
     }
 
     setCurrentContext(context);
-    setTimeOfDay(timeContext);
   };
 
   const loadContextualContent = async () => {
     try {
-      if (ownerMode) {
-        // Load real proactive content for owner
-        const briefingResponse = await axios.get(`${API}/proactive/briefing?type=${timeOfDay}`);
-        setProactiveBriefing(briefingResponse.data);
+      // Load contextual cards from backend
+      const cardsResponse = await axios.get(`${API}/context/cards`);
+      if (cardsResponse.data.cards) {
+        setContextualCards(cardsResponse.data.cards);
       }
 
-      // Generate contextual cards based on current context
-      generateContextualCards();
+      if (ownerMode) {
+        // Load proactive briefing
+        try {
+          const briefingResponse = await axios.get(`${API}/intelligence/briefing`);
+          setProactiveBriefing(briefingResponse.data);
+        } catch (e) {
+          console.log('Briefing not available');
+        }
+
+        // Load privacy stats
+        try {
+          const privacyResponse = await axios.get(`${API}/privacy/stats`);
+          setPrivacyStats(privacyResponse.data);
+        } catch (e) {
+          console.log('Privacy stats not available');
+        }
+      }
     } catch (error) {
       console.error('Failed to load contextual content:', error);
-      generateContextualCards(); // Fallback to static cards
+      // Generate fallback cards
+      setContextualCards(getFallbackCards());
     }
   };
 
-  const generateContextualCards = () => {
-    const cards = getContextualCards(currentContext, trapActive, ownerMode);
-    setContextualCards(cards);
-  };
+  const getFallbackCards = () => {
+    const hour = new Date().getHours();
+    const cards = [];
 
-  const getContextualCards = (context, isTrap, isOwner) => {
-    const baseCards = [];
-
-    switch (context) {
-      case 'morning':
-        baseCards.push(
-          {
-            id: 'morning_briefing',
-            title: '🌅 Good Morning',
-            type: 'briefing',
-            content: isOwner ? 'Ready to make today amazing! Here\'s what\'s ahead.' : 'Have a great day ahead!',
-            priority: 'high',
-            actions: [
-              { text: 'View Schedule', action: () => onAppOpen('calendar') },
-              { text: 'Check Weather', action: () => handleWeatherCheck() }
-            ]
-          },
-          {
-            id: 'morning_routine',
-            title: '☕ Morning Essentials',
-            type: 'routine',
-            content: 'Your usual morning apps and shortcuts',
-            priority: 'medium',
-            actions: [
-              { text: 'News', action: () => handleQuickAction('news') },
-              { text: 'Messages', action: () => onAppOpen('messages') },
-              { text: 'Email', action: () => handleQuickAction('email') }
-            ]
-          }
-        );
-        break;
-
-      case 'work':
-        baseCards.push(
-          {
-            id: 'work_focus',
-            title: '💼 Work Mode Active',
-            type: 'focus',
-            content: isOwner ? 'Optimized for productivity. Distractions minimized.' : 'Focus mode enabled',
-            priority: 'high',
-            actions: [
-              { text: 'Calendar', action: () => onAppOpen('calendar') },
-              { text: 'Notes', action: () => onAppOpen('notes') },
-              { text: 'Settings', action: () => onAppOpen('settings') }
-            ]
-          },
-          {
-            id: 'upcoming_meeting',
-            title: '📅 Next Meeting',
-            type: 'alert',
-            content: isTrap ? 'Team standup in 30 minutes' : (isOwner ? 'AI analysis suggests preparation time needed' : 'No meetings scheduled'),
-            priority: 'high',
-            actions: [
-              { text: 'Prepare', action: () => handleMeetingPrep() },
-              { text: 'Join Early', action: () => handleQuickAction('meeting') }
-            ]
-          }
-        );
-        break;
-
-      case 'evening':
-        baseCards.push(
-          {
-            id: 'evening_wind_down',
-            title: '🌆 Evening Relaxation',
-            type: 'lifestyle',
-            content: 'Time to unwind and reflect on the day',
-            priority: 'medium',
-            actions: [
-              { text: 'Netflix', action: () => handleQuickAction('netflix') },
-              { text: 'Music', action: () => handleQuickAction('music') },
-              { text: 'Photos', action: () => onAppOpen('photos') }
-            ]
-          },
-          {
-            id: 'daily_summary',
-            title: '📊 Day Summary',
-            type: 'insight',
-            content: isOwner ? 'AI has prepared your daily insights and achievements' : 'Review today\'s activities',
-            priority: 'low',
-            actions: [
-              { text: 'View Insights', action: () => handleDailySummary() },
-              { text: 'Plan Tomorrow', action: () => handlePlanTomorrow() }
-            ]
-          }
-        );
-        break;
-
-      case 'night':
-        baseCards.push(
-          {
-            id: 'night_mode',
-            title: '🌙 Night Mode',
-            type: 'system',
-            content: 'Optimized for nighttime use with reduced notifications',
-            priority: 'medium',
-            actions: [
-              { text: 'Sleep Timer', action: () => handleSleepTimer() },
-              { text: 'Do Not Disturb', action: () => handleQuickAction('dnd') }
-            ]
-          }
-        );
-        break;
-
-      default:
-        baseCards.push(
-          {
-            id: 'general_assistant',
-            title: isOwner ? '🤖 Your Digital Mate' : '📱 Assistant',
-            type: 'assistant',
-            content: isOwner ? 'I\'m here to help with whatever you need' : 'How can I help you today?',
-            priority: 'medium',
-            actions: [
-              { text: 'Quick Actions', action: () => handleQuickActions() },
-              { text: 'Voice Command', action: () => handleVoiceCommand() }
-            ]
-          }
-        );
+    if (hour >= 5 && hour < 12) {
+      cards.push({
+        id: 'greeting',
+        type: 'greeting',
+        title: 'Good Morning',
+        subtitle: 'Ready to start your day',
+        icon: '🌅',
+        priority: 1
+      });
+    } else if (hour >= 12 && hour < 17) {
+      cards.push({
+        id: 'greeting',
+        type: 'greeting',
+        title: 'Good Afternoon',
+        subtitle: 'Stay productive',
+        icon: '☀️',
+        priority: 1
+      });
+    } else {
+      cards.push({
+        id: 'greeting',
+        type: 'greeting',
+        title: 'Good Evening',
+        subtitle: 'Time to wind down',
+        icon: '🌙',
+        priority: 1
+      });
     }
 
-    // Add proactive intelligence cards for owner mode
-    if (isOwner) {
-      baseCards.push(
-        {
-          id: 'proactive_suggestions',
-          title: '💡 Smart Suggestions',
-          type: 'intelligence',
-          content: 'AI has identified opportunities and optimizations for you',
-          priority: 'high',
-          actions: [
-            { text: 'View All', action: () => handleProactiveSuggestions() },
-            { text: 'Quick Fix', action: () => handleQuickFix() }
-          ]
-        }
-      );
-    }
-
-    return baseCards;
+    return cards;
   };
 
-  const handleWeatherCheck = async () => {
-    // Mock weather data for demo
-    setWeatherData({
-      temp: '72°F',
-      condition: 'Partly Cloudy',
-      forecast: 'Perfect day ahead!'
-    });
-  };
+  const handleChatSubmit = async () => {
+    if (!chatMessage.trim()) return;
 
-  const handleMeetingPrep = () => {
-    // Mock meeting preparation
-    console.log('Preparing for meeting with AI assistance...');
-  };
-
-  const handleDailySummary = async () => {
-    if (ownerMode) {
-      try {
-        const response = await axios.get(`${API}/proactive/daily-summary`);
-        console.log('Daily summary:', response.data);
-      } catch (error) {
-        console.log('Mock daily summary: 8 tasks completed, 3 meetings attended, 15 messages processed');
-      }
+    setIsThinking(true);
+    try {
+      const response = await axios.post(`${API}/intelligence/chat`, {
+        message: chatMessage,
+        context: currentContext
+      });
+      
+      setChatResponse(response.data);
+      setChatMessage('');
+    } catch (error) {
+      console.error('Chat failed:', error);
+      setChatResponse({
+        response: "I'm having trouble connecting. Please try again.",
+        suggestions: []
+      });
+    } finally {
+      setIsThinking(false);
     }
   };
 
-  const handlePlanTomorrow = () => {
-    console.log('AI is analyzing tomorrow\'s optimal schedule...');
-  };
+  const handleGoalSubmit = async () => {
+    if (!goalInput.trim()) return;
 
-  const handleSleepTimer = () => {
-    console.log('Setting up sleep optimization...');
-  };
-
-  const handleQuickActions = () => {
-    console.log('Opening quick actions menu...');
-  };
-
-  const handleVoiceCommand = () => {
-    console.log('Listening for "Hey Mate" command...');
-  };
-
-  const handleProactiveSuggestions = async () => {
-    if (ownerMode) {
-      try {
-        const response = await axios.get(`${API}/proactive/suggestions`);
-        console.log('Proactive suggestions:', response.data);
-      } catch (error) {
-        console.log('Mock suggestions: Optimize calendar, backup photos, update passwords');
-      }
+    setIsThinking(true);
+    try {
+      const response = await axios.post(`${API}/intelligence/process-goal`, {
+        goal: goalInput
+      });
+      
+      setGoalPlan(response.data.plan);
+      setGoalInput('');
+    } catch (error) {
+      console.error('Goal processing failed:', error);
+    } finally {
+      setIsThinking(false);
     }
-  };
-
-  const handleQuickFix = () => {
-    console.log('Applying AI-recommended quick fixes...');
-  };
-
-  const handleQuickAction = (action) => {
-    console.log(`Quick action: ${action}`);
   };
 
   const getContextualStyling = () => {
@@ -282,15 +168,6 @@ const ContextualHub = ({ authStatus, onAppOpen, trapActive, ownerMode }) => {
         return 'bg-gradient-to-br from-slate-900 via-gray-900 to-black';
       default:
         return 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900';
-    }
-  };
-
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high': return 'border-red-500 bg-red-900 bg-opacity-20';
-      case 'medium': return 'border-yellow-500 bg-yellow-900 bg-opacity-20';
-      case 'low': return 'border-green-500 bg-green-900 bg-opacity-20';
-      default: return 'border-slate-500 bg-slate-900 bg-opacity-20';
     }
   };
 
@@ -324,22 +201,44 @@ const ContextualHub = ({ authStatus, onAppOpen, trapActive, ownerMode }) => {
         </div>
       </div>
 
-      {/* Weather Widget (if loaded) */}
-      {weatherData && (
-        <div className="p-4 bg-blue-900 bg-opacity-30 border-b border-blue-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-lg font-semibold">{weatherData.temp}</div>
-              <div className="text-sm text-blue-300">{weatherData.condition}</div>
+      {/* Contextual Cards */}
+      <div className="p-6 space-y-4">
+        {contextualCards.map((card) => (
+          <div
+            key={card.id}
+            className={`
+              rounded-lg p-4 transition-all duration-300 hover:transform hover:scale-[1.01]
+              ${card.type === 'greeting' ? 'bg-gradient-to-r from-blue-900 to-purple-900 border border-blue-700' :
+                card.type === 'status' ? 'bg-slate-800 border border-slate-700' :
+                card.type === 'action' ? 'bg-yellow-900 bg-opacity-30 border border-yellow-700' :
+                'bg-slate-800 border border-slate-700'}
+            `}
+          >
+            <div className="flex items-center space-x-3">
+              <span className="text-3xl">{card.icon}</span>
+              <div>
+                <h3 className="font-semibold">{card.title}</h3>
+                <p className="text-sm text-slate-400">{card.subtitle}</p>
+                {card.detail && (
+                  <p className="text-xs text-blue-400 mt-1">{card.detail}</p>
+                )}
+              </div>
             </div>
-            <div className="text-sm text-blue-200">{weatherData.forecast}</div>
+            {card.action && (
+              <button 
+                onClick={() => console.log(card.action)}
+                className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm"
+              >
+                View
+              </button>
+            )}
           </div>
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* AI Workforce Monitor (Owner Mode Only) */}
       {ownerMode && (
-        <div className="p-6">
+        <div className="p-6 border-t border-slate-700">
           <AIWorkforceMonitor 
             ownerMode={ownerMode}
             authStatus={authStatus}
@@ -347,60 +246,166 @@ const ContextualHub = ({ authStatus, onAppOpen, trapActive, ownerMode }) => {
         </div>
       )}
 
-      {/* Contextual Cards Grid */}
-      <div className="p-6 space-y-4">
-        {contextualCards.map((card) => (
-          <div
-            key={card.id}
-            className={`
-              rounded-lg border-l-4 p-6 transition-all duration-300 hover:transform hover:scale-[1.02]
-              ${getPriorityColor(card.priority)}
-            `}
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">{card.title}</h3>
-                <p className="text-slate-300 text-sm">{card.content}</p>
-              </div>
-              
-              <div className={`
-                px-2 py-1 rounded text-xs font-medium
-                ${card.priority === 'high' ? 'bg-red-800 text-red-200' :
-                  card.priority === 'medium' ? 'bg-yellow-800 text-yellow-200' :
-                  'bg-green-800 text-green-200'}
-              `}>
-                {card.priority}
-              </div>
+      {/* Chat with Digital Mate (Owner Mode) */}
+      {ownerMode && (
+        <div className="p-6 border-t border-slate-700">
+          <h2 className="text-lg font-semibold mb-4">💬 Chat with Your Digital Mate</h2>
+          <div className="bg-slate-800 rounded-lg p-4">
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={chatMessage}
+                onChange={(e) => setChatMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleChatSubmit()}
+                placeholder="Ask me anything..."
+                className="flex-1 bg-slate-700 border border-slate-600 rounded px-4 py-2 text-white"
+              />
+              <button
+                onClick={handleChatSubmit}
+                disabled={isThinking}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white px-4 py-2 rounded"
+              >
+                {isThinking ? '...' : 'Send'}
+              </button>
             </div>
-
-            {/* Card Actions */}
-            <div className="flex flex-wrap gap-2">
-              {card.actions.map((action, idx) => (
-                <button
-                  key={idx}
-                  onClick={action.action}
-                  className="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded text-sm font-medium transition-all"
-                >
-                  {action.text}
-                </button>
-              ))}
-            </div>
+            
+            {chatResponse && (
+              <div className="mt-4 p-4 bg-slate-900 rounded-lg">
+                <p className="text-slate-200">{chatResponse.response}</p>
+                {chatResponse.suggestions && chatResponse.suggestions.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {chatResponse.suggestions.map((suggestion, idx) => (
+                      <span key={idx} className="bg-blue-900 text-blue-200 px-2 py-1 rounded text-xs">
+                        💡 {suggestion}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {/* Goal Planner (Owner Mode) */}
+      {ownerMode && (
+        <div className="p-6 border-t border-slate-700">
+          <h2 className="text-lg font-semibold mb-4">🎯 AI Goal Planner</h2>
+          <div className="bg-slate-800 rounded-lg p-4">
+            <div className="flex space-x-2 mb-4">
+              <input
+                type="text"
+                value={goalInput}
+                onChange={(e) => setGoalInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleGoalSubmit()}
+                placeholder="What do you want to achieve? (e.g., 'Plan a vacation to Japan')"
+                className="flex-1 bg-slate-700 border border-slate-600 rounded px-4 py-2 text-white"
+              />
+              <button
+                onClick={handleGoalSubmit}
+                disabled={isThinking}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-white px-4 py-2 rounded"
+              >
+                {isThinking ? '...' : 'Plan'}
+              </button>
+            </div>
+            
+            {goalPlan && (
+              <div className="space-y-4">
+                <div className="p-4 bg-slate-900 rounded-lg">
+                  <h3 className="font-semibold text-green-400 mb-2">✓ Goal Understood</h3>
+                  <p className="text-slate-300">{goalPlan.understood_goal}</p>
+                </div>
+                
+                {goalPlan.execution_plan && goalPlan.execution_plan.length > 0 && (
+                  <div className="p-4 bg-slate-900 rounded-lg">
+                    <h3 className="font-semibold text-blue-400 mb-2">📋 Execution Plan</h3>
+                    <div className="space-y-2">
+                      {goalPlan.execution_plan.map((step, idx) => (
+                        <div key={idx} className="flex items-start space-x-2">
+                          <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-xs">{step.step}</span>
+                          <div>
+                            <p className="text-slate-200">{step.action}</p>
+                            <p className="text-xs text-slate-400">Agent: {step.agent}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {goalPlan.suggestions && goalPlan.suggestions.length > 0 && (
+                  <div className="p-4 bg-yellow-900 bg-opacity-30 rounded-lg border border-yellow-700">
+                    <h3 className="font-semibold text-yellow-400 mb-2">💡 AI Suggestions</h3>
+                    <ul className="space-y-1">
+                      {goalPlan.suggestions.map((suggestion, idx) => (
+                        <li key={idx} className="text-sm text-yellow-200">• {suggestion}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Privacy Guardian Status (Owner Mode) */}
+      {ownerMode && privacyStats && (
+        <div className="p-6 border-t border-slate-700">
+          <h2 className="text-lg font-semibold mb-4">🧠 Privacy Guardian</h2>
+          <div className="bg-slate-800 rounded-lg p-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-400">{privacyStats.total_analyzed}</div>
+                <div className="text-xs text-slate-400">Items Analyzed</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-400">{privacyStats.accepted_suggestions}</div>
+                <div className="text-xs text-slate-400">Accepted</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-400">{Math.round(privacyStats.trust_level * 100)}%</div>
+                <div className="text-xs text-slate-400">Trust Level</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-purple-400 capitalize">{privacyStats.learning_mode?.replace('_', ' ')}</div>
+                <div className="text-xs text-slate-400">Learning Mode</div>
+              </div>
+            </div>
+            <p className="text-xs text-slate-400 text-center">
+              {privacyStats.mode_explanation?.[privacyStats.learning_mode] || 'AI is learning your privacy preferences'}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Proactive Briefing Section (Owner Mode Only) */}
-      {ownerMode && proactiveBriefing && (
+      {ownerMode && proactiveBriefing && proactiveBriefing.briefing_type !== 'locked' && (
         <div className="p-6 border-t border-slate-700">
           <h2 className="text-xl font-semibold mb-4">🧠 Proactive Intelligence</h2>
           <div className="bg-slate-800 rounded-lg p-4">
             <h3 className="font-medium mb-2">{proactiveBriefing.title}</h3>
             <p className="text-slate-300 text-sm mb-3">{proactiveBriefing.summary}</p>
             
-            {proactiveBriefing.insights && (
-              <div className="space-y-1">
+            {proactiveBriefing.insights && proactiveBriefing.insights.length > 0 && (
+              <div className="space-y-1 mb-4">
+                <h4 className="text-sm font-semibold text-blue-400">Insights:</h4>
                 {proactiveBriefing.insights.map((insight, idx) => (
                   <div key={idx} className="text-xs text-blue-300">• {insight}</div>
+                ))}
+              </div>
+            )}
+            
+            {proactiveBriefing.action_items && proactiveBriefing.action_items.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {proactiveBriefing.action_items.map((item, idx) => (
+                  <button 
+                    key={idx}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                  >
+                    {item.text}
+                  </button>
                 ))}
               </div>
             )}
