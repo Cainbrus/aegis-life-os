@@ -658,10 +658,10 @@ const AegisTrapSystem = () => {
     // Trigger welcome notification for invisible mode
     triggerNotification({
       type: 'suggestion',
-      title: '🎉 Aegis Learning Complete!',
-      message: 'I now understand your patterns. I\'ll run invisibly in the background and only alert you when needed. Access me anytime via the Calculator secret code.',
+      title: '🎉 I Know You Now!',
+      message: 'I\'ve learned your patterns and I\'m now watching over everything. I\'ll delete anything suspicious, hide your private stuff, and only bother you when it matters. Access me anytime through Calculator → 8675309',
       actions: [
-        { id: 'got_it', label: 'Got it!', primary: true }
+        { id: 'got_it', label: 'Let\'s Go!', primary: true }
       ]
     });
   }, [triggerNotification]);
