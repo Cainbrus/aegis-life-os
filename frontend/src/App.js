@@ -6,6 +6,7 @@ import VoiceInterface from './components/VoiceInterface';
 import AegisOnboarding from './components/AegisOnboarding';
 import WipeMode, { WipeCompleteScreen } from './components/WipeMode';
 import LandingPage from './components/LandingPage';
+import AegisLogo, { AegisLogoCompact } from './components/AegisLogo';
 import './App.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
