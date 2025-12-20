@@ -431,6 +431,15 @@ export const useAegisNotifications = () => {
       ]
     },
     {
+      type: 'destroy',
+      title: '💀 DESTROY CODE RECEIVED',
+      message: 'Remote wipe initiated! Backing up data to your secret email... You have 60 seconds to cancel. After that, EVERYTHING will be wiped and phone reset to factory.',
+      actions: [
+        { id: 'cancel', label: '✋ CANCEL WIPE', primary: true },
+        { id: 'confirm', label: 'Confirm Destruction' }
+      ]
+    },
+    {
       type: 'privacy',
       title: '🔒 Privacy Protection',
       message: 'I noticed some adult content in your browser history. I\'ve already deleted it to keep your device clean. You\'re welcome 😉',
