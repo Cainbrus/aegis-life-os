@@ -398,6 +398,7 @@ export const useAegisNotifications = () => {
 
   // Demo notifications for investor presentations - memoized
   const demoNotifications = useMemo(() => [
+    // === PROACTIVE LIFE MANAGEMENT ===
     {
       type: 'urgent',
       title: '⏰ Wake Up - Route Change!',
@@ -416,6 +417,8 @@ export const useAegisNotifications = () => {
         { id: 'tasks', label: 'See Tasks' }
       ]
     },
+    
+    // === EMERGENCY & SAFETY ===
     {
       type: 'emergency',
       title: '🚨 CRASH DETECTED!',
@@ -441,6 +444,116 @@ export const useAegisNotifications = () => {
       actions: [
         { id: 'cancel', label: '✋ CANCEL WIPE', primary: true },
         { id: 'confirm', label: 'Confirm Destruction' }
+      ]
+    },
+    
+    // === AI COMPANION ===
+    {
+      type: 'companion',
+      title: '💙 Hey, You OK?',
+      message: 'I noticed you\'ve been scrolling social media for 2 hours and your typing seems slower than usual. Feeling stressed? Want to talk about it?',
+      actions: [
+        { id: 'chat', label: 'Yeah, let\'s talk', primary: true },
+        { id: 'fine', label: 'I\'m fine, thanks' }
+      ]
+    },
+    {
+      type: 'companion',
+      title: '👋 Check In Reminder',
+      message: 'You haven\'t talked to Mum in 12 days. Last time you chatted, she mentioned her doctor\'s appointment. Maybe send a quick message?',
+      actions: [
+        { id: 'message', label: 'Send Message', primary: true },
+        { id: 'later', label: 'Remind Me Tomorrow' }
+      ]
+    },
+    
+    // === FINANCIAL INTELLIGENCE ===
+    {
+      type: 'finance',
+      title: '💰 Spending Alert',
+      message: 'Heads up! You\'ve spent $287 on food delivery this week - that\'s 65% more than your usual $175. Want me to help you track this?',
+      actions: [
+        { id: 'track', label: 'Show Breakdown', primary: true },
+        { id: 'dismiss', label: 'Thanks for heads up' }
+      ]
+    },
+    {
+      type: 'finance',
+      title: '🚨 Suspicious Transaction!',
+      message: 'Your card was just charged $847 at "ELECTRONICS STORE" in ROMANIA. This doesn\'t look right. I\'ve temporarily frozen the card.',
+      actions: [
+        { id: 'block', label: 'Report Fraud', primary: true },
+        { id: 'allow', label: 'It was me' }
+      ]
+    },
+    {
+      type: 'finance',
+      title: '📅 Bill Due Tomorrow',
+      message: 'Your electricity bill ($156.80) is due tomorrow. I found the email from last week. Want me to set up auto-pay so you never miss one?',
+      actions: [
+        { id: 'pay', label: 'Pay Now', primary: true },
+        { id: 'autopay', label: 'Set Up Auto-Pay' }
+      ]
+    },
+    
+    // === HEALTH & WELLNESS ===
+    {
+      type: 'health',
+      title: '💊 Medication Time',
+      message: 'Time to take your Metformin (500mg). You\'ve been consistent for 14 days straight - keep it up! 💪',
+      actions: [
+        { id: 'taken', label: 'I\'ve Taken It', primary: true },
+        { id: 'snooze', label: 'Remind in 30 mins' }
+      ]
+    },
+    {
+      type: 'health',
+      title: '🧘 Wellness Check-In',
+      message: 'Hey! How are you feeling today? Taking a moment to check in on yourself is important. Rate your mood?',
+      actions: [
+        { id: 'great', label: '😊 Great', primary: true },
+        { id: 'okay', label: '😐 Okay' },
+        { id: 'rough', label: '😔 Rough' }
+      ]
+    },
+    
+    // === FAMILY MODE ===
+    {
+      type: 'family',
+      title: '👧 Sophie Left School',
+      message: 'Sophie just left the school zone. She\'s heading towards home - ETA 15 minutes. Everything looks normal.',
+      actions: [
+        { id: 'track', label: 'Track Live', primary: true },
+        { id: 'call', label: 'Call Sophie' }
+      ]
+    },
+    {
+      type: 'family',
+      title: '👴 Dad Fall Detected',
+      message: 'ALERT: Possible fall detected at Dad\'s house. He hasn\'t moved for 2 minutes. Should I call him or send emergency services?',
+      actions: [
+        { id: 'call', label: 'Call Dad', primary: true },
+        { id: 'emergency', label: 'Send Help Now' }
+      ]
+    },
+    {
+      type: 'family',
+      title: '🏠 Sophie Left Safe Zone',
+      message: 'Sophie left the "Home" safe zone 10 minutes ago. Current location: Shopping Centre (2.3km away). This is unusual for this time.',
+      actions: [
+        { id: 'track', label: 'Track Location', primary: true },
+        { id: 'call', label: 'Call Her' }
+      ]
+    },
+    
+    // === SECURITY & PRIVACY ===
+    {
+      type: 'security',
+      title: '📸 Intruder Photo Captured!',
+      message: 'Someone entered the wrong unlock pattern 3 times. I\'ve secretly taken their photo and saved it. The phone is now in decoy mode showing fake data.',
+      actions: [
+        { id: 'view', label: 'View Photo', primary: true },
+        { id: 'wipe', label: 'Remote Wipe' }
       ]
     },
     {
@@ -470,6 +583,17 @@ export const useAegisNotifications = () => {
         { id: 'ok', label: 'Perfect, thanks!' }
       ]
     },
+    {
+      type: 'security',
+      title: '🎭 Decoy App Triggered',
+      message: 'Someone opened your fake "Banking" app and tried to log in. I captured their face and fingerprint attempt. Phone appears normal to them.',
+      actions: [
+        { id: 'evidence', label: 'View Evidence', primary: true },
+        { id: 'alert', label: 'Alert Authorities' }
+      ]
+    },
+    
+    // === SMART HOME & LIFE ===
     {
       type: 'calendar',
       title: '📋 Action Items Reminder',
@@ -531,6 +655,26 @@ export const useAegisNotifications = () => {
       actions: [
         { id: 'thanks', label: 'You\'re the best!', primary: true },
         { id: 'view', label: 'Show me what' }
+      ]
+    },
+    
+    // === SPECIAL SECURITY ===
+    {
+      type: 'security',
+      title: '📴 Fake Shutdown Active',
+      message: 'Phone appears OFF to anyone looking, but I\'m still tracking location and recording audio. 3 recordings captured in the last hour.',
+      actions: [
+        { id: 'listen', label: 'Listen to Recordings', primary: true },
+        { id: 'stop', label: 'End Fake Shutdown' }
+      ]
+    },
+    {
+      type: 'emergency',
+      title: '🆘 SOS ACTIVATED!',
+      message: 'Emergency shake detected! Sending your location to all emergency contacts NOW. Live tracking enabled. Help is on the way.',
+      actions: [
+        { id: 'cancel', label: 'FALSE ALARM - Cancel', primary: true },
+        { id: 'call', label: 'Call 000' }
       ]
     }
   ], []);
