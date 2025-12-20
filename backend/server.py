@@ -2543,33 +2543,153 @@ async def process_user_goal(data: Dict[str, Any]):
 
 @api_router.post("/intelligence/chat")
 async def chat_with_intelligence(data: Dict[str, Any]):
-    """Have a conversation with your Digital Mate"""
+    """Have a conversation with your Digital Mate - GPT-powered contextual AI"""
     if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
         return {"error": "Owner authentication required"}
     
     try:
         message = data.get("message", "")
-        context = data.get("context", "general")
+        context = data.get("context", {})
+        session_id = data.get("session_id", "default_chat")
         
         if not message:
             return {"error": "No message provided"}
         
-        # Use L2 orchestrator for conversation
-        response = await l2_proactive_orchestrator.process_proactive_request(message, context)
+        # Get user context data for personalized responses
+        user_context = await build_user_context()
+        
+        # Build the system prompt with user context
+        system_prompt = f"""You are Aegis, a caring and intelligent Digital Mate - a personal AI companion that knows everything about the user and helps them manage their life.
+
+PERSONALITY:
+- Warm, friendly, and genuinely caring like a close friend
+- Proactive and helpful without being pushy
+- Direct and honest, but always supportive
+- Uses casual language and occasional emojis
+- Remembers everything the user tells you
+
+USER'S CURRENT CONTEXT:
+{user_context}
+
+YOUR CAPABILITIES:
+1. Check their calendar and schedule
+2. Monitor their spending and finances
+3. Track their family members' locations and safety
+4. Manage their medications and health
+5. Protect their privacy and security
+6. Just chat and provide emotional support
+
+RESPONSE STYLE:
+- Keep responses concise but warm (2-4 sentences usually)
+- Ask follow-up questions to show you care
+- Offer actionable suggestions when appropriate
+- If they seem stressed or down, be extra supportive
+- Reference their actual data when relevant
+
+Remember: You're not just an AI assistant - you're their Digital Mate who genuinely cares about their wellbeing."""
+
+        # Initialize LLM chat
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        llm_chat = LlmChat(
+            api_key=api_key,
+            session_id=f"aegis_chat_{session_id}",
+            system_message=system_prompt
+        ).with_model("openai", "gpt-4o")
+        
+        # Get conversation history for context
+        history = await db.intelligence_conversations.find(
+            {"session_id": session_id}
+        ).sort("timestamp", -1).limit(10).to_list(10)
+        
+        # Build context from history
+        history_context = ""
+        if history:
+            history_context = "\n\nRecent conversation:\n"
+            for msg in reversed(history):
+                history_context += f"User: {msg.get('user_message', '')}\n"
+                history_context += f"Aegis: {msg.get('ai_response', '')}\n"
+        
+        # Create the user message with context
+        full_message = message
+        if context.get('mood'):
+            full_message = f"[User's current mood: {context['mood']}] {message}"
+        
+        user_message = UserMessage(text=full_message + history_context)
+        
+        # Get AI response
+        ai_response = await llm_chat.send_message(user_message)
         
         # Store conversation
         await db.intelligence_conversations.insert_one({
+            "id": str(uuid.uuid4()),
+            "session_id": session_id,
             "user_message": message,
-            "ai_response": response,
+            "ai_response": ai_response,
             "context": context,
             "timestamp": datetime.utcnow()
         })
         
-        return response
+        return {
+            "response": ai_response,
+            "session_id": session_id
+        }
         
     except Exception as e:
         logger.error(f"Intelligence chat error: {e}")
-        return {"error": "Chat failed", "response": "I'm having trouble processing that. Please try again."}
+        # Fallback to a friendly response if AI fails
+        return {
+            "response": "I'm having a moment here - my brain got a bit fuzzy. 😅 Can you try saying that again?",
+            "error": str(e)
+        }
+
+
+async def build_user_context():
+    """Build a context string with the user's current data"""
+    context_parts = []
+    
+    try:
+        # Get today's calendar events
+        today = datetime.now().strftime("%Y-%m-%d")
+        events = await db.calendar_events.find({"date": today}, {"_id": 0}).to_list(10)
+        if events:
+            context_parts.append(f"TODAY'S SCHEDULE: {len(events)} events")
+            for e in events[:3]:
+                context_parts.append(f"  - {e.get('time', 'TBD')}: {e.get('title', 'Event')}")
+        
+        # Get recent spending
+        recent_transactions = await db.transactions.find({}, {"_id": 0}).sort("date", -1).limit(5).to_list(5)
+        if recent_transactions:
+            total = sum(abs(t.get('amount', 0)) for t in recent_transactions if t.get('amount', 0) < 0)
+            context_parts.append(f"RECENT SPENDING: ${total:.2f} in last few transactions")
+        
+        # Get family status
+        family = await db.family_members.find({}, {"_id": 0}).to_list(10)
+        if family:
+            context_parts.append(f"FAMILY: {len(family)} members tracked")
+            for f in family[:3]:
+                context_parts.append(f"  - {f.get('name', 'Member')}: {f.get('status', 'Unknown')}")
+        
+        # Get medication reminders
+        meds = await db.medications.find({"taken": False}, {"_id": 0}).to_list(5)
+        if meds:
+            context_parts.append(f"MEDICATIONS DUE: {len(meds)} not yet taken today")
+        
+        # Get mood history
+        moods = await db.mood_history.find({}, {"_id": 0}).sort("timestamp", -1).limit(3).to_list(3)
+        if moods:
+            recent_mood = moods[0].get('mood', 'unknown') if moods else 'unknown'
+            context_parts.append(f"RECENT MOOD: {recent_mood}")
+        
+        # Get vault status
+        vault_count = await db.vault_files.count_documents({})
+        if vault_count > 0:
+            context_parts.append(f"VAULT: {vault_count} protected files")
+            
+    except Exception as e:
+        logger.error(f"Error building user context: {e}")
+        context_parts.append("(Some data unavailable)")
+    
+    return "\n".join(context_parts) if context_parts else "No specific data available yet - still learning about this user."
 
 # ===============================
 # PHASE 4: VOICE INTERFACE
