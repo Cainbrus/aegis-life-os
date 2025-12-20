@@ -1910,8 +1910,8 @@ async def complete_onboarding(onboarding_data: Dict[str, Any]):
 async def get_onboarding_status():
     """Check if user has completed onboarding"""
     try:
-        # Check if any onboarding records exist
-        record = await db.user_onboarding.find_one({}, sort=[("completed_at", -1)])
+        # Check if any onboarding records exist (exclude _id)
+        record = await db.user_onboarding.find_one({}, {"_id": 0}, sort=[("completed_at", -1)])
         
         return {
             "onboarding_complete": record is not None,
