@@ -4,6 +4,36 @@
 }
 
 /* ===========================
+   FLOATING DIGITAL NUMBERS ANIMATION
+   =========================== */
+
+@keyframes float-down {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+.animate-float-down {
+  animation: float-down linear infinite;
+}
+
+@keyframes scan-vertical {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+.animate-scan-vertical {
+  animation: scan-vertical 3s linear infinite;
+}
+
+/* ===========================
    PATTERN AUTHENTICATION STYLING
    =========================== */
 
