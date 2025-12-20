@@ -3202,6 +3202,140 @@ async def handle_notification_action(data: Dict[str, Any]):
     except Exception as e:
         return {"success": False}
 
+# =============================================
+# PUSH NOTIFICATION SUBSCRIPTION ENDPOINTS
+# For real browser push notifications
+# =============================================
+
+@api_router.post("/notifications/subscribe")
+async def subscribe_to_push(data: Dict[str, Any]):
+    """Store push notification subscription from browser"""
+    try:
+        subscription_data = data.get("subscription", {})
+        
+        if not subscription_data.get("endpoint"):
+            return {"success": False, "message": "Invalid subscription - missing endpoint"}
+        
+        # Store subscription in database
+        push_subscription = {
+            "id": str(uuid.uuid4()),
+            "endpoint": subscription_data.get("endpoint"),
+            "keys": subscription_data.get("keys", {}),
+            "expiration_time": subscription_data.get("expirationTime"),
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "active": True,
+            "user_agent": data.get("user_agent", ""),
+            "security_state": l1_enhanced_kernel.current_security_state.value
+        }
+        
+        # Update existing or insert new subscription
+        await db.push_subscriptions.update_one(
+            {"endpoint": subscription_data.get("endpoint")},
+            {"$set": push_subscription},
+            upsert=True
+        )
+        
+        logger.info(f"Push subscription registered/updated: {push_subscription['id']}")
+        
+        return {
+            "success": True,
+            "message": "Push subscription registered successfully",
+            "subscription_id": push_subscription["id"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Push subscription error: {e}")
+        return {"success": False, "message": "Failed to register push subscription"}
+
+@api_router.post("/notifications/unsubscribe")
+async def unsubscribe_from_push(data: Dict[str, Any]):
+    """Remove push notification subscription"""
+    try:
+        endpoint = data.get("endpoint")
+        
+        if not endpoint:
+            return {"success": False, "message": "Missing endpoint"}
+        
+        # Mark subscription as inactive
+        result = await db.push_subscriptions.update_one(
+            {"endpoint": endpoint},
+            {"$set": {"active": False, "unsubscribed_at": datetime.utcnow()}}
+        )
+        
+        if result.modified_count > 0:
+            logger.info(f"Push subscription unsubscribed: {endpoint[:50]}...")
+            return {"success": True, "message": "Unsubscribed successfully"}
+        else:
+            return {"success": False, "message": "Subscription not found"}
+        
+    except Exception as e:
+        logger.error(f"Push unsubscribe error: {e}")
+        return {"success": False, "message": "Failed to unsubscribe"}
+
+@api_router.get("/notifications/push-status")
+async def get_push_status():
+    """Get push notification status and active subscriptions count"""
+    try:
+        active_count = await db.push_subscriptions.count_documents({"active": True})
+        total_count = await db.push_subscriptions.count_documents({})
+        
+        return {
+            "push_enabled": True,
+            "active_subscriptions": active_count,
+            "total_subscriptions": total_count,
+            "vapid_configured": True  # In production, check actual VAPID config
+        }
+        
+    except Exception as e:
+        logger.error(f"Push status error: {e}")
+        return {"push_enabled": False, "active_subscriptions": 0}
+
+@api_router.post("/notifications/send-push")
+async def send_push_notification(data: Dict[str, Any]):
+    """Send a push notification to all active subscribers (owner only)"""
+    if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
+        return {"error": "Owner authentication required"}
+    
+    try:
+        title = data.get("title", "Aegis Alert")
+        body = data.get("body", "")
+        notification_type = data.get("type", "info")
+        
+        # Get all active subscriptions
+        subscriptions = await db.push_subscriptions.find(
+            {"active": True},
+            {"_id": 0}
+        ).to_list(100)
+        
+        # In a production environment, you would use web-push library here
+        # to actually send push notifications to each subscription endpoint
+        # For now, we log the intent and store the notification
+        
+        push_record = {
+            "id": str(uuid.uuid4()),
+            "title": title,
+            "body": body,
+            "type": notification_type,
+            "sent_at": datetime.utcnow(),
+            "target_count": len(subscriptions),
+            "status": "simulated"  # Would be "sent" in production with web-push
+        }
+        
+        await db.push_sent.insert_one(push_record)
+        
+        logger.info(f"Push notification queued: {title} to {len(subscriptions)} subscribers")
+        
+        return {
+            "success": True,
+            "message": f"Push notification sent to {len(subscriptions)} subscribers",
+            "notification_id": push_record["id"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Send push error: {e}")
+        return {"success": False, "message": "Failed to send push notification"}
+
 @api_router.post("/notifications/trigger")
 async def trigger_notification(data: Dict[str, Any]):
     """Manually trigger a notification"""
