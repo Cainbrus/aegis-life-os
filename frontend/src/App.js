@@ -9,6 +9,7 @@ import LandingPage from './components/LandingPage';
 import AegisLogo, { AegisLogoCompact } from './components/AegisLogo';
 import AegisLearningMode from './components/AegisLearningMode';
 import { AegisNotification, AegisCalendar, InvisibleHomeScreen, useAegisNotifications } from './components/AegisInvisibleMode';
+import AegisChat from './components/AegisChat';
 import './App.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
