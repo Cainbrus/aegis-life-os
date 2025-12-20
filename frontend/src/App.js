@@ -740,8 +740,9 @@ const AegisTrapSystem = () => {
   };
 
   const handleGetStarted = () => {
+    // User clicked "Initialize Aegis" - start onboarding
     setShowLandingPage(false);
-    checkOnboardingStatus();
+    setOnboardingComplete(false); // Force show onboarding
   };
 
   const handleOnboardingComplete = () => {
