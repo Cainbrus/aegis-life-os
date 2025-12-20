@@ -32,6 +32,14 @@ export const AegisNotification = ({ notification, onDismiss, onAction }) => {
         return { border: 'border-yellow-500', bg: 'bg-yellow-500/10', glow: 'shadow-[0_0_30px_rgba(234,179,8,0.4)]' };
       case 'destroy':
         return { border: 'border-red-700', bg: 'bg-red-900/30', glow: 'shadow-[0_0_60px_rgba(185,28,28,0.6)]' };
+      case 'companion':
+        return { border: 'border-pink-500', bg: 'bg-pink-500/10', glow: 'shadow-[0_0_30px_rgba(236,72,153,0.3)]' };
+      case 'finance':
+        return { border: 'border-emerald-500', bg: 'bg-emerald-500/10', glow: 'shadow-[0_0_30px_rgba(16,185,129,0.3)]' };
+      case 'health':
+        return { border: 'border-rose-400', bg: 'bg-rose-400/10', glow: 'shadow-[0_0_30px_rgba(251,113,133,0.3)]' };
+      case 'family':
+        return { border: 'border-amber-500', bg: 'bg-amber-500/10', glow: 'shadow-[0_0_30px_rgba(245,158,11,0.3)]' };
       case 'privacy':
         return { border: 'border-purple-500', bg: 'bg-purple-500/10', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.3)]' };
       case 'reminder':
@@ -57,6 +65,14 @@ export const AegisNotification = ({ notification, onDismiss, onAction }) => {
         return '📍';
       case 'destroy':
         return '💀';
+      case 'companion':
+        return '💙';
+      case 'finance':
+        return '💰';
+      case 'health':
+        return '💊';
+      case 'family':
+        return '👨‍👩‍👧';
       case 'privacy':
         return '🔒';
       case 'reminder':
