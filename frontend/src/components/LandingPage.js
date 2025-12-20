@@ -4,8 +4,11 @@ import AegisLogo, { AegisLogoCompact } from './AegisLogo';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Hero background image
-const HERO_IMAGE = "https://images.unsplash.com/photo-1682159672286-40790338349b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHw0fHxkaWdpdGFsJTIwaGFuZHNoYWtlJTIwaHVtYW4lMjByb2JvdHxlbnwwfHx8fDE3NjYyMDEzOTh8MA&ixlib=rb-4.1.0&q=85";
+// BOLD DRAMATIC IMAGES
+const HERO_BG = "https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?w=1920&q=80"; // Cyberpunk neon
+const AI_IMAGE = "https://images.unsplash.com/photo-1677442135136-760c813028c0?w=800&q=80"; // AI circuit brain
+const CYBER_IMAGE = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80"; // Matrix code
+const TECH_IMAGE = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80"; // Circuit board
 
 const LandingPage = ({ onGetStarted }) => {
   const [email, setEmail] = useState('');
@@ -30,7 +33,6 @@ const LandingPage = ({ onGetStarted }) => {
       }, 3000);
     } catch (error) {
       console.error('Beta signup failed:', error);
-      // Still proceed for demo
       setIsSignedUp(true);
       setTimeout(() => {
         onGetStarted();
@@ -42,16 +44,26 @@ const LandingPage = ({ onGetStarted }) => {
 
   if (isSignedUp) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-6">
-          <AegisLogo size={150} />
-          <h1 className="text-3xl font-bold mb-4 mt-6">Welcome to Aegis!</h1>
-          <p className="text-slate-300 mb-6">
-            Your Digital Mate is being initialized...
+      <div className="min-h-screen bg-black text-white flex items-center justify-center relative overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/30 via-black to-purple-900/30"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzA2YjZkNCIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50"></div>
+        
+        <div className="text-center max-w-md mx-auto px-6 relative z-10">
+          <AegisLogo size={180} />
+          <h1 className="text-4xl font-black mb-4 mt-8 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 drop-shadow-[0_0_20px_rgba(6,182,212,0.5)]">
+            INITIALIZING...
+          </h1>
+          <p className="text-cyan-300 mb-6 text-lg">
+            Your Digital Mate is coming online
           </p>
-          <div className="animate-spin text-4xl mb-4">⚡</div>
-          <div className="text-sm text-slate-400">
-            Launching your personalized AI experience
+          <div className="flex justify-center space-x-2 mb-4">
+            <div className="w-3 h-3 bg-cyan-400 rounded-full animate-bounce"></div>
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+            <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+          </div>
+          <div className="text-sm text-cyan-400/70 font-mono">
+            [SYSTEM BOOT SEQUENCE ACTIVE]
           </div>
         </div>
       </div>
@@ -59,14 +71,22 @@ const LandingPage = ({ onGetStarted }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white">
-      {/* Neural Network Background Animation */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-10 w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-          <div className="absolute top-32 left-32 w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-          <div className="absolute top-20 right-20 w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
-        </div>
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      {/* DRAMATIC BACKGROUND */}
+      <div className="fixed inset-0">
+        {/* Dark gradient base */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-900 to-black"></div>
+        
+        {/* Animated grid pattern */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzA2YjZkNCIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-60"></div>
+        
+        {/* Glowing orbs */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] animate-pulse" style={{animationDelay: '2s'}}></div>
+        
+        {/* Scan line effect */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent h-1 animate-scan"></div>
       </div>
 
       <div className="relative z-10">
