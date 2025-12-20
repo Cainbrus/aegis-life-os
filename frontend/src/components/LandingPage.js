@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import AegisLogo, { AegisLogoCompact } from './AegisLogo';
+import { DigitalBrain, DigitalLock, DigitalMask, DigitalCrown, DigitalTarget, DigitalGear, DigitalChip } from './DigitalIcons';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// BOLD DRAMATIC IMAGES
-const HERO_BG = "https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?w=1920&q=80"; // Cyberpunk neon
+// BOLD DRAMATIC IMAGES - Circuit/Digital themed
 const AI_IMAGE = "https://images.unsplash.com/photo-1677442135136-760c813028c0?w=800&q=80"; // AI circuit brain
 const CYBER_IMAGE = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80"; // Matrix code
 const TECH_IMAGE = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80"; // Circuit board
