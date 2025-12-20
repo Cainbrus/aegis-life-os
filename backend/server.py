@@ -2172,9 +2172,10 @@ Provide your analysis in JSON format."""
             
             await db.privacy_learning.insert_one(learning_record)
             
-            # Adjust trust level based on acceptance rate
+            # Adjust trust level based on acceptance rate (exclude _id)
             recent_feedback = await db.privacy_learning.find(
-                {"timestamp": {"$gte": datetime.utcnow() - timedelta(days=7)}}
+                {"timestamp": {"$gte": datetime.utcnow() - timedelta(days=7)}},
+                {"_id": 0}
             ).to_list(100)
             
             if recent_feedback:
