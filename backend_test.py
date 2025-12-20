@@ -1813,7 +1813,7 @@ class AegisEnhancedSystemTester:
         self.test_push_notifications_send_different_types()
         
         # Phase 9: Legacy Advanced Features (Priority 2)
-        print(f"\n🚀 PHASE 8: LEGACY ADVANCED FEATURES")
+        print(f"\n🚀 PHASE 9: LEGACY ADVANCED FEATURES")
         self.test_calculator_secret_handshake()
         self.test_phantom_folder_authentication()
         self.test_phantom_folder_data_access()
@@ -1822,20 +1822,20 @@ class AegisEnhancedSystemTester:
         self.test_onboarding_status_check()
         self.test_onboarding_completion()
         
-        # Phase 9: Legacy Proactive Intelligence (Priority 3)
-        print(f"\n🧠 PHASE 9: LEGACY PROACTIVE INTELLIGENCE")
+        # Phase 10: Legacy Proactive Intelligence (Priority 3)
+        print(f"\n🧠 PHASE 10: LEGACY PROACTIVE INTELLIGENCE")
         self.test_l2_ai_orchestrator()
         self.test_proactive_briefing_generation()
         self.test_wake_word_status()
         
-        # Phase 10: Advanced Pattern Features & Security
-        print(f"\n🔒 PHASE 10: ADVANCED PATTERN FEATURES & SECURITY")
+        # Phase 11: Advanced Pattern Features & Security
+        print(f"\n🔒 PHASE 11: ADVANCED PATTERN FEATURES & SECURITY")
         self.test_duress_pattern_auth()
         self.test_auto_detect_pattern()
         self.test_vault_access_without_auth()
         
-        # Phase 11: Security & Lockout Testing
-        print(f"\n🛡️  PHASE 11: SECURITY & LOCKOUT TESTING")
+        # Phase 12: Security & Lockout Testing
+        print(f"\n🛡️  PHASE 12: SECURITY & LOCKOUT TESTING")
         self.test_failed_authentication_lockout()
         self.test_logout()
         
