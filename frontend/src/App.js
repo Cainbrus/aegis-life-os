@@ -818,6 +818,99 @@ const AegisTrapSystem = () => {
     return <AegisOnboarding onComplete={handleOnboardingComplete} />;
   }
 
+  // =============================================
+  // LEARNING MODE - Show after onboarding, before invisible mode
+  // This teaches Aegis about the user's patterns
+  // =============================================
+  if (showLearningMode && isAuthenticated && ownerMode) {
+    return (
+      <>
+        <AegisLearningMode onLearningComplete={handleLearningComplete} />
+        {/* Show notifications even during learning */}
+        {currentNotification && (
+          <AegisNotification
+            notification={currentNotification}
+            onDismiss={dismissNotification}
+            onAction={handleAction}
+          />
+        )}
+      </>
+    );
+  }
+
+  // =============================================
+  // INVISIBLE MODE - Aegis runs in background
+  // Shows phone-like home screen with notifications
+  // Access Aegis via Calculator secret code
+  // =============================================
+  if (showInvisibleMode && isAuthenticated) {
+    // Show Calendar if requested
+    if (showCalendar) {
+      return (
+        <>
+          <AegisCalendar onClose={() => setShowCalendar(false)} />
+          {currentNotification && (
+            <AegisNotification
+              notification={currentNotification}
+              onDismiss={dismissNotification}
+              onAction={handleAction}
+            />
+          )}
+        </>
+      );
+    }
+    
+    // Show Calculator Vault if requested (secret access to Aegis)
+    if (currentApp === 'calculator') {
+      return (
+        <>
+          <CalculatorVault 
+            onClose={() => {
+              setCurrentApp(null);
+              // When closing vault, exit invisible mode to show full Aegis
+              handleExitInvisibleMode();
+            }}
+            onVaultAccess={handleVaultAccess}
+          />
+          {currentNotification && (
+            <AegisNotification
+              notification={currentNotification}
+              onDismiss={dismissNotification}
+              onAction={handleAction}
+            />
+          )}
+        </>
+      );
+    }
+    
+    // Show invisible home screen (looks like normal phone)
+    return (
+      <>
+        <InvisibleHomeScreen
+          onOpenCalculator={() => setCurrentApp('calculator')}
+          onOpenCalendar={() => setShowCalendar(true)}
+          onOpenApp={(appName) => {
+            // Log app opens even in invisible mode
+            logAction("app_opened_invisible_mode", appName, { 
+              timestamp: new Date().toISOString() 
+            });
+            // Could show fake apps or redirect to real ones
+          }}
+        />
+        {/* Always show notifications in invisible mode */}
+        {currentNotification && (
+          <AegisNotification
+            notification={currentNotification}
+            onDismiss={dismissNotification}
+            onAction={handleAction}
+          />
+        )}
+        {/* Wipe Mode still active in background */}
+        <WipeMode onWipeTriggered={handleWipeTriggered} />
+      </>
+    );
+  }
+
   // Show Pattern interface if not authenticated - WITH DRAMATIC BACKGROUND
   if (!isAuthenticated) {
     return (
