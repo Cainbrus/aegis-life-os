@@ -79,24 +79,31 @@ const LandingPage = ({ onGetStarted }) => {
         </header>
 
         <div className="container mx-auto px-6 py-16 max-w-6xl">
-          {/* Hero Section with AI Animation */}
+          {/* Hero Section with Logo and AI Animation */}
           <div className="text-center mb-20">
-            <h1 className="text-6xl md:text-8xl font-bold mb-8 font-mono">
+            {/* Main Logo */}
+            <div className="flex justify-center mb-8">
+              <AegisLogo size={220} showText={true} />
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl font-bold mb-8 font-mono">
               <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-pulse">
-                HIERARCHICAL
+                YOUR DIGITAL
               </span>
               <span className="block bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent" style={{animationDelay: '0.5s'}}>
-                PROACTIVE
-              </span>
-              <span className="block bg-gradient-to-r from-cyan-400 via-green-500 to-blue-500 bg-clip-text text-transparent" style={{animationDelay: '1s'}}>
-                INTELLIGENCE
+                LIFE COMPANION
               </span>
             </h1>
             
             <div className="relative">
               <p className="text-xl md:text-2xl text-slate-300 max-w-4xl mx-auto mb-12 leading-relaxed">
-                <span className="text-cyan-400 font-mono">[SYSTEM INITIALIZED]</span> Your Digital Mate - 
-                An advanced AI workforce that learns, protects, and evolves with your digital life.
+                <span className="text-cyan-400 font-mono">[SYSTEM INITIALIZED]</span> Where AI meets human trust - 
+                An advanced intelligence that learns, protects, and evolves with your digital life.
+              </p>
+              
+              {/* Tagline */}
+              <p className="text-lg text-slate-400 italic mb-8">
+                "Better be safe than sorry"
               </p>
               
               {/* Scanning Line Effect */}
@@ -115,6 +122,20 @@ const LandingPage = ({ onGetStarted }) => {
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                 </span>
               </button>
+            </div>
+          </div>
+
+          {/* Hero Image Section */}
+          <div className="relative mb-20 rounded-2xl overflow-hidden border border-cyan-500/30 shadow-2xl shadow-cyan-500/10">
+            <img 
+              src={HERO_IMAGE} 
+              alt="Human and AI partnership" 
+              className="w-full h-64 md:h-96 object-cover opacity-60"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 right-0 p-8 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-cyan-400 mb-2">Human + AI Partnership</h2>
+              <p className="text-slate-300">Your Digital Mate extends your capabilities while protecting your privacy</p>
             </div>
           </div>
 
