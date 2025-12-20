@@ -538,6 +538,7 @@ const AegisOnboarding = ({ onComplete }) => {
       case 2: return setupData.normalPattern && setupData.ownerCode;
       case 3: return setupData.customWakeName && setupData.duressPhrase;
       case 4: return setupData.calculatorCode;
+      case 5: return setupData.destroyCode && setupData.backupEmail; // Destroy mode validation
       default: return true;
     }
   };
@@ -571,7 +572,8 @@ const AegisOnboarding = ({ onComplete }) => {
             {currentStep === 2 && renderPatternSetup()}
             {currentStep === 3 && renderVoiceSetup()}
             {currentStep === 4 && renderSecretSetup()}
-            {currentStep === 5 && renderCompletion()}
+            {currentStep === 5 && renderDestroyMode()}
+            {currentStep === 6 && renderCompletion()}
           </div>
         </div>
 
