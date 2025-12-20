@@ -918,6 +918,7 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
                 if (app.action === 'calculator') onOpenCalculator();
                 else if (app.action === 'calendar') onOpenCalendar();
                 else if (app.action === 'chat') onOpenChat && onOpenChat();
+                else if (app.action === 'settings') onOpenSettings && onOpenSettings();
                 else onOpenApp(app.name);
               }}
               className="flex flex-col items-center group"
