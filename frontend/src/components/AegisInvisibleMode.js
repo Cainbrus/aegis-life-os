@@ -26,6 +26,10 @@ export const AegisNotification = ({ notification, onDismiss, onAction }) => {
         return { border: 'border-red-500', bg: 'bg-red-500/10', glow: 'shadow-[0_0_30px_rgba(239,68,68,0.3)]' };
       case 'urgent':
         return { border: 'border-orange-500', bg: 'bg-orange-500/10', glow: 'shadow-[0_0_30px_rgba(249,115,22,0.4)]' };
+      case 'emergency':
+        return { border: 'border-red-600', bg: 'bg-red-600/20', glow: 'shadow-[0_0_50px_rgba(220,38,38,0.5)]' };
+      case 'lost':
+        return { border: 'border-yellow-500', bg: 'bg-yellow-500/10', glow: 'shadow-[0_0_30px_rgba(234,179,8,0.4)]' };
       case 'privacy':
         return { border: 'border-purple-500', bg: 'bg-purple-500/10', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.3)]' };
       case 'reminder':
@@ -45,6 +49,10 @@ export const AegisNotification = ({ notification, onDismiss, onAction }) => {
         return '🚨';
       case 'urgent':
         return '⚡';
+      case 'emergency':
+        return '🆘';
+      case 'lost':
+        return '📍';
       case 'privacy':
         return '🔒';
       case 'reminder':
