@@ -72,10 +72,7 @@ const LandingPage = ({ onGetStarted }) => {
       <div className="relative z-10">
         {/* Header */}
         <header className="flex items-center justify-between p-6 border-b border-cyan-500/20 bg-slate-900/50 backdrop-blur-sm">
-          <div className="flex items-center space-x-3">
-            <div className="text-4xl animate-pulse">🛡️</div>
-            <div className="text-2xl font-bold text-cyan-400 font-mono tracking-wider">AEGIS</div>
-          </div>
+          <AegisLogoCompact size={45} />
           <div className="text-sm text-slate-400 font-mono">
             {new Date().toLocaleTimeString()} | AI STATUS: ACTIVE
           </div>
