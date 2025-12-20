@@ -545,7 +545,7 @@ const AegisTrapSystem = () => {
   const [trapEvidence, setTrapEvidence] = useState(null);
   const [onboardingComplete, setOnboardingComplete] = useState(null);
   const [wipeTriggered, setWipeTriggered] = useState(false);
-  const [showLandingPage, setShowLandingPage] = useState(true);
+  const [showLandingPage, setShowLandingPage] = useState(null); // null = loading, true = show landing, false = skip landing
 
   // Determine if trap mode is active
   const trapActive = authStatus?.security_state === "STATE_PHONE_UNLOCKED" && authStatus?.trap_mode;
@@ -565,10 +565,18 @@ const AegisTrapSystem = () => {
   const checkOnboardingStatus = async () => {
     try {
       const response = await axios.get(`${API}/onboarding/status`);
-      setOnboardingComplete(response.data.onboarding_complete);
+      const isComplete = response.data.onboarding_complete;
+      setOnboardingComplete(isComplete);
+      // If onboarding is complete, skip the landing page
+      if (isComplete) {
+        setShowLandingPage(false);
+      } else {
+        setShowLandingPage(true);
+      }
     } catch (error) {
       console.error('Failed to check onboarding status:', error);
       setOnboardingComplete(false);
+      setShowLandingPage(true); // Show landing for new users
     }
   };
 
