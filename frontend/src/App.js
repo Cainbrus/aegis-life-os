@@ -711,34 +711,6 @@ const AegisTrapSystem = () => {
       loadSystemStatus();
     }
   }, [isAuthenticated, loadSystemStatus]);
-  };
-
-  const loadSystemStatus = async () => {
-    try {
-      const response = await axios.get(`${API}/system/trap-status`);
-      setSystemStatus(response.data);
-    } catch (error) {
-      console.error("Failed to load system status:", error);
-    }
-  };
-
-  const loadTrapStatus = async () => {
-    try {
-      const response = await axios.get(`${API}/trap/status`);
-      setTrapStatus(response.data);
-    } catch (error) {
-      console.error("Failed to load trap status:", error);
-    }
-  };
-
-  const loadTrapEvidence = async () => {
-    try {
-      const response = await axios.get(`${API}/trap/evidence`);
-      setTrapEvidence(response.data);
-    } catch (error) {
-      console.error("Failed to load trap evidence:", error);
-    }
-  };
 
   const handleAuthSuccess = (authResult) => {
     setAuthStatus(authResult);
