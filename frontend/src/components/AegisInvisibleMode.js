@@ -380,8 +380,8 @@ export const useAegisNotifications = () => {
   const [currentNotification, setCurrentNotification] = useState(null);
   const [demoNotificationsShown, setDemoNotificationsShown] = useState(0);
 
-  // Demo notifications for investor presentations
-  const demoNotifications = [
+  // Demo notifications for investor presentations - memoized
+  const demoNotifications = useMemo(() => [
     {
       type: 'calendar',
       title: '📅 Upcoming Meeting',
@@ -418,7 +418,7 @@ export const useAegisNotifications = () => {
         { id: 'dismiss', label: 'OK' }
       ]
     }
-  ];
+  ], []);
 
   useEffect(() => {
     // Check for real notifications periodically
@@ -453,30 +453,23 @@ export const useAegisNotifications = () => {
     }, 10000);
 
     return () => clearTimeout(demoTimer);
-  }, [demoNotificationsShown]);
+  }, [demoNotificationsShown, demoNotifications]);
 
+  // Update current notification when notifications list changes
   useEffect(() => {
-    // Show notifications one at a time
-    if (notifications.length > 0 && !currentNotification) {
-      setCurrentNotification(notifications[0]);
-    }
+    // Use timeout to avoid synchronous setState in effect
+    const timer = setTimeout(() => {
+      if (notifications.length > 0 && !currentNotification) {
+        setCurrentNotification(notifications[0]);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [notifications, currentNotification]);
 
   const dismissNotification = useCallback(() => {
     setNotifications(prev => prev.slice(1));
     setCurrentNotification(null);
-    
-    // Queue next demo notification after dismissal
-    setTimeout(() => {
-      if (demoNotificationsShown < demoNotifications.length) {
-        setNotifications(prev => [...prev, { 
-          ...demoNotifications[demoNotificationsShown], 
-          id: Date.now() 
-        }]);
-        setDemoNotificationsShown(prev => prev + 1);
-      }
-    }, 15000);
-  }, [demoNotificationsShown, demoNotifications]);
+  }, []);
 
   const handleAction = useCallback(async (actionId) => {
     try {
