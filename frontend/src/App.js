@@ -1107,6 +1107,7 @@ const AegisTrapSystem = () => {
         {/* Demo Mode Controller - for investor presentations */}
         <DemoModeController 
           onTriggerNotification={handleDemoNotification}
+          onDismissNotification={dismissNotification}
           isActive={demoMode}
           onToggle={() => setDemoMode(!demoMode)}
         />
