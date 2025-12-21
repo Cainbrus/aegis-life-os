@@ -17,7 +17,7 @@ import { ProtectionSummaryModal, IntruderPhotosViewer } from './components/Prote
 import { DemoModeController, QuickDemoButton } from './components/DemoMode';
 import { useIntruderCapture, IntruderAlertScreen, SilentCameraCapture } from './components/IntruderCamera';
 import smartProtection from './services/SmartProtectionService';
-import { playUnlock, playLock, playError, playNotification } from './services/SoundService';
+import { playUnlock, playLock, playError, playNotification, playSuccess } from './services/SoundService';
 import './App.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
