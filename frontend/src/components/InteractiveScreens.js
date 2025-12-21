@@ -405,7 +405,7 @@ export const FinancialDashboard = ({ onClose }) => {
               </div>
             ))}
             <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mt-4">
-              <p className="text-emerald-300 text-sm">💡 3 of 4 bills are on auto-pay. You're on track!</p>
+              <p className="text-emerald-300 text-sm">💡 3 of 4 bills are on auto-pay. You are on track!</p>
             </div>
           </div>
         )}
