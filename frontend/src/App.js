@@ -1052,6 +1052,16 @@ const AegisTrapSystem = () => {
       return <HealthDashboard onClose={() => setShowHealthDashboard(false)} />;
     }
 
+    // Show Emergency Setup
+    if (showEmergencySetup) {
+      return <EmergencySetupScreen onClose={() => setShowEmergencySetup(false)} />;
+    }
+
+    // Show Lost Phone Setup
+    if (showLostPhoneSetup) {
+      return <LostPhoneSetupScreen onClose={() => setShowLostPhoneSetup(false)} />;
+    }
+
     // Show Push Notification Settings
     if (showPushSettings) {
       return (
