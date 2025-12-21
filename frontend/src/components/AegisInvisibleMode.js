@@ -814,20 +814,20 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
     day: 'numeric' 
   });
 
-  // Normal-looking phone apps - looks completely innocent
+  // Phone apps - each one demos an Aegis feature when tapped!
   const apps = [
-    { name: 'Messages', icon: '💬', color: 'bg-green-500', badge: 3 },
-    { name: 'Phone', icon: '📞', color: 'bg-green-600' },
-    { name: 'Camera', icon: '📷', color: 'bg-gray-600' },
-    { name: 'Photos', icon: '🖼️', color: 'bg-gradient-to-br from-pink-500 to-yellow-500' },
-    { name: 'Safari', icon: '🧭', color: 'bg-blue-500' },
-    { name: 'Mail', icon: '✉️', color: 'bg-blue-400', badge: 12 },
-    { name: 'Calendar', icon: '📅', color: 'bg-white text-red-500', action: 'calendar' },
-    { name: 'Notes', icon: '📝', color: 'bg-yellow-400' },
-    { name: 'Music', icon: '🎵', color: 'bg-gradient-to-br from-pink-500 to-red-500' },
-    { name: 'Settings', icon: '⚙️', color: 'bg-gray-500', action: 'settings' }, // Opens notification settings
-    { name: 'Calculator', icon: '🔢', color: 'bg-gray-700', action: 'calculator' }, // SECRET ACCESS TO AEGIS
-    { name: 'Aegis', icon: '💙', color: 'bg-gradient-to-br from-cyan-500 to-blue-600', action: 'chat' }, // CHAT WITH AEGIS
+    { name: 'Messages', icon: '💬', color: 'bg-green-500', badge: 3, action: 'messages', aegisFeature: 'Spam blocked' },
+    { name: 'Phone', icon: '📞', color: 'bg-green-600', action: 'phone', aegisFeature: 'Scam detected' },
+    { name: 'Photos', icon: '🖼️', color: 'bg-gradient-to-br from-pink-500 to-yellow-500', action: 'photos', aegisFeature: '2 hidden' },
+    { name: 'Banking', icon: '🏦', color: 'bg-emerald-600', action: 'finance', aegisFeature: 'Secure', isAegis: true },
+    { name: 'Health', icon: '💊', color: 'bg-rose-500', action: 'health', aegisFeature: '2 reminders', isAegis: true },
+    { name: 'Family', icon: '👨‍👩‍👧', color: 'bg-amber-500', action: 'family', aegisFeature: 'All safe', isAegis: true },
+    { name: 'Calendar', icon: '📅', color: 'bg-white text-red-500', action: 'calendar', aegisFeature: 'Optimized' },
+    { name: 'Notes', icon: '📝', color: 'bg-yellow-400', action: 'notes' },
+    { name: 'Mail', icon: '✉️', color: 'bg-blue-400', badge: 5, action: 'mail', aegisFeature: '7 filtered' },
+    { name: 'Settings', icon: '⚙️', color: 'bg-gray-500', action: 'settings' },
+    { name: 'Calculator', icon: '🔢', color: 'bg-gray-700', action: 'calculator', aegisFeature: '🔐 Vault' },
+    { name: 'Aegis', icon: '🛡️', color: 'bg-gradient-to-br from-cyan-500 to-blue-600', action: 'chat', isAegis: true, aegisFeature: 'Chat' },
   ];
 
   // SOS Triggered Screen
