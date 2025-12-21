@@ -921,23 +921,45 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
               key={idx}
               onClick={() => {
                 playAppOpen();
-                if (app.action === 'calculator') onOpenCalculator();
-                else if (app.action === 'calendar') onOpenCalendar();
-                else if (app.action === 'chat') onOpenChat && onOpenChat();
-                else if (app.action === 'settings') onOpenSettings && onOpenSettings();
-                else onOpenApp(app.name);
+                // Handle all app actions
+                switch(app.action) {
+                  case 'calculator': onOpenCalculator(); break;
+                  case 'calendar': onOpenCalendar(); break;
+                  case 'chat': onOpenChat && onOpenChat(); break;
+                  case 'settings': onOpenSettings && onOpenSettings(); break;
+                  case 'finance': onOpenApp('finance'); break;
+                  case 'health': onOpenApp('health'); break;
+                  case 'family': onOpenApp('family'); break;
+                  case 'photos': onOpenApp('photos'); break;
+                  case 'messages': onOpenApp('messages'); break;
+                  case 'phone': onOpenApp('phone_app'); break;
+                  case 'mail': onOpenApp('mail'); break;
+                  case 'notes': onOpenApp('notes'); break;
+                  default: onOpenApp(app.name); break;
+                }
               }}
               className="flex flex-col items-center group"
             >
               <div className={`w-16 h-16 ${app.color} rounded-2xl flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform duration-200 relative`}>
                 {app.icon}
+                {/* Badge for notifications */}
                 {app.badge && (
                   <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white">
                     {app.badge}
                   </div>
                 )}
+                {/* Aegis protection indicator */}
+                {app.isAegis && (
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-cyan-500 rounded-full flex items-center justify-center shadow-lg shadow-cyan-500/50">
+                    <span className="text-[8px]">🛡️</span>
+                  </div>
+                )}
               </div>
               <span className="text-xs mt-2 text-slate-300 font-medium">{app.name}</span>
+              {/* Aegis feature subtitle */}
+              {app.aegisFeature && (
+                <span className="text-[10px] text-cyan-400/70">{app.aegisFeature}</span>
+              )}
             </button>
           ))}
         </div>
