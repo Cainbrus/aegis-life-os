@@ -10,7 +10,7 @@ import AegisLogo, { AegisLogoCompact } from './components/AegisLogo';
 import AegisLearningMode from './components/AegisLearningMode';
 import { AegisNotification, AegisCalendar, InvisibleHomeScreen, useAegisNotifications } from './components/AegisInvisibleMode';
 import AegisChat from './components/AegisChat';
-import { MeetingSummaryScreen, FinancialDashboard, FamilyTrackerDashboard, HealthDashboard } from './components/InteractiveScreens';
+import { MeetingSummaryScreen, FinancialDashboard, FamilyTrackerDashboard, HealthDashboard, EmergencySetupScreen, LostPhoneSetupScreen } from './components/InteractiveScreens';
 import PushNotificationSettings from './components/PushNotificationSettings';
 import usePushNotifications from './hooks/usePushNotifications';
 import { ProtectionSummaryModal, IntruderPhotosViewer } from './components/ProtectionSummary';
