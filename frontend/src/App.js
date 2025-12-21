@@ -1139,6 +1139,8 @@ const AegisTrapSystem = () => {
           onOpenCalendar={() => setShowCalendar(true)}
           onOpenChat={() => setShowChat(true)}
           onOpenSettings={() => setShowPushSettings(true)}
+          onOpenEmergency={() => setShowEmergencySetup(true)}
+          onOpenLostPhone={() => setShowLostPhoneSetup(true)}
           onOpenApp={(appName) => {
             // Log app opens
             logAction("app_opened_invisible_mode", appName, { 
@@ -1157,6 +1159,12 @@ const AegisTrapSystem = () => {
                 break;
               case 'settings':
                 setShowPushSettings(true);
+                break;
+              case 'emergency':
+                setShowEmergencySetup(true);
+                break;
+              case 'lost_phone':
+                setShowLostPhoneSetup(true);
                 break;
               case 'photos':
                 // Could show protected photos vault
