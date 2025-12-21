@@ -13,6 +13,11 @@ import AegisChat from './components/AegisChat';
 import { MeetingSummaryScreen, FinancialDashboard, FamilyTrackerDashboard, HealthDashboard } from './components/InteractiveScreens';
 import PushNotificationSettings from './components/PushNotificationSettings';
 import usePushNotifications from './hooks/usePushNotifications';
+import { ProtectionSummaryModal, IntruderPhotosViewer } from './components/ProtectionSummary';
+import { DemoModeController, QuickDemoButton } from './components/DemoMode';
+import { useIntruderCapture, IntruderAlertScreen, SilentCameraCapture } from './components/IntruderCamera';
+import smartProtection from './services/SmartProtectionService';
+import { playUnlock, playLock, playError, playNotification } from './services/SoundService';
 import './App.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
