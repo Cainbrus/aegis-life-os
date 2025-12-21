@@ -1036,6 +1036,830 @@ export const HealthDashboard = ({ onClose }) => {
   );
 };
 
+// =============================================
+// EMERGENCY SETUP SCREEN
+// Configure emergency contacts, who to call, auto-call settings
+// =============================================
+export const EmergencySetupScreen = ({ onClose }) => {
+  const [contacts, setContacts] = useState([
+    { id: 1, name: 'Sarah Smith', relation: 'Wife', phone: '0412 345 678', priority: 1, avatar: '👩' },
+    { id: 2, name: 'Dr. James Wilson', relation: 'Doctor', phone: '02 9876 5432', priority: 2, avatar: '👨‍⚕️' },
+    { id: 3, name: 'Mum', relation: 'Mother', phone: '0423 456 789', priority: 3, avatar: '👵' }
+  ]);
+  const [settings, setSettings] = useState({
+    autoCall000: true,
+    autoCallAfterAttempts: 3,
+    sendLocation: true,
+    shareMedicalInfo: true,
+    crashDetection: true,
+    shakeSOS: true,
+    sosMessage: 'EMERGENCY: I need help! This is an automated message from Aegis.'
+  });
+  const [showAddContact, setShowAddContact] = useState(false);
+  const [newContact, setNewContact] = useState({ name: '', relation: '', phone: '' });
+  const [activeTab, setActiveTab] = useState('contacts');
+
+  useEffect(() => {
+    playAppOpen();
+  }, []);
+
+  const addContact = () => {
+    if (!newContact.name || !newContact.phone) return;
+    const contact = {
+      id: Date.now(),
+      ...newContact,
+      priority: contacts.length + 1,
+      avatar: '👤'
+    };
+    setContacts([...contacts, contact]);
+    setNewContact({ name: '', relation: '', phone: '' });
+    setShowAddContact(false);
+    playSuccess();
+  };
+
+  const removeContact = (id) => {
+    setContacts(contacts.filter(c => c.id !== id));
+    playButtonClick();
+  };
+
+  const toggleSetting = (key) => {
+    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    playButtonClick();
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black text-white">
+      {/* Header */}
+      <div className="bg-red-600/20 backdrop-blur-xl p-4 border-b border-red-500/30 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <button onClick={() => { playButtonClick(); onClose(); }} className="text-red-400 font-medium">← Back</button>
+          <h1 className="text-lg font-bold">🆘 Emergency Setup</h1>
+          <button onClick={() => { playButtonClick(); playSuccess(); }} className="text-red-400 text-sm">Save</button>
+        </div>
+      </div>
+
+      {/* Emergency Info Banner */}
+      <div className="p-4 animate-fadeIn">
+        <div className="bg-gradient-to-br from-red-600/30 to-orange-600/30 rounded-2xl p-4 border border-red-500/50">
+          <div className="flex items-center space-x-3">
+            <span className="text-4xl">🛡️</span>
+            <div>
+              <h2 className="text-white font-bold">Aegis Emergency Protection</h2>
+              <p className="text-red-200 text-sm">Configure how Aegis protects you in emergencies</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex px-4 space-x-2 mb-4">
+        {['contacts', 'settings', 'triggers'].map(tab => (
+          <button
+            key={tab}
+            onClick={() => { playButtonClick(); setActiveTab(tab); }}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === tab 
+                ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' 
+                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+            }`}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      <div className="px-4 pb-20">
+        {activeTab === 'contacts' && (
+          <div className="space-y-4 animate-fadeIn">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-white">Emergency Contacts</h3>
+              <button 
+                onClick={() => { playButtonClick(); setShowAddContact(true); }}
+                className="text-red-400 text-sm"
+              >
+                + Add
+              </button>
+            </div>
+            
+            <p className="text-slate-400 text-xs">Contacts are called in priority order during emergencies</p>
+
+            {contacts.map((contact, idx) => (
+              <div key={contact.id} className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      <span className="text-3xl">{contact.avatar}</span>
+                      <div className="absolute -top-1 -left-1 w-5 h-5 bg-red-600 rounded-full flex items-center justify-center text-xs font-bold">
+                        {contact.priority}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">{contact.name}</p>
+                      <p className="text-red-400 text-sm">{contact.relation}</p>
+                      <p className="text-slate-400 text-xs">{contact.phone}</p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => { playButtonClick(); playNotification('emergency'); }}
+                      className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-lg transition-colors"
+                    >
+                      📞
+                    </button>
+                    <button 
+                      onClick={() => removeContact(contact.id)}
+                      className="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg transition-colors"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {contacts.length === 0 && (
+              <div className="text-center py-8">
+                <span className="text-4xl">👥</span>
+                <p className="text-slate-400 mt-2">No emergency contacts added</p>
+                <button 
+                  onClick={() => setShowAddContact(true)}
+                  className="mt-4 text-red-400 underline"
+                >
+                  Add your first contact
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="space-y-4 animate-fadeIn">
+            <h3 className="font-semibold text-white mb-3">Auto-Response Settings</h3>
+            
+            {/* Auto call 000 */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">🚨</span>
+                  <div>
+                    <p className="text-white font-medium">Auto-Call 000</p>
+                    <p className="text-slate-400 text-xs">Automatically call emergency services</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => toggleSetting('autoCall000')}
+                  className={`w-14 h-8 rounded-full transition-all ${
+                    settings.autoCall000 ? 'bg-red-600' : 'bg-slate-600'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition-all ${
+                    settings.autoCall000 ? 'translate-x-7' : 'translate-x-1'
+                  }`}></div>
+                </button>
+              </div>
+            </div>
+
+            {/* Auto call after failed attempts */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">🔐</span>
+                  <div>
+                    <p className="text-white font-medium">Call After Failed Unlocks</p>
+                    <p className="text-slate-400 text-xs">Alert contacts after {settings.autoCallAfterAttempts} failed attempts</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button 
+                    onClick={() => setSettings(p => ({ ...p, autoCallAfterAttempts: Math.max(1, p.autoCallAfterAttempts - 1) }))}
+                    className="w-8 h-8 bg-slate-700 rounded-lg text-white"
+                  >-</button>
+                  <span className="text-white font-bold w-8 text-center">{settings.autoCallAfterAttempts}</span>
+                  <button 
+                    onClick={() => setSettings(p => ({ ...p, autoCallAfterAttempts: Math.min(10, p.autoCallAfterAttempts + 1) }))}
+                    className="w-8 h-8 bg-slate-700 rounded-lg text-white"
+                  >+</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Send Location */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">📍</span>
+                  <div>
+                    <p className="text-white font-medium">Send Location</p>
+                    <p className="text-slate-400 text-xs">Share GPS location with contacts</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => toggleSetting('sendLocation')}
+                  className={`w-14 h-8 rounded-full transition-all ${
+                    settings.sendLocation ? 'bg-green-600' : 'bg-slate-600'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition-all ${
+                    settings.sendLocation ? 'translate-x-7' : 'translate-x-1'
+                  }`}></div>
+                </button>
+              </div>
+            </div>
+
+            {/* Share Medical Info */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">🏥</span>
+                  <div>
+                    <p className="text-white font-medium">Share Medical Info</p>
+                    <p className="text-slate-400 text-xs">Send blood type, allergies to responders</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => toggleSetting('shareMedicalInfo')}
+                  className={`w-14 h-8 rounded-full transition-all ${
+                    settings.shareMedicalInfo ? 'bg-green-600' : 'bg-slate-600'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition-all ${
+                    settings.shareMedicalInfo ? 'translate-x-7' : 'translate-x-1'
+                  }`}></div>
+                </button>
+              </div>
+            </div>
+
+            {/* Custom SOS Message */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center space-x-3 mb-3">
+                <span className="text-2xl">💬</span>
+                <p className="text-white font-medium">Custom SOS Message</p>
+              </div>
+              <textarea
+                value={settings.sosMessage}
+                onChange={(e) => setSettings(p => ({ ...p, sosMessage: e.target.value }))}
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm"
+                rows={3}
+                placeholder="Message sent to contacts during emergency..."
+              />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'triggers' && (
+          <div className="space-y-4 animate-fadeIn">
+            <h3 className="font-semibold text-white mb-3">Emergency Triggers</h3>
+            <p className="text-slate-400 text-xs mb-4">Configure how emergencies are detected</p>
+
+            {/* Crash Detection */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">🚗</span>
+                  <div>
+                    <p className="text-white font-medium">Crash Detection</p>
+                    <p className="text-slate-400 text-xs">Detect car accidents via accelerometer</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => toggleSetting('crashDetection')}
+                  className={`w-14 h-8 rounded-full transition-all ${
+                    settings.crashDetection ? 'bg-red-600' : 'bg-slate-600'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition-all ${
+                    settings.crashDetection ? 'translate-x-7' : 'translate-x-1'
+                  }`}></div>
+                </button>
+              </div>
+            </div>
+
+            {/* Shake SOS */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">📳</span>
+                  <div>
+                    <p className="text-white font-medium">Shake SOS</p>
+                    <p className="text-slate-400 text-xs">Shake phone 5 times to trigger SOS</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => toggleSetting('shakeSOS')}
+                  className={`w-14 h-8 rounded-full transition-all ${
+                    settings.shakeSOS ? 'bg-red-600' : 'bg-slate-600'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition-all ${
+                    settings.shakeSOS ? 'translate-x-7' : 'translate-x-1'
+                  }`}></div>
+                </button>
+              </div>
+            </div>
+
+            {/* Voice Trigger */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center space-x-3">
+                <span className="text-2xl">🎤</span>
+                <div>
+                  <p className="text-white font-medium">Duress Phrase</p>
+                  <p className="text-slate-400 text-xs">Say "Call my lawyer" to trigger silent emergency</p>
+                  <p className="text-red-400 text-xs mt-1">✓ Active - Silently alerts contacts</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Pattern Trigger */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center space-x-3">
+                <span className="text-2xl">🔒</span>
+                <div>
+                  <p className="text-white font-medium">Duress Pattern</p>
+                  <p className="text-slate-400 text-xs">Pattern 2-5-8 triggers silent emergency + trap mode</p>
+                  <p className="text-red-400 text-xs mt-1">✓ Active - Phone appears normal to attacker</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Test Emergency */}
+            <button 
+              onClick={() => { playButtonClick(); playNotification('emergency'); }}
+              className="w-full bg-red-600/20 border border-red-500/50 text-red-400 py-4 rounded-xl font-bold transition-colors hover:bg-red-600/30"
+            >
+              🧪 Test Emergency Alert (No real call)
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Add Contact Modal */}
+      {showAddContact && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-md border border-slate-700 shadow-2xl">
+            <h3 className="text-xl font-bold mb-4 text-red-400">Add Emergency Contact</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={newContact.name}
+                  onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white"
+                  placeholder="Contact name"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">Relationship</label>
+                <input
+                  type="text"
+                  value={newContact.relation}
+                  onChange={(e) => setNewContact({ ...newContact, relation: e.target.value })}
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white"
+                  placeholder="e.g., Wife, Doctor, Friend"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">Phone Number</label>
+                <input
+                  type="tel"
+                  value={newContact.phone}
+                  onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white"
+                  placeholder="0412 345 678"
+                />
+              </div>
+            </div>
+            
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={() => { playButtonClick(); setShowAddContact(false); }}
+                className="flex-1 bg-slate-700 text-white py-3 rounded-lg font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addContact}
+                className="flex-1 bg-red-600 text-white py-3 rounded-lg font-medium"
+              >
+                Add Contact
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// =============================================
+// LOST PHONE SETUP SCREEN
+// Configure remote lock, tracking, sound alarm, wipe data settings
+// =============================================
+export const LostPhoneSetupScreen = ({ onClose }) => {
+  const [settings, setSettings] = useState({
+    remoteLock: true,
+    gpsTracking: true,
+    soundAlarm: true,
+    showContactInfo: true,
+    wipeAfterAttempts: 10,
+    enableWipe: false,
+    trustedDevices: [
+      { id: 1, name: "Sarah's iPhone", lastUsed: "2 hours ago", trusted: true },
+      { id: 2, name: "Home iPad", lastUsed: "Yesterday", trusted: true }
+    ],
+    lostMessage: "This phone belongs to me. Please return it!",
+    rewardOffer: "$50 reward for safe return",
+    contactEmail: "john@email.com",
+    contactPhone: "0412 345 678"
+  });
+  const [activeTab, setActiveTab] = useState('settings');
+  const [isLostMode, setIsLostMode] = useState(false);
+  const [showAddDevice, setShowAddDevice] = useState(false);
+
+  useEffect(() => {
+    playAppOpen();
+  }, []);
+
+  const toggleSetting = (key) => {
+    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    playButtonClick();
+  };
+
+  const activateLostMode = () => {
+    setIsLostMode(true);
+    playNotification('emergency');
+    playSuccess();
+  };
+
+  const deactivateLostMode = () => {
+    setIsLostMode(false);
+    playButtonClick();
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black text-white">
+      {/* Header */}
+      <div className="bg-yellow-600/20 backdrop-blur-xl p-4 border-b border-yellow-500/30 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <button onClick={() => { playButtonClick(); onClose(); }} className="text-yellow-400 font-medium">← Back</button>
+          <h1 className="text-lg font-bold">📍 Lost Phone Setup</h1>
+          <button onClick={() => { playButtonClick(); playSuccess(); }} className="text-yellow-400 text-sm">Save</button>
+        </div>
+      </div>
+
+      {/* Lost Mode Status */}
+      <div className="p-4 animate-fadeIn">
+        <div className={`rounded-2xl p-4 border ${
+          isLostMode 
+            ? 'bg-gradient-to-br from-red-600/40 to-orange-600/40 border-red-500/50' 
+            : 'bg-gradient-to-br from-green-600/20 to-emerald-600/20 border-green-500/30'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <span className="text-4xl">{isLostMode ? '🚨' : '✅'}</span>
+              <div>
+                <h2 className="text-white font-bold">
+                  {isLostMode ? 'LOST MODE ACTIVE' : 'Phone Status: Safe'}
+                </h2>
+                <p className={`text-sm ${isLostMode ? 'text-red-200' : 'text-green-200'}`}>
+                  {isLostMode ? 'GPS tracking enabled • Contact info showing' : 'All security features ready'}
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={isLostMode ? deactivateLostMode : activateLostMode}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                isLostMode 
+                  ? 'bg-green-600 hover:bg-green-500 text-white' 
+                  : 'bg-red-600 hover:bg-red-500 text-white'
+              }`}
+            >
+              {isLostMode ? 'Deactivate' : 'Mark as Lost'}
+            </button>
+          </div>
+          
+          {isLostMode && (
+            <div className="mt-4 pt-4 border-t border-red-500/30 grid grid-cols-3 gap-2">
+              <button className="bg-white/10 rounded-lg p-2 text-center">
+                <span className="text-xl">📍</span>
+                <p className="text-xs text-white mt-1">Track</p>
+              </button>
+              <button 
+                onClick={() => playNotification('emergency')}
+                className="bg-white/10 rounded-lg p-2 text-center"
+              >
+                <span className="text-xl">🔊</span>
+                <p className="text-xs text-white mt-1">Play Sound</p>
+              </button>
+              <button className="bg-white/10 rounded-lg p-2 text-center">
+                <span className="text-xl">💬</span>
+                <p className="text-xs text-white mt-1">Send Message</p>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex px-4 space-x-2 mb-4">
+        {['settings', 'message', 'devices'].map(tab => (
+          <button
+            key={tab}
+            onClick={() => { playButtonClick(); setActiveTab(tab); }}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === tab 
+                ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-500/30' 
+                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+            }`}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      <div className="px-4 pb-20">
+        {activeTab === 'settings' && (
+          <div className="space-y-4 animate-fadeIn">
+            <h3 className="font-semibold text-white mb-3">Lost Phone Features</h3>
+
+            {/* Remote Lock */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">🔒</span>
+                  <div>
+                    <p className="text-white font-medium">Remote Lock</p>
+                    <p className="text-slate-400 text-xs">Lock phone remotely when lost</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => toggleSetting('remoteLock')}
+                  className={`w-14 h-8 rounded-full transition-all ${
+                    settings.remoteLock ? 'bg-yellow-600' : 'bg-slate-600'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition-all ${
+                    settings.remoteLock ? 'translate-x-7' : 'translate-x-1'
+                  }`}></div>
+                </button>
+              </div>
+            </div>
+
+            {/* GPS Tracking */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">📍</span>
+                  <div>
+                    <p className="text-white font-medium">GPS Tracking</p>
+                    <p className="text-slate-400 text-xs">Track location when marked lost</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => toggleSetting('gpsTracking')}
+                  className={`w-14 h-8 rounded-full transition-all ${
+                    settings.gpsTracking ? 'bg-green-600' : 'bg-slate-600'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition-all ${
+                    settings.gpsTracking ? 'translate-x-7' : 'translate-x-1'
+                  }`}></div>
+                </button>
+              </div>
+            </div>
+
+            {/* Sound Alarm */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">🔊</span>
+                  <div>
+                    <p className="text-white font-medium">Sound Alarm</p>
+                    <p className="text-slate-400 text-xs">Play loud sound to locate phone</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => toggleSetting('soundAlarm')}
+                  className={`w-14 h-8 rounded-full transition-all ${
+                    settings.soundAlarm ? 'bg-blue-600' : 'bg-slate-600'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition-all ${
+                    settings.soundAlarm ? 'translate-x-7' : 'translate-x-1'
+                  }`}></div>
+                </button>
+              </div>
+            </div>
+
+            {/* Show Contact Info */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">👤</span>
+                  <div>
+                    <p className="text-white font-medium">Show Contact Info</p>
+                    <p className="text-slate-400 text-xs">Display your contact details on lost screen</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => toggleSetting('showContactInfo')}
+                  className={`w-14 h-8 rounded-full transition-all ${
+                    settings.showContactInfo ? 'bg-green-600' : 'bg-slate-600'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition-all ${
+                    settings.showContactInfo ? 'translate-x-7' : 'translate-x-1'
+                  }`}></div>
+                </button>
+              </div>
+            </div>
+
+            {/* Remote Wipe */}
+            <div className="bg-red-900/30 rounded-xl p-4 border border-red-500/30">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">💀</span>
+                  <div>
+                    <p className="text-white font-medium">Remote Wipe</p>
+                    <p className="text-red-400 text-xs">Erase all data after {settings.wipeAfterAttempts} failed attempts</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => toggleSetting('enableWipe')}
+                  className={`w-14 h-8 rounded-full transition-all ${
+                    settings.enableWipe ? 'bg-red-600' : 'bg-slate-600'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition-all ${
+                    settings.enableWipe ? 'translate-x-7' : 'translate-x-1'
+                  }`}></div>
+                </button>
+              </div>
+              
+              {settings.enableWipe && (
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-red-500/30">
+                  <span className="text-slate-400 text-sm">Wipe after attempts:</span>
+                  <div className="flex items-center space-x-2">
+                    <button 
+                      onClick={() => setSettings(p => ({ ...p, wipeAfterAttempts: Math.max(3, p.wipeAfterAttempts - 1) }))}
+                      className="w-8 h-8 bg-slate-700 rounded-lg text-white"
+                    >-</button>
+                    <span className="text-white font-bold w-8 text-center">{settings.wipeAfterAttempts}</span>
+                    <button 
+                      onClick={() => setSettings(p => ({ ...p, wipeAfterAttempts: Math.min(20, p.wipeAfterAttempts + 1) }))}
+                      className="w-8 h-8 bg-slate-700 rounded-lg text-white"
+                    >+</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'message' && (
+          <div className="space-y-4 animate-fadeIn">
+            <h3 className="font-semibold text-white mb-3">Lost Mode Message</h3>
+            <p className="text-slate-400 text-xs">This info will be shown on the lock screen when lost mode is active</p>
+
+            {/* Message */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <label className="block text-sm text-slate-400 mb-2">Message to Finder</label>
+              <textarea
+                value={settings.lostMessage}
+                onChange={(e) => setSettings(p => ({ ...p, lostMessage: e.target.value }))}
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm"
+                rows={3}
+                placeholder="Message shown to whoever finds your phone..."
+              />
+            </div>
+
+            {/* Reward */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <label className="block text-sm text-slate-400 mb-2">Reward Offer (optional)</label>
+              <input
+                type="text"
+                value={settings.rewardOffer}
+                onChange={(e) => setSettings(p => ({ ...p, rewardOffer: e.target.value }))}
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm"
+                placeholder="e.g., $50 reward for safe return"
+              />
+            </div>
+
+            {/* Contact Email */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <label className="block text-sm text-slate-400 mb-2">Contact Email</label>
+              <input
+                type="email"
+                value={settings.contactEmail}
+                onChange={(e) => setSettings(p => ({ ...p, contactEmail: e.target.value }))}
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm"
+                placeholder="your.email@example.com"
+              />
+            </div>
+
+            {/* Contact Phone */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <label className="block text-sm text-slate-400 mb-2">Contact Phone</label>
+              <input
+                type="tel"
+                value={settings.contactPhone}
+                onChange={(e) => setSettings(p => ({ ...p, contactPhone: e.target.value }))}
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm"
+                placeholder="0412 345 678"
+              />
+            </div>
+
+            {/* Preview */}
+            <div className="bg-gradient-to-br from-yellow-600/30 to-orange-600/30 rounded-xl p-4 border border-yellow-500/30">
+              <h4 className="text-yellow-300 font-medium mb-3 text-center">📱 Preview of Lost Screen</h4>
+              <div className="bg-slate-900/80 rounded-lg p-4 text-center">
+                <span className="text-4xl">📱</span>
+                <p className="text-white font-medium mt-2">LOST PHONE</p>
+                <p className="text-slate-300 text-sm mt-2">"{settings.lostMessage}"</p>
+                {settings.rewardOffer && (
+                  <p className="text-green-400 text-sm mt-2">🎁 {settings.rewardOffer}</p>
+                )}
+                <p className="text-slate-400 text-xs mt-2">📧 {settings.contactEmail}</p>
+                <p className="text-slate-400 text-xs">📞 {settings.contactPhone}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'devices' && (
+          <div className="space-y-4 animate-fadeIn">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-white">Trusted Devices</h3>
+              <button 
+                onClick={() => { playButtonClick(); setShowAddDevice(true); }}
+                className="text-yellow-400 text-sm"
+              >
+                + Add
+              </button>
+            </div>
+            <p className="text-slate-400 text-xs">These devices can locate your phone when lost</p>
+
+            {settings.trustedDevices.map((device, idx) => (
+              <div key={device.id} className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-3xl">📱</span>
+                    <div>
+                      <p className="text-white font-medium">{device.name}</p>
+                      <p className="text-slate-400 text-xs">Last used: {device.lastUsed}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {device.trusted && (
+                      <span className="text-green-400 text-xs">✓ Trusted</span>
+                    )}
+                    <button 
+                      onClick={playButtonClick}
+                      className="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg"
+                    >
+                      ⚙️
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Find My Network */}
+            <div className="bg-gradient-to-br from-blue-900/30 to-cyan-900/30 rounded-xl p-4 border border-blue-500/30">
+              <div className="flex items-center space-x-3">
+                <span className="text-3xl">🌐</span>
+                <div>
+                  <p className="text-white font-medium">Aegis Find Network</p>
+                  <p className="text-blue-300 text-xs">Use other Aegis devices to locate your phone even when offline</p>
+                  <p className="text-green-400 text-xs mt-1">✓ Enabled - Encrypted & Anonymous</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Last Known Location */}
+            <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
+              <div className="flex items-center space-x-3 mb-3">
+                <span className="text-2xl">📍</span>
+                <div>
+                  <p className="text-white font-medium">Last Known Location</p>
+                  <p className="text-slate-400 text-xs">Updated 5 minutes ago</p>
+                </div>
+              </div>
+              <div className="bg-slate-700/50 rounded-lg p-3 text-center">
+                <p className="text-slate-300">42 Example Street, Sydney NSW 2000</p>
+                <p className="text-cyan-400 text-xs mt-1">GPS: -33.8688° S, 151.2093° E</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Add CSS animation
 const style = document.createElement('style');
 style.textContent = `
@@ -1063,5 +1887,7 @@ export default {
   MeetingSummaryScreen,
   FinancialDashboard,
   FamilyTrackerDashboard,
-  HealthDashboard
+  HealthDashboard,
+  EmergencySetupScreen,
+  LostPhoneSetupScreen
 };
