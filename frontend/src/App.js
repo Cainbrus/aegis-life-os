@@ -1090,6 +1090,41 @@ const AegisTrapSystem = () => {
         )}
         {/* Wipe Mode still active in background */}
         <WipeMode onWipeTriggered={handleWipeTriggered} />
+        
+        {/* Demo Mode Controller - for investor presentations */}
+        <DemoModeController 
+          onTriggerNotification={handleDemoNotification}
+          isActive={demoMode}
+          onToggle={() => setDemoMode(!demoMode)}
+        />
+        
+        {/* Quick Demo Trigger Button */}
+        <QuickDemoButton onTrigger={handleDemoNotification} />
+        
+        {/* Protection Summary Modal - shows when owner returns */}
+        {showProtectionSummary && protectionData && (
+          <ProtectionSummaryModal
+            summary={protectionData}
+            onDismiss={() => {
+              setShowProtectionSummary(false);
+              setProtectionData(null);
+              smartProtection.clearProtectionLog();
+            }}
+            onViewDetails={(type) => {
+              if (type === 'intruder') {
+                setShowIntruderPhotos(true);
+              }
+            }}
+          />
+        )}
+        
+        {/* Intruder Photos Viewer */}
+        {showIntruderPhotos && (
+          <IntruderPhotosViewer
+            photos={intruderCaptures}
+            onClose={() => setShowIntruderPhotos(false)}
+          />
+        )}
       </>
     );
   }
