@@ -6,7 +6,7 @@ Debug Vault Authentication - Check what's happening with owner auth
 import requests
 import json
 
-base_url = "https://mate-os.preview.emergentagent.com"
+base_url = "https://aegis-protector.preview.emergentagent.com"
 api_url = f"{base_url}/api"
 
 print("🔍 Debugging Vault Authentication Issue")
