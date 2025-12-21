@@ -1225,8 +1225,23 @@ const AegisTrapSystem = () => {
           
           {/* Pattern auth with glass effect */}
           <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-            <DualPatternAuth onAuthSuccess={handleAuthSuccess} authStatus={authStatus} />
+            <DualPatternAuth 
+              onAuthSuccess={handleAuthSuccess} 
+              authStatus={authStatus}
+              onIntruderDetected={handleIntruderDetected}
+            />
           </div>
+          
+          {/* Silent intruder camera capture */}
+          {shouldCaptureIntruder && (
+            <SilentCameraCapture 
+              reason="wrong_pattern"
+              onCapture={(capture) => {
+                console.log('Intruder captured silently');
+                setShouldCaptureIntruder(false);
+              }}
+            />
+          )}
           
           {/* Status bar at bottom */}
           <div className="mt-6 flex justify-center space-x-6 text-xs font-mono">
