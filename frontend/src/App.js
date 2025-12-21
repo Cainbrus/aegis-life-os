@@ -249,7 +249,7 @@ const TrapApp = ({ appName, onClose, logAction, capturePhoto }) => {
 };
 
 // Pattern Authentication Component
-const DualPatternAuth = ({ onAuthSuccess, authStatus }) => {
+const DualPatternAuth = ({ onAuthSuccess, authStatus, onIntruderDetected }) => {
   const [currentPattern, setCurrentPattern] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [showPatternSetup, setShowPatternSetup] = useState(false);
