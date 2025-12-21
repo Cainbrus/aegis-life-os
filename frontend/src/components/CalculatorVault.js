@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { playCalculatorKey, playVaultUnlock, playButtonClick, playError, playSuccess } from '../services/SoundService';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -15,6 +16,7 @@ const CalculatorVault = ({ onClose, onVaultAccess }) => {
 
   // Calculator functionality
   const handleCalculatorInput = (value) => {
+    playCalculatorKey();
     if (display === '0' && value !== '.') {
       setDisplay(value);
     } else {
@@ -23,10 +25,12 @@ const CalculatorVault = ({ onClose, onVaultAccess }) => {
   };
 
   const handleCalculatorClear = () => {
+    playButtonClick();
     setDisplay('0');
   };
 
   const handleEquals = async () => {
+    playButtonClick();
     try {
       // Check if the current display matches the secret code
       const response = await axios.post(`${API}/vault/verify-secret`, {
@@ -34,14 +38,17 @@ const CalculatorVault = ({ onClose, onVaultAccess }) => {
       });
       
       if (response.data.vault_unlocked) {
+        playVaultUnlock();
         await triggerSecretHandshake();
       } else {
         // Normal calculation
         try {
           const result = eval(display);
           setDisplay(result.toString());
+          playSuccess();
         } catch {
           setDisplay('Error');
+          playError();
         }
       }
     } catch (error) {
