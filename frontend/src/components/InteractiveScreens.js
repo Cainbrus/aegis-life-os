@@ -701,7 +701,7 @@ export const FamilyTrackerDashboard = ({ onClose }) => {
 
         {/* Recent Alerts */}
         <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700">
-          <h3 className="font-semibold text-white mb-3">Today's Activity</h3>
+          <h3 className="font-semibold text-white mb-3">Today&apos;s Activity</h3>
           <div className="space-y-3">
             {recentAlerts.map((alert, idx) => (
               <div key={idx} className="flex items-center space-x-3 text-sm">
