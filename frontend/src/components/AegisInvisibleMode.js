@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import { playButtonClick, playNotification, playAppOpen, playAppClose, playSuccess, playError, playMessageReceived, playVaultUnlock, playSosActivate } from '../services/SoundService';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -14,9 +15,12 @@ export const AegisNotification = ({ notification, onDismiss, onAction }) => {
   const [isVisible, setIsVisible] = useState(false);
   
   useEffect(() => {
-    // Animate in
+    // Animate in and play sound
     setTimeout(() => setIsVisible(true), 100);
-  }, []);
+    if (notification) {
+      playNotification(notification.type || 'info');
+    }
+  }, [notification]);
 
   if (!notification) return null;
 
