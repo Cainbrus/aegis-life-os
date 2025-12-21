@@ -927,6 +927,8 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
                   case 'calendar': onOpenCalendar(); break;
                   case 'chat': onOpenChat && onOpenChat(); break;
                   case 'settings': onOpenSettings && onOpenSettings(); break;
+                  case 'emergency': onOpenEmergency && onOpenEmergency(); break;
+                  case 'lost_phone': onOpenLostPhone && onOpenLostPhone(); break;
                   case 'finance': onOpenApp('finance'); break;
                   case 'health': onOpenApp('health'); break;
                   case 'family': onOpenApp('family'); break;
