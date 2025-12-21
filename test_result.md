@@ -249,11 +249,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Real Push Notifications"
-    - "Push Notification Settings UI"
-    - "Push Subscription Backend APIs"
+    - "Interactive Screens (Financial, Family, Health Dashboards)"
+    - "Sound Effects Integration"
+    - "Enhanced Visual Polish"
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
