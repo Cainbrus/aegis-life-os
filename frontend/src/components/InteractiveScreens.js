@@ -863,7 +863,7 @@ export const HealthDashboard = ({ onClose }) => {
         {activeTab === 'medications' && (
           <div className="space-y-3 animate-fadeIn">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-white">Today's Medications</h3>
+              <h3 className="font-semibold text-white">Today&apos;s Medications</h3>
               <span className="text-xs text-rose-400">2 of 4 taken</span>
             </div>
             {healthData.medications.map((med, idx) => (
