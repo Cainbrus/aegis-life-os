@@ -776,7 +776,7 @@ export const useAegisNotifications = () => {
 };
 
 // The "Invisible" home screen - looks like a normal iOS/Android phone
-export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenApp, onOpenChat, onOpenSettings }) => {
+export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenApp, onOpenChat, onOpenSettings, onOpenEmergency, onOpenLostPhone }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [shakeCount, setShakeCount] = useState(0);
   const [sosTriggered, setSosTriggered] = useState(false);
@@ -822,10 +822,10 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
     { name: 'Banking', icon: '🏦', color: 'bg-emerald-600', action: 'finance', aegisFeature: 'Secure', isAegis: true },
     { name: 'Health', icon: '💊', color: 'bg-rose-500', action: 'health', aegisFeature: '2 reminders', isAegis: true },
     { name: 'Family', icon: '👨‍👩‍👧', color: 'bg-amber-500', action: 'family', aegisFeature: 'All safe', isAegis: true },
+    { name: 'Emergency', icon: '🆘', color: 'bg-gradient-to-br from-red-500 to-orange-600', action: 'emergency', aegisFeature: 'Setup', isAegis: true },
+    { name: 'Lost Phone', icon: '📍', color: 'bg-gradient-to-br from-yellow-500 to-orange-500', action: 'lost_phone', aegisFeature: 'Ready', isAegis: true },
     { name: 'Calendar', icon: '📅', color: 'bg-white text-red-500', action: 'calendar', aegisFeature: 'Optimized' },
-    { name: 'Notes', icon: '📝', color: 'bg-yellow-400', action: 'notes' },
     { name: 'Mail', icon: '✉️', color: 'bg-blue-400', badge: 5, action: 'mail', aegisFeature: '7 filtered' },
-    { name: 'Settings', icon: '⚙️', color: 'bg-gray-500', action: 'settings' },
     { name: 'Calculator', icon: '🔢', color: 'bg-gray-700', action: 'calculator', aegisFeature: '🔐 Vault' },
     { name: 'Aegis', icon: '🛡️', color: 'bg-gradient-to-br from-cyan-500 to-blue-600', action: 'chat', isAegis: true, aegisFeature: 'Chat' },
   ];
