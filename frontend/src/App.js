@@ -314,15 +314,27 @@ const DualPatternAuth = ({ onAuthSuccess, authStatus }) => {
       setAuthResult(response.data);
       
       if (response.data.success) {
+        playUnlock();
         onAuthSuccess(response.data);
         setCurrentPattern([]);
+      } else {
+        // Wrong pattern - potential intruder!
+        playError();
+        if (onIntruderDetected) {
+          onIntruderDetected();
+        }
       }
     } catch (error) {
       console.error("Pattern authentication failed:", error);
+      playError();
       setAuthResult({
         success: false,
         message: "Authentication failed"
       });
+      // Capture intruder on failed attempt
+      if (onIntruderDetected) {
+        onIntruderDetected();
+      }
     } finally {
       setLoading(false);
     }
@@ -345,6 +357,7 @@ const DualPatternAuth = ({ onAuthSuccess, authStatus }) => {
       if (response.data.success) {
         setShowPatternSetup(false);
         setSetupPatterns({ primary_pattern: "", owner_pattern: "", duress_pattern: "2-5-8" });
+        playSuccess();
         alert("Dual Pattern authentication configured successfully!");
       }
     } catch (error) {
