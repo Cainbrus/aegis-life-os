@@ -156,7 +156,7 @@ const DEMO_SCENARIOS = [
 ];
 
 // Demo Mode Controller
-export const DemoModeController = ({ onTriggerNotification, onOpenScreen, isActive, onToggle }) => {
+export const DemoModeController = ({ onTriggerNotification, onDismissNotification, onOpenScreen, isActive, onToggle }) => {
   const [currentScenario, setCurrentScenario] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -168,26 +168,40 @@ export const DemoModeController = ({ onTriggerNotification, onOpenScreen, isActi
 
     const scenario = DEMO_SCENARIOS[currentScenario];
     
-    // Trigger the notification
-    if (onTriggerNotification && scenario) {
-      playNotification(scenario.notification.type);
-      onTriggerNotification(scenario.notification);
+    // Dismiss previous notification first
+    if (onDismissNotification) {
+      onDismissNotification();
     }
+    
+    // Small delay before showing new notification
+    const showTimer = setTimeout(() => {
+      // Trigger the notification
+      if (onTriggerNotification && scenario) {
+        playNotification(scenario.notification.type);
+        onTriggerNotification(scenario.notification);
+      }
+    }, 300);
 
     // Move to next scenario after duration
-    const timer = setTimeout(() => {
+    const advanceTimer = setTimeout(() => {
       if (currentScenario < DEMO_SCENARIOS.length - 1) {
         setCurrentScenario(prev => prev + 1);
       } else {
-        // Demo complete
+        // Demo complete - dismiss last notification
+        if (onDismissNotification) {
+          onDismissNotification();
+        }
         setIsPlaying(false);
         setCurrentScenario(0);
         playSuccess();
       }
     }, scenario?.duration || 5000);
 
-    return () => clearTimeout(timer);
-  }, [isPlaying, isPaused, currentScenario, onTriggerNotification]);
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(advanceTimer);
+    };
+  }, [isPlaying, isPaused, currentScenario, onTriggerNotification, onDismissNotification]);
 
   const startDemo = () => {
     setCurrentScenario(0);
@@ -197,6 +211,10 @@ export const DemoModeController = ({ onTriggerNotification, onOpenScreen, isActi
   };
 
   const stopDemo = () => {
+    // Dismiss notification when stopping
+    if (onDismissNotification) {
+      onDismissNotification();
+    }
     setIsPlaying(false);
     setCurrentScenario(0);
     playButtonClick();
