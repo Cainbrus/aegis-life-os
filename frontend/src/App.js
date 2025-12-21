@@ -1118,13 +1118,67 @@ const AegisTrapSystem = () => {
           onOpenChat={() => setShowChat(true)}
           onOpenSettings={() => setShowPushSettings(true)}
           onOpenApp={(appName) => {
-            // Log app opens even in invisible mode
+            // Log app opens
             logAction("app_opened_invisible_mode", appName, { 
               timestamp: new Date().toISOString() 
             });
-            // Handle Settings app specially - open push notification settings
-            if (appName === 'settings') {
-              setShowPushSettings(true);
+            // Handle different apps - open Aegis feature screens
+            switch(appName) {
+              case 'finance':
+                setShowFinanceDashboard(true);
+                break;
+              case 'health':
+                setShowHealthDashboard(true);
+                break;
+              case 'family':
+                setShowFamilyTracker(true);
+                break;
+              case 'settings':
+                setShowPushSettings(true);
+                break;
+              case 'photos':
+                // Could show protected photos vault
+                triggerNotification({
+                  type: 'privacy',
+                  icon: '🖼️',
+                  title: 'Photos Protected',
+                  message: '2 sensitive photos have been moved to your secure vault. Tap Calculator → 8675309 to access.',
+                });
+                break;
+              case 'messages':
+                triggerNotification({
+                  type: 'security',
+                  icon: '💬',
+                  title: 'Messages Filtered',
+                  message: 'Aegis blocked 3 spam messages and 1 suspicious link today. Your inbox is clean.',
+                });
+                break;
+              case 'phone_app':
+                triggerNotification({
+                  type: 'security',
+                  icon: '📞',
+                  title: 'Call Protection Active',
+                  message: '2 scam calls blocked this week. Unknown callers are screened automatically.',
+                });
+                break;
+              case 'mail':
+                triggerNotification({
+                  type: 'privacy',
+                  icon: '✉️',
+                  title: 'Email Protected',
+                  message: '7 phishing attempts filtered. 2 tracking pixels blocked.',
+                });
+                break;
+              case 'notes':
+                triggerNotification({
+                  type: 'suggestion',
+                  icon: '📝',
+                  title: 'Notes Synced & Encrypted',
+                  message: 'All your notes are end-to-end encrypted. Last backup: 2 hours ago.',
+                });
+                break;
+              default:
+                break;
             }
           }}
         />
