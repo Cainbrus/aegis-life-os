@@ -684,6 +684,7 @@ const AegisTrapSystem = () => {
         setShowFamilyTracker(false);
         setShowHealthDashboard(false);
         setShowIntruderAlert(false);
+        setShowEmailInbox(false);
         setCurrentApp(null);
         break;
       default:
