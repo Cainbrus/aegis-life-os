@@ -17,6 +17,7 @@ import { ProtectionSummaryModal, IntruderPhotosViewer } from './components/Prote
 import { DemoModeController, QuickDemoButton } from './components/DemoMode';
 import { useIntruderCapture, IntruderAlertScreen, SilentCameraCapture } from './components/IntruderCamera';
 import SmartEmailInbox from './components/SmartEmailInbox';
+import StoryExperienceMode, { StoryModeButton } from './components/StoryExperienceMode';
 import smartProtection from './services/SmartProtectionService';
 import { playUnlock, playLock, playError, playNotification, playSuccess } from './services/SoundService';
 import './App.css';
