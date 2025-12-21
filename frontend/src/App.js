@@ -596,6 +596,7 @@ const AegisTrapSystem = () => {
   const [demoMode, setDemoMode] = useState(false);
   const [shouldCaptureIntruder, setShouldCaptureIntruder] = useState(false);
   const [showEmailInbox, setShowEmailInbox] = useState(false);
+  const [showStoryMode, setShowStoryMode] = useState(false);
 
   // Determine if trap mode is active
   const trapActive = authStatus?.security_state === "STATE_PHONE_UNLOCKED" && authStatus?.trap_mode;
