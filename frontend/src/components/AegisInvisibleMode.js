@@ -920,6 +920,7 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
             <button
               key={idx}
               onClick={() => {
+                playAppOpen();
                 if (app.action === 'calculator') onOpenCalculator();
                 else if (app.action === 'calendar') onOpenCalendar();
                 else if (app.action === 'chat') onOpenChat && onOpenChat();
@@ -954,7 +955,7 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
           <div className="bg-slate-800/70 backdrop-blur-2xl rounded-3xl p-4 border border-slate-700/50">
             <div className="flex justify-around">
               <button 
-                onClick={() => onOpenApp('Phone')}
+                onClick={() => { playAppOpen(); onOpenApp('Phone'); }}
                 className="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg hover:scale-110 transition-transform"
               >
                 📞
