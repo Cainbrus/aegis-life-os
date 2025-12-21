@@ -1143,12 +1143,31 @@ const AegisTrapSystem = () => {
         <DemoModeController 
           onTriggerNotification={handleDemoNotification}
           onDismissNotification={dismissNotification}
+          onOpenScreen={handleDemoOpenScreen}
           isActive={demoMode}
           onToggle={() => setDemoMode(!demoMode)}
         />
         
         {/* Quick Demo Trigger Button */}
-        <QuickDemoButton onTrigger={handleDemoNotification} />
+        <QuickDemoButton 
+          onTrigger={handleDemoNotification} 
+          onOpenScreen={handleDemoOpenScreen}
+        />
+        
+        {/* Intruder Alert Screen (for demo) */}
+        {showIntruderAlert && (
+          <IntruderAlertScreen
+            captures={[{
+              id: 'demo_intruder',
+              timestamp: new Date().toISOString(),
+              image: null,
+              reason: 'wrong_pattern',
+              placeholder: true
+            }]}
+            onDismiss={() => setShowIntruderAlert(false)}
+            onViewAll={() => setShowIntruderPhotos(true)}
+          />
+        )}
         
         {/* Protection Summary Modal - shows when owner returns */}
         {showProtectionSummary && protectionData && (
