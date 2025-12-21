@@ -1363,7 +1363,7 @@ export const EmergencySetupScreen = ({ onClose }) => {
                 <span className="text-2xl">🎤</span>
                 <div>
                   <p className="text-white font-medium">Duress Phrase</p>
-                  <p className="text-slate-400 text-xs">Say "Call my lawyer" to trigger silent emergency</p>
+                  <p className="text-slate-400 text-xs">Say &quot;Call my lawyer&quot; to trigger silent emergency</p>
                   <p className="text-red-400 text-xs mt-1">✓ Active - Silently alerts contacts</p>
                 </div>
               </div>
