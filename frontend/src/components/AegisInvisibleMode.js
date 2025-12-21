@@ -109,7 +109,7 @@ export const AegisNotification = ({ notification, onDismiss, onAction }) => {
                 {notification.actions.map((action, idx) => (
                   <button
                     key={idx}
-                    onClick={() => onAction(action.id)}
+                    onClick={() => { playButtonClick(); onAction(action.id); }}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                       action.primary
                         ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:opacity-90 shadow-lg'
@@ -123,7 +123,7 @@ export const AegisNotification = ({ notification, onDismiss, onAction }) => {
             )}
           </div>
           <button
-            onClick={onDismiss}
+            onClick={() => { playButtonClick(); onDismiss(); }}
             className="text-slate-500 hover:text-white transition-colors text-xl"
           >
             ✕
@@ -150,15 +150,16 @@ export const AegisCalendar = ({ onClose }) => {
     nextWeek.setDate(nextWeek.getDate() + 7);
     
     return [
-      { id: 1, title: '📊 Team Meeting', date: today.toISOString().split('T')[0], time: '10:00', description: 'Weekly sync - Conference Room B', priority: 'high' },
-      { id: 2, title: '🦷 Dentist Appointment', date: tomorrow.toISOString().split('T')[0], time: '14:30', description: 'Regular checkup', priority: 'medium' },
-      { id: 3, title: '🎂 Mom\'s Birthday', date: nextWeek.toISOString().split('T')[0], time: '00:00', description: 'Don\'t forget gift!', priority: 'high' },
-      { id: 4, title: '💼 Client Call', date: today.toISOString().split('T')[0], time: '15:00', description: 'Project review', priority: 'high' },
-      { id: 5, title: '🏋️ Gym Session', date: today.toISOString().split('T')[0], time: '18:00', description: 'Leg day', priority: 'low' },
+      { id: 1, title: '📊 Investor Demo', date: today.toISOString().split('T')[0], time: '10:00', description: 'Aegis Full Feature Showcase', priority: 'high' },
+      { id: 2, title: '💼 Follow-up Call', date: tomorrow.toISOString().split('T')[0], time: '14:30', description: 'Technical due diligence', priority: 'high' },
+      { id: 3, title: '🎂 Team Celebration', date: nextWeek.toISOString().split('T')[0], time: '18:00', description: 'Funding milestone party!', priority: 'medium' },
+      { id: 4, title: '📝 Board Meeting', date: today.toISOString().split('T')[0], time: '15:00', description: 'Q1 Review', priority: 'high' },
+      { id: 5, title: '🏋️ Gym Session', date: today.toISOString().split('T')[0], time: '07:00', description: 'Morning workout', priority: 'low' },
     ];
   }, []);
 
   useEffect(() => {
+    playAppOpen();
     const loadEvents = async () => {
       try {
         const response = await axios.get(`${API}/calendar/events`);
