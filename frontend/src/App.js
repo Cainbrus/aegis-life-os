@@ -1199,6 +1199,17 @@ const AegisTrapSystem = () => {
         {/* Wipe Mode still active in background */}
         <WipeMode onWipeTriggered={handleWipeTriggered} />
         
+        {/* Story Experience Mode Button - shows the full journey */}
+        <StoryModeButton onClick={() => setShowStoryMode(true)} />
+        
+        {/* Story Experience Mode - full realistic walkthrough */}
+        {showStoryMode && (
+          <StoryExperienceMode 
+            onClose={() => setShowStoryMode(false)}
+            onComplete={() => setShowStoryMode(false)}
+          />
+        )}
+        
         {/* Demo Mode Controller - for investor presentations */}
         <DemoModeController 
           onTriggerNotification={handleDemoNotification}
