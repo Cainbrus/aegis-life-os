@@ -1164,12 +1164,8 @@ const AegisTrapSystem = () => {
                 });
                 break;
               case 'mail':
-                triggerNotification({
-                  type: 'privacy',
-                  icon: '✉️',
-                  title: 'Email Protected',
-                  message: '7 phishing attempts filtered. 2 tracking pixels blocked.',
-                });
+                // Open the smart email inbox
+                setShowEmailInbox(true);
                 break;
               case 'notes':
                 triggerNotification({
