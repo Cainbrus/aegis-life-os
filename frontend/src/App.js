@@ -1022,6 +1022,11 @@ const AegisTrapSystem = () => {
   // Access Aegis via Calculator secret code
   // =============================================
   if (showInvisibleMode && isAuthenticated) {
+    // Show Smart Email Inbox
+    if (showEmailInbox) {
+      return <SmartEmailInbox onClose={() => setShowEmailInbox(false)} />;
+    }
+
     // Show Meeting Summary
     if (showMeetingSummary) {
       return <MeetingSummaryScreen onClose={() => setShowMeetingSummary(false)} />;
