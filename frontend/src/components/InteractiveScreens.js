@@ -1778,7 +1778,7 @@ export const LostPhoneSetupScreen = ({ onClose }) => {
               <div className="bg-slate-900/80 rounded-lg p-4 text-center">
                 <span className="text-4xl">📱</span>
                 <p className="text-white font-medium mt-2">LOST PHONE</p>
-                <p className="text-slate-300 text-sm mt-2">"{settings.lostMessage}"</p>
+                <p className="text-slate-300 text-sm mt-2">&quot;{settings.lostMessage}&quot;</p>
                 {settings.rewardOffer && (
                   <p className="text-green-400 text-sm mt-2">🎁 {settings.rewardOffer}</p>
                 )}
