@@ -572,6 +572,14 @@ const AegisTrapSystem = () => {
   const [showFamilyTracker, setShowFamilyTracker] = useState(false);
   const [showHealthDashboard, setShowHealthDashboard] = useState(false);
   const [showPushSettings, setShowPushSettings] = useState(false);
+  
+  // PROTECTION & DEMO FEATURES
+  const [showProtectionSummary, setShowProtectionSummary] = useState(false);
+  const [protectionData, setProtectionData] = useState(null);
+  const [showIntruderAlert, setShowIntruderAlert] = useState(false);
+  const [showIntruderPhotos, setShowIntruderPhotos] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
+  const [shouldCaptureIntruder, setShouldCaptureIntruder] = useState(false);
 
   // Determine if trap mode is active
   const trapActive = authStatus?.security_state === "STATE_PHONE_UNLOCKED" && authStatus?.trap_mode;
@@ -581,11 +589,57 @@ const AegisTrapSystem = () => {
   const logAction = useTrapLogger(trapActive);
   const capturePhoto = useSilentPhotoCapture(trapActive);
   
+  // Initialize intruder camera capture
+  const { captureIntruder, captures: intruderCaptures, clearCaptures } = useIntruderCapture();
+  
   // Initialize notification system for invisible mode
   const { currentNotification, dismissNotification, handleAction: baseHandleAction, triggerNotification } = useAegisNotifications();
   
   // Initialize push notifications
   const pushNotifications = usePushNotifications(isAuthenticated && ownerMode);
+  
+  // Start smart protection monitoring when in owner mode
+  useEffect(() => {
+    if (ownerMode && showInvisibleMode) {
+      smartProtection.startIdleMonitoring({
+        idleDelay: 60000, // 1 minute for demo
+        onIdle: (cleanupActions) => {
+          console.log('Phone went idle, protection activated');
+          setProtectionData(smartProtection.getProtectionSummary());
+        },
+        onActive: () => {
+          console.log('User returned');
+        }
+      });
+      
+      return () => {
+        smartProtection.stopIdleMonitoring();
+      };
+    }
+  }, [ownerMode, showInvisibleMode]);
+  
+  // Show protection summary when owner returns after being away
+  useEffect(() => {
+    if (ownerMode && protectionData && (protectionData.totalCleanups > 0 || protectionData.intruderAttempts > 0)) {
+      setShowProtectionSummary(true);
+    }
+  }, [ownerMode, protectionData]);
+  
+  // Handle intruder capture on wrong pattern
+  const handleIntruderDetected = useCallback(async () => {
+    playError();
+    setShouldCaptureIntruder(true);
+    const capture = await captureIntruder('wrong_pattern');
+    if (capture) {
+      console.log('Intruder captured:', capture.id);
+    }
+    setShouldCaptureIntruder(false);
+  }, [captureIntruder]);
+  
+  // Demo mode notification trigger
+  const handleDemoNotification = useCallback((notification) => {
+    triggerNotification(notification);
+  }, [triggerNotification]);
 
   // Custom action handler that opens interactive screens
   const handleAction = useCallback((actionId) => {
@@ -593,7 +647,8 @@ const AegisTrapSystem = () => {
     switch(actionId) {
       case 'view':
       case 'View Summary':
-        if (currentNotification?.title?.includes('Meeting')) {
+      case 'view_summary':
+        if (currentNotification?.title?.includes('Meeting') || currentNotification?.title?.includes('Summary')) {
           setShowMeetingSummary(true);
         }
         break;
@@ -603,9 +658,13 @@ const AegisTrapSystem = () => {
         break;
       case 'track':
       case 'Track Location':
+      case 'view_map':
         if (currentNotification?.type === 'family') {
           setShowFamilyTracker(true);
         }
+        break;
+      case 'view_photo':
+        setShowIntruderPhotos(true);
         break;
       case 'Show Breakdown':
         setShowFinanceDashboard(true);
