@@ -654,6 +654,41 @@ const AegisTrapSystem = () => {
     triggerNotification(notification);
   }, [triggerNotification]);
 
+  // Demo mode screen opener - opens actual feature screens
+  const handleDemoOpenScreen = useCallback((screenName) => {
+    switch(screenName) {
+      case 'meeting_summary':
+        setShowMeetingSummary(true);
+        break;
+      case 'finance':
+        setShowFinanceDashboard(true);
+        break;
+      case 'family':
+        setShowFamilyTracker(true);
+        break;
+      case 'health':
+        setShowHealthDashboard(true);
+        break;
+      case 'calculator':
+        setCurrentApp('calculator');
+        break;
+      case 'intruder':
+        setShowIntruderAlert(true);
+        break;
+      case 'close_all':
+        // Close all screens to return to home
+        setShowMeetingSummary(false);
+        setShowFinanceDashboard(false);
+        setShowFamilyTracker(false);
+        setShowHealthDashboard(false);
+        setShowIntruderAlert(false);
+        setCurrentApp(null);
+        break;
+      default:
+        break;
+    }
+  }, []);
+
   // Custom action handler that opens interactive screens
   const handleAction = useCallback((actionId) => {
     // Handle special actions that open screens
