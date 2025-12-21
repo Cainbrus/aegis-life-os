@@ -16,6 +16,7 @@ import usePushNotifications from './hooks/usePushNotifications';
 import { ProtectionSummaryModal, IntruderPhotosViewer } from './components/ProtectionSummary';
 import { DemoModeController, QuickDemoButton } from './components/DemoMode';
 import { useIntruderCapture, IntruderAlertScreen, SilentCameraCapture } from './components/IntruderCamera';
+import SmartEmailInbox from './components/SmartEmailInbox';
 import smartProtection from './services/SmartProtectionService';
 import { playUnlock, playLock, playError, playNotification, playSuccess } from './services/SoundService';
 import './App.css';
