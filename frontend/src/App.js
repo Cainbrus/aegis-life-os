@@ -699,7 +699,7 @@ const AegisTrapSystem = () => {
   }, []);
 
   // Custom action handler that opens interactive screens
-  const handleAction = useCallback((actionId) => {
+  const handleAction = useCallback((actionId, actionData) => {
     // Handle special actions that open screens
     switch(actionId) {
       case 'view':
@@ -716,9 +716,48 @@ const AegisTrapSystem = () => {
       case 'track':
       case 'Track Location':
       case 'view_map':
+        // Open Family Tracker or Lost Phone based on context
         if (currentNotification?.type === 'family') {
           setShowFamilyTracker(true);
+        } else if (currentNotification?.type === 'lost') {
+          setShowLostPhoneSetup(true);
         }
+        playSuccess();
+        break;
+      case 'Play Sound':
+      case 'play_sound':
+        // Simulate playing a loud sound
+        playNotification('emergency');
+        triggerNotification({
+          type: 'suggestion',
+          icon: '🔊',
+          title: 'Sound Playing',
+          message: 'Playing loud alarm on your lost device. Sound will play for 2 minutes.',
+        });
+        break;
+      case 'Show New Route':
+      case 'show_route':
+        // Simulate showing new route
+        triggerNotification({
+          type: 'suggestion',
+          icon: '🗺️',
+          title: 'New Route Loaded',
+          message: 'Alternative route via Highway 5 loaded. Estimated arrival: 8:45 AM. Save 15 minutes!',
+        });
+        playSuccess();
+        break;
+      case 'Snooze 5 mins':
+      case 'snooze':
+        // Dismiss and simulate snooze
+        playButtonClick();
+        setTimeout(() => {
+          triggerNotification({
+            type: 'reminder',
+            icon: '⏰',
+            title: 'Reminder',
+            message: 'Time to leave! Your meeting starts in 45 minutes.',
+          });
+        }, 3000);
         break;
       case 'view_photo':
         setShowIntruderPhotos(true);
@@ -727,7 +766,7 @@ const AegisTrapSystem = () => {
         setShowFinanceDashboard(true);
         break;
       case 'taken':
-      case 'I\'ve Taken It':
+      case "I've Taken It":
         setShowHealthDashboard(true);
         break;
       case 'Full Schedule':
@@ -735,8 +774,30 @@ const AegisTrapSystem = () => {
         setShowCalendar(true);
         break;
       case 'chat':
-      case 'Yeah, let\'s talk':
+      case "Yeah, let's talk":
         setShowChat(true);
+        break;
+      case 'Call':
+      case 'call':
+        // Simulate making a call
+        triggerNotification({
+          type: 'suggestion',
+          icon: '📞',
+          title: 'Calling...',
+          message: 'Connecting to emergency contact.',
+        });
+        playSuccess();
+        break;
+      case 'Send Message':
+      case 'send_message':
+        // Simulate sending a message
+        triggerNotification({
+          type: 'suggestion',
+          icon: '💬',
+          title: 'Message Sent',
+          message: 'Your location and message have been sent to the finder.',
+        });
+        playSuccess();
         break;
       default:
         // Default behavior - just dismiss
@@ -744,7 +805,7 @@ const AegisTrapSystem = () => {
     }
     // Always call base handler to dismiss notification
     baseHandleAction(actionId);
-  }, [baseHandleAction, currentNotification]);
+  }, [baseHandleAction, currentNotification, triggerNotification]);
 
   // Define functions first before useEffect hooks
   const checkLearningStatus = useCallback(async () => {
