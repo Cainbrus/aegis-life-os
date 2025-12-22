@@ -325,10 +325,10 @@ export const DemoGuideLauncher = ({ onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="fixed bottom-4 right-4 z-40 bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-4 py-3 rounded-2xl shadow-lg hover:scale-105 transition-transform flex items-center space-x-2 border border-cyan-400/30"
+      className="fixed top-4 right-4 z-40 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center space-x-2 border border-purple-400/30"
     >
-      <span className="text-xl">🎯</span>
-      <span className="font-bold">INVESTOR DEMO</span>
+      <span className="text-lg">📋</span>
+      <span className="font-bold text-sm">SCRIPT</span>
     </button>
   );
 };
