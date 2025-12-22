@@ -325,7 +325,7 @@ export const DemoGuideLauncher = ({ onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="fixed bottom-32 right-2 z-30 bg-purple-600/80 text-white px-2 py-1 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center space-x-1 text-xs backdrop-blur-sm"
+      className="fixed bottom-24 right-3 z-30 bg-purple-600/90 text-white px-3 py-1.5 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center space-x-1 text-xs backdrop-blur-sm"
     >
       <span>📋</span>
       <span className="font-bold">SCRIPT</span>
