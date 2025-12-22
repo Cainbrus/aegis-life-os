@@ -1315,10 +1315,10 @@ const AegisTrapSystem = () => {
             onAction={handleAction}
           />
         )}
-        {/* Wipe Mode still active in background */}
+        {/* Wipe Mode - only shows during wipe, otherwise hidden */}
         <WipeMode onWipeTriggered={handleWipeTriggered} />
         
-        {/* Story Experience Mode Button - shows the full journey */}
+        {/* Story Experience Mode Button - small button at bottom */}
         <StoryModeButton onClick={() => setShowStoryMode(true)} />
         
         {/* Story Experience Mode - full realistic walkthrough */}
@@ -1329,16 +1329,7 @@ const AegisTrapSystem = () => {
           />
         )}
         
-        {/* Demo Mode Controller - for investor presentations */}
-        <DemoModeController 
-          onTriggerNotification={handleDemoNotification}
-          onDismissNotification={dismissNotification}
-          onOpenScreen={handleDemoOpenScreen}
-          isActive={demoMode}
-          onToggle={() => setDemoMode(!demoMode)}
-        />
-        
-        {/* Investor Demo Guide - guided presentation script */}
+        {/* Script Guide Button - small button at bottom */}
         <DemoGuideLauncher onClick={() => setShowInvestorGuide(true)} />
         
         {showInvestorGuide && (
