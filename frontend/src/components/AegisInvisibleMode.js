@@ -724,17 +724,26 @@ export const useAegisNotifications = () => {
   }, []);
 
   // Demo: Show notifications periodically for investor demos
+  // Only show CRITICAL notifications - reduced for better UX
   useEffect(() => {
-    // After 10 seconds of invisible mode, show first demo notification
+    // Critical notifications only (security, emergency, family safety)
+    const criticalNotifications = demoNotifications.filter(n => 
+      ['emergency', 'security', 'family'].includes(n.type) && 
+      (n.title.includes('CRASH') || n.title.includes('Intruder') || n.title.includes('SOS') || 
+       n.title.includes('Fall') || n.title.includes('Left Safe Zone'))
+    );
+    
+    // Show first notification after 15 seconds, then rarely
     const demoTimer = setTimeout(() => {
-      if (demoNotificationsShown < demoNotifications.length) {
+      if (demoNotificationsShown < 2 && criticalNotifications.length > 0) { // Max 2 auto notifications
+        const notif = criticalNotifications[demoNotificationsShown % criticalNotifications.length];
         setNotifications(prev => [...prev, { 
-          ...demoNotifications[demoNotificationsShown], 
+          ...notif, 
           id: Date.now() 
         }]);
         setDemoNotificationsShown(prev => prev + 1);
       }
-    }, 10000);
+    }, demoNotificationsShown === 0 ? 15000 : 60000); // First after 15s, then 60s
 
     return () => clearTimeout(demoTimer);
   }, [demoNotificationsShown, demoNotifications]);
