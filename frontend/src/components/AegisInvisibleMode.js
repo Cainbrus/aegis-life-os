@@ -978,61 +978,28 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
           </div>
         </div>
 
-        {/* Quick Protection Stats Widget */}
-        <div className="fixed bottom-24 left-4 right-4">
-          <div className="bg-gradient-to-r from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-2xl p-3 border border-cyan-500/20 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-sm">🛡️</span>
-                </div>
-                <div>
-                  <p className="text-white text-xs font-bold">Aegis Active</p>
-                  <p className="text-cyan-400/70 text-[10px]">Today&apos;s Protection</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4 text-center">
-                <div>
-                  <p className="text-white font-bold text-sm">12</p>
-                  <p className="text-slate-400 text-[10px]">Blocked</p>
-                </div>
-                <div className="h-6 w-px bg-slate-700"></div>
-                <div>
-                  <p className="text-white font-bold text-sm">3</p>
-                  <p className="text-slate-400 text-[10px]">Hidden</p>
-                </div>
-                <div className="h-6 w-px bg-slate-700"></div>
-                <div>
-                  <p className="text-green-400 font-bold text-sm">✓</p>
-                  <p className="text-slate-400 text-[10px]">Secure</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Dock */}
-        <div className="fixed bottom-6 left-6 right-6">
-          <div className="bg-slate-800/70 backdrop-blur-2xl rounded-3xl p-4 border border-slate-700/50">
+        <div className="fixed bottom-4 left-4 right-4 sm:left-6 sm:right-6">
+          <div className="bg-slate-800/70 backdrop-blur-2xl rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-slate-700/50">
             <div className="flex justify-around">
               <button 
                 onClick={() => { playAppOpen(); onOpenApp('Phone'); }}
-                className="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg hover:scale-110 transition-transform"
+                className="w-12 h-12 sm:w-14 sm:h-14 bg-green-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl shadow-lg hover:scale-110 transition-transform"
               >
                 📞
               </button>
               <button 
                 onClick={() => onOpenApp('Safari')}
-                className="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg hover:scale-110 transition-transform"
+                className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl shadow-lg hover:scale-110 transition-transform"
               >
                 🧭
               </button>
               <button 
                 onClick={() => onOpenApp('Messages')}
-                className="w-14 h-14 bg-green-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg hover:scale-110 transition-transform relative"
+                className="w-12 h-12 sm:w-14 sm:h-14 bg-green-600 rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl shadow-lg hover:scale-110 transition-transform relative"
               >
                 💬
-                <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white">
+                <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-bold text-white">
                   3
                 </div>
               </button>
