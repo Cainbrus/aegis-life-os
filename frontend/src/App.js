@@ -901,19 +901,25 @@ const AegisTrapSystem = () => {
   // Handle learning mode completion
   const handleLearningComplete = useCallback(() => {
     setShowLearningMode(false);
-    setShowInvisibleMode(true);
     setLearningStatus({ learning_complete: true, invisible_mode: true });
     
-    // Trigger welcome notification for invisible mode
-    triggerNotification({
-      type: 'suggestion',
-      title: '🎉 I Know You Now!',
-      message: 'I\'ve learned your patterns and I\'m now watching over everything. I\'ll delete anything suspicious, hide your private stuff, and only bother you when it matters. Access me anytime through Calculator → 8675309',
-      actions: [
-        { id: 'got_it', label: 'Let\'s Go!', primary: true }
-      ]
-    });
-  }, [triggerNotification]);
+    // Check if setup is already complete
+    if (setupComplete) {
+      // Go directly to invisible mode
+      setShowInvisibleMode(true);
+      triggerNotification({
+        type: 'suggestion',
+        title: '🎉 Welcome Back!',
+        message: 'Aegis is active and protecting you. Tap any app to see what I\'ve done for you.',
+        actions: [
+          { id: 'got_it', label: 'Let\'s Go!', primary: true }
+        ]
+      });
+    } else {
+      // Show setup wizard first
+      setShowSetupWizard(true);
+    }
+  }, [triggerNotification, setupComplete]);
   
   // Handle exiting invisible mode (via calculator vault)
   const handleExitInvisibleMode = useCallback(() => {
