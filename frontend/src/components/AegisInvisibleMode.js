@@ -724,26 +724,26 @@ export const useAegisNotifications = () => {
   }, []);
 
   // Demo: Show notifications periodically for investor demos
-  // Only show CRITICAL notifications - reduced for better UX
+  // Each notification type shows ONCE only - no repeats!
   useEffect(() => {
-    // Critical notifications only (security, emergency, family safety)
+    // Only show ONE notification total for demo (the first critical one)
+    // User can trigger more by clicking apps
+    if (demoNotificationsShown >= 1) return; // Already showed one, stop
+    
     const criticalNotifications = demoNotifications.filter(n => 
-      ['emergency', 'security', 'family'].includes(n.type) && 
-      (n.title.includes('CRASH') || n.title.includes('Intruder') || n.title.includes('SOS') || 
-       n.title.includes('Fall') || n.title.includes('Left Safe Zone'))
+      n.type === 'security' && n.title.includes('Intruder')
     );
     
-    // Show first notification after 15 seconds, then rarely
+    // Show first notification after 20 seconds, then STOP
     const demoTimer = setTimeout(() => {
-      if (demoNotificationsShown < 2 && criticalNotifications.length > 0) { // Max 2 auto notifications
-        const notif = criticalNotifications[demoNotificationsShown % criticalNotifications.length];
+      if (criticalNotifications.length > 0) {
         setNotifications(prev => [...prev, { 
-          ...notif, 
+          ...criticalNotifications[0], 
           id: Date.now() 
         }]);
-        setDemoNotificationsShown(prev => prev + 1);
+        setDemoNotificationsShown(1); // Mark as shown, no more auto notifications
       }
-    }, demoNotificationsShown === 0 ? 15000 : 60000); // First after 15s, then 60s
+    }, 20000);
 
     return () => clearTimeout(demoTimer);
   }, [demoNotificationsShown, demoNotifications]);
