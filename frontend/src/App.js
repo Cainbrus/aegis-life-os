@@ -19,6 +19,7 @@ import { useIntruderCapture, IntruderAlertScreen, SilentCameraCapture } from './
 import SmartEmailInbox from './components/SmartEmailInbox';
 import StoryExperienceMode, { StoryModeButton } from './components/StoryExperienceMode';
 import InvestorDemoGuide, { DemoGuideLauncher } from './components/InvestorDemoGuide';
+import SetupWizard from './components/SetupWizard';
 import smartProtection from './services/SmartProtectionService';
 import { playUnlock, playLock, playError, playNotification, playSuccess } from './services/SoundService';
 import './App.css';
