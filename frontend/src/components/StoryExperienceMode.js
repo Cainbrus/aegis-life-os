@@ -444,22 +444,51 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
 
         {/* Controls */}
         <div className="mt-6 flex justify-center space-x-4">
-          {!isPlaying ? (
+          {hasCompleted ? (
             <>
               <button
-                onClick={startStory}
-                className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold hover:opacity-90 transition-all"
+                onClick={restartStory}
+                className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold hover:opacity-90 transition-all"
               >
-                ▶️ Start Experience
+                🔄 Watch Again
+              </button>
+              <button
+                onClick={onClose}
+                className="px-6 py-3 bg-slate-700 text-white rounded-xl font-bold hover:bg-slate-600 transition-all"
+              >
+                ✓ Done
+              </button>
+            </>
+          ) : isPlaying ? (
+            <>
+              <button
+                onClick={() => setIsPlaying(false)}
+                className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-500 transition-all"
+              >
+                ⏸️ Pause
+              </button>
+              <button
+                onClick={restartStory}
+                className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all"
+              >
+                🔄 Restart
               </button>
             </>
           ) : (
-            <button
-              onClick={restartStory}
-              className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all"
-            >
-              🔄 Restart
-            </button>
+            <>
+              <button
+                onClick={() => setIsPlaying(true)}
+                className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold hover:opacity-90 transition-all"
+              >
+                ▶️ Resume
+              </button>
+              <button
+                onClick={restartStory}
+                className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all"
+              >
+                🔄 Restart
+              </button>
+            </>
           )}
         </div>
       </div>
