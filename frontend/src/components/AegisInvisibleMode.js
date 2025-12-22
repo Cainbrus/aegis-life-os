@@ -93,24 +93,28 @@ export const AegisNotification = ({ notification, onDismiss, onAction }) => {
   const styles = getTypeStyles();
 
   return (
-    <div className={`fixed top-4 left-4 right-4 z-50 transition-all duration-500 transform ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}`}>
-      <div className={`bg-slate-900/95 backdrop-blur-xl rounded-2xl border-2 ${styles.border} ${styles.bg} p-4 ${styles.glow}`}>
-        <div className="flex items-start space-x-3">
-          <div className="text-3xl animate-bounce">{getIcon()}</div>
-          <div className="flex-1">
+    <div className={`fixed top-12 left-2 right-2 sm:top-4 sm:left-4 sm:right-4 z-[60] transition-all duration-500 transform ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}`}>
+      <div className={`bg-slate-900/95 backdrop-blur-xl rounded-2xl border-2 ${styles.border} ${styles.bg} p-3 sm:p-4 ${styles.glow}`}>
+        <div className="flex items-start space-x-2 sm:space-x-3">
+          <div className="text-2xl sm:text-3xl animate-bounce">{notification.icon || getIcon()}</div>
+          <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-white text-lg">{notification.title}</h3>
-              <span className="text-xs text-slate-400">{notification.time || 'Just now'}</span>
+              <h3 className="font-bold text-white text-sm sm:text-lg truncate">{notification.title}</h3>
+              <span className="text-[10px] sm:text-xs text-slate-400 ml-2 flex-shrink-0">{notification.time || 'Just now'}</span>
             </div>
-            <p className="text-sm text-slate-300 mt-1">{notification.message}</p>
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 line-clamp-2">{notification.message}</p>
             
             {notification.actions && notification.actions.length > 0 && (
-              <div className="flex space-x-2 mt-4">
+              <div className="flex flex-wrap gap-2 mt-3">
                 {notification.actions.map((action, idx) => (
                   <button
                     key={idx}
-                    onClick={() => { playButtonClick(); onAction(action.id); }}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    onClick={(e) => { 
+                      e.stopPropagation();
+                      playButtonClick(); 
+                      if (onAction) onAction(action.id, action); 
+                    }}
+                    className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                       action.primary
                         ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:opacity-90 shadow-lg'
                         : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
@@ -123,8 +127,8 @@ export const AegisNotification = ({ notification, onDismiss, onAction }) => {
             )}
           </div>
           <button
-            onClick={() => { playButtonClick(); onDismiss(); }}
-            className="text-slate-500 hover:text-white transition-colors text-xl"
+            onClick={(e) => { e.stopPropagation(); playButtonClick(); onDismiss(); }}
+            className="text-slate-500 hover:text-white transition-colors text-lg sm:text-xl flex-shrink-0"
           >
             ✕
           </button>
