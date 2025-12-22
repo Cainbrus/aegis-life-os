@@ -137,9 +137,10 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
         }
         setCurrentScene(prev => prev + 1);
       } else {
-        // Story complete
+        // Story complete - show completion state, don't auto-close
         setIsPlaying(false);
-        if (onComplete) onComplete();
+        setHasCompleted(true);
+        playSuccess();
       }
     }, scene?.duration || 3000);
 
