@@ -103,10 +103,11 @@ const STORY_SCENES = [
 // Story Experience Component
 const StoryExperienceMode = ({ onClose, onComplete }) => {
   const [currentScene, setCurrentScene] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Auto-start!
   const [showPhoneScreen, setShowPhoneScreen] = useState(true);
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [captureTime, setCaptureTime] = useState(null);
+  const [hasCompleted, setHasCompleted] = useState(false);
 
   const scene = STORY_SCENES[currentScene];
 
