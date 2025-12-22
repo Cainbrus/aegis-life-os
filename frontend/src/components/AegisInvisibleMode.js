@@ -1012,11 +1012,6 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
             </div>
           </div>
         </div>
-        
-        {/* Subtle Aegis indicator - barely visible */}
-        <div className="fixed bottom-2 left-1/2 -translate-x-1/2">
-          <div className="w-1 h-1 bg-cyan-400/30 rounded-full animate-pulse"></div>
-        </div>
       </div>
     </div>
   );
