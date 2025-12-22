@@ -277,16 +277,16 @@ export const DemoModeController = ({
     return (
       <button
         onClick={() => setShowControls(true)}
-        className="fixed bottom-20 right-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center space-x-2 animate-pulse"
+        className="fixed bottom-4 right-2 z-30 bg-gradient-to-r from-purple-600/80 to-pink-600/80 backdrop-blur-sm text-white px-3 py-2 rounded-xl shadow-lg hover:scale-105 transition-transform flex items-center space-x-2 text-sm"
       >
-        <span className="text-xl">🎬</span>
-        <span className="font-bold">INVESTOR DEMO</span>
+        <span>🎬</span>
+        <span className="font-bold text-xs">DEMO</span>
       </button>
     );
   }
 
   return (
-    <div className="fixed bottom-20 right-4 z-50 w-80">
+    <div className="fixed bottom-4 right-2 z-40 w-72 sm:w-80">
       <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-purple-500/30 shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-3 flex items-center justify-between">
