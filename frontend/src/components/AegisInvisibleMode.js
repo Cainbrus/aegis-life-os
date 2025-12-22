@@ -974,6 +974,39 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
           </div>
         </div>
 
+        {/* Quick Protection Stats Widget */}
+        <div className="fixed bottom-24 left-4 right-4">
+          <div className="bg-gradient-to-r from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-2xl p-3 border border-cyan-500/20 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-sm">🛡️</span>
+                </div>
+                <div>
+                  <p className="text-white text-xs font-bold">Aegis Active</p>
+                  <p className="text-cyan-400/70 text-[10px]">Today&apos;s Protection</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4 text-center">
+                <div>
+                  <p className="text-white font-bold text-sm">12</p>
+                  <p className="text-slate-400 text-[10px]">Blocked</p>
+                </div>
+                <div className="h-6 w-px bg-slate-700"></div>
+                <div>
+                  <p className="text-white font-bold text-sm">3</p>
+                  <p className="text-slate-400 text-[10px]">Hidden</p>
+                </div>
+                <div className="h-6 w-px bg-slate-700"></div>
+                <div>
+                  <p className="text-green-400 font-bold text-sm">✓</p>
+                  <p className="text-slate-400 text-[10px]">Secure</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Dock */}
         <div className="fixed bottom-6 left-6 right-6">
           <div className="bg-slate-800/70 backdrop-blur-2xl rounded-3xl p-4 border border-slate-700/50">
