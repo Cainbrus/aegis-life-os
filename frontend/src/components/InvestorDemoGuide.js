@@ -233,7 +233,7 @@ const InvestorDemoGuide = ({ onClose, onAction }) => {
               <div className="mt-3 bg-slate-800/50 rounded-xl p-3 border border-slate-700">
                 <p className="text-slate-300 text-sm leading-relaxed">
                   <span className="text-cyan-400 font-medium">Say: </span>
-                  "{step?.narration}"
+                  &quot;{step?.narration}&quot;
                 </p>
               </div>
             )}
