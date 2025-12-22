@@ -1074,6 +1074,27 @@ const AegisTrapSystem = () => {
   }
 
   // =============================================
+  // SETUP WIZARD - Show after onboarding to configure essential features
+  // Emergency contacts, Lost Phone info, Family members
+  // =============================================
+  if (showSetupWizard && !setupComplete) {
+    return (
+      <SetupWizard 
+        onComplete={(data) => {
+          setSetupData(data);
+          setSetupComplete(true);
+          setShowSetupWizard(false);
+          localStorage.setItem('aegis_setup_complete', 'true');
+          localStorage.setItem('aegis_setup_data', JSON.stringify(data));
+          playSuccess();
+          // Go to invisible mode after setup
+          setShowInvisibleMode(true);
+        }} 
+      />
+    );
+  }
+
+  // =============================================
   // LEARNING MODE - Show after onboarding, before invisible mode
   // This teaches Aegis about the user's patterns
   // =============================================
