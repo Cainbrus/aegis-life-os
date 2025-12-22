@@ -4,23 +4,23 @@
 // Shows the full journey of how Aegis protects you
 // =============================================
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { playButtonClick, playNotification, playLock, playUnlock, playError, playSosActivate, playSuccess } from '../services/SoundService';
+import React, { useState, useEffect, useRef } from 'react';
+import { playButtonClick, playNotification, playLock, playUnlock, playSuccess } from '../services/SoundService';
 
 // Story scenes that walk through a realistic scenario
 const STORY_SCENES = [
   {
     id: 'using_phone',
-    title: 'You\'re using your phone',
+    title: "You're using your phone",
     description: 'Browsing, checking messages...',
-    duration: 4000,
+    duration: 3000,
     type: 'owner_using'
   },
   {
     id: 'put_down',
     title: 'You put your phone down',
     description: 'Going to the bathroom / Getting coffee...',
-    duration: 3000,
+    duration: 2500,
     type: 'transition',
     sound: 'lock'
   },
@@ -28,14 +28,14 @@ const STORY_SCENES = [
     id: 'phone_idle',
     title: 'Phone is idle...',
     description: 'Aegis is watching silently',
-    duration: 2500,
+    duration: 2000,
     type: 'idle'
   },
   {
     id: 'someone_picks_up',
     title: '⚠️ Someone picks up your phone!',
     description: 'Your partner / coworker / stranger',
-    duration: 3000,
+    duration: 2500,
     type: 'alert',
     sound: 'alert'
   },
@@ -43,14 +43,14 @@ const STORY_SCENES = [
     id: 'wrong_pattern',
     title: '🔓 They try to unlock...',
     description: 'Entering the wrong pattern',
-    duration: 3000,
+    duration: 2500,
     type: 'intruder_attempt'
   },
   {
     id: 'photo_captured',
     title: '📸 PHOTO CAPTURED!',
     description: 'Aegis silently photographs the intruder',
-    duration: 3500,
+    duration: 3000,
     type: 'capture',
     sound: 'capture'
   },
@@ -58,35 +58,35 @@ const STORY_SCENES = [
     id: 'fake_mode_active',
     title: '🎭 FAKE MODE ACTIVATED',
     description: 'Showing decoy data to protect your privacy',
-    duration: 3000,
+    duration: 2500,
     type: 'fake_mode'
   },
   {
     id: 'intruder_browsing',
     title: 'Intruder browses fake data',
-    description: 'They see fake messages, photos, apps...',
-    duration: 4000,
+    description: "They see fake messages, photos, apps...",
+    duration: 3000,
     type: 'fake_browsing'
   },
   {
     id: 'intruder_leaves',
     title: 'They put the phone down',
-    description: 'Didn\'t find what they were looking for',
-    duration: 2500,
+    description: "Didn't find what they were looking for",
+    duration: 2000,
     type: 'transition'
   },
   {
     id: 'you_return',
     title: '👤 You return',
     description: 'Picking up your phone',
-    duration: 2500,
+    duration: 2000,
     type: 'owner_return'
   },
   {
     id: 'owner_unlock',
     title: '🔓 You unlock with YOUR pattern',
     description: 'Using the owner pattern (1-5-9-8-7)',
-    duration: 3000,
+    duration: 2500,
     type: 'owner_unlock',
     sound: 'unlock'
   },
@@ -94,90 +94,89 @@ const STORY_SCENES = [
     id: 'protection_summary',
     title: '🛡️ While you were away...',
     description: 'Aegis shows you everything that happened',
-    duration: 5000,
+    duration: 4000,
     type: 'summary',
     sound: 'success'
   }
 ];
 
 // Story Experience Component
-const StoryExperienceMode = ({ onClose, onComplete }) => {
+const StoryExperienceMode = ({ onClose }) => {
   const [currentScene, setCurrentScene] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true); // Auto-start!
-  const [showPhoneScreen, setShowPhoneScreen] = useState(true);
-  const [capturedPhoto, setCapturedPhoto] = useState(null);
-  const [captureTime, setCaptureTime] = useState(null);
-  const [hasCompleted, setHasCompleted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isComplete, setIsComplete] = useState(false);
+  const timerRef = useRef(null);
 
   const scene = STORY_SCENES[currentScene];
+  const totalScenes = STORY_SCENES.length;
+  const progress = ((currentScene + 1) / totalScenes) * 100;
 
-  // Play sounds based on scene
+  // Handle scene advancement
   useEffect(() => {
-    if (!isPlaying) return;
-    
-    switch(scene?.sound) {
-      case 'lock': playLock(); break;
-      case 'alert': playNotification('security'); break;
-      case 'capture': playSosActivate(); break;
-      case 'unlock': playUnlock(); break;
-      case 'success': playSuccess(); break;
-      default: break;
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
     }
-  }, [currentScene, isPlaying, scene?.sound]);
 
-  // Auto-advance through scenes
-  useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying || isComplete) return;
 
-    const currentDuration = STORY_SCENES[currentScene]?.duration || 3000;
-    
-    const timer = setTimeout(() => {
-      if (currentScene < STORY_SCENES.length - 1) {
-        // Special handling for photo capture
-        if (STORY_SCENES[currentScene]?.type === 'capture') {
-          setCaptureTime(new Date());
-        }
-        setCurrentScene(prev => prev + 1);
+    // Play sound for current scene
+    if (scene?.sound) {
+      switch(scene.sound) {
+        case 'lock': playLock(); break;
+        case 'alert': playNotification('security'); break;
+        case 'capture': playNotification('emergency'); break;
+        case 'unlock': playUnlock(); break;
+        case 'success': playSuccess(); break;
+        default: break;
+      }
+    }
+
+    // Set timer to advance to next scene
+    timerRef.current = setTimeout(() => {
+      if (currentScene < totalScenes - 1) {
+        setCurrentScene(currentScene + 1);
       } else {
-        // Story complete - show completion state, don't auto-close
+        setIsComplete(true);
         setIsPlaying(false);
-        setHasCompleted(true);
         playSuccess();
       }
-    }, currentDuration);
+    }, scene?.duration || 3000);
 
-    return () => clearTimeout(timer);
-  }, [isPlaying, currentScene]);
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [currentScene, isPlaying, isComplete, scene, totalScenes]);
 
-  const startStory = () => {
+  const handleRestart = () => {
     setCurrentScene(0);
     setIsPlaying(true);
-    setCapturedPhoto(null);
-    setCaptureTime(null);
-    setHasCompleted(false);
+    setIsComplete(false);
     playButtonClick();
   };
 
-  const restartStory = () => {
-    setCurrentScene(0);
-    setIsPlaying(true);
-    setCapturedPhoto(null);
-    setCaptureTime(null);
-    setHasCompleted(false);
+  const handlePause = () => {
+    setIsPlaying(false);
     playButtonClick();
   };
 
-  // Render different phone screens based on scene type
+  const handleResume = () => {
+    setIsPlaying(true);
+    playButtonClick();
+  };
+
+  // Render phone screen based on scene type
   const renderPhoneScreen = () => {
     switch(scene?.type) {
       case 'owner_using':
         return (
-          <div className="bg-gradient-to-b from-slate-800 to-slate-900 h-full p-4 animate-fadeIn">
+          <div className="bg-gradient-to-b from-slate-800 to-slate-900 h-full p-4">
             <div className="text-center mb-4">
               <div className="text-4xl mb-2">📱</div>
               <p className="text-slate-300">Normal phone use</p>
             </div>
-            {/* Fake app icons */}
             <div className="grid grid-cols-4 gap-3 mt-6">
               {['💬', '📷', '🎵', '📧', '🌐', '📅', '⚙️', '📝'].map((icon, i) => (
                 <div key={i} className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center text-2xl">
@@ -190,7 +189,7 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
       
       case 'transition':
         return (
-          <div className="bg-black h-full flex items-center justify-center animate-fadeIn">
+          <div className="bg-black h-full flex items-center justify-center">
             <div className="text-center">
               <div className="text-6xl mb-4 animate-pulse">🌙</div>
               <p className="text-slate-500">Screen off</p>
@@ -221,11 +220,10 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
       
       case 'intruder_attempt':
         return (
-          <div className="bg-slate-900 h-full p-4 animate-fadeIn">
+          <div className="bg-slate-900 h-full p-4">
             <div className="text-center mb-6">
               <p className="text-slate-400 text-sm">Draw pattern to unlock</p>
             </div>
-            {/* Pattern grid with wrong attempt animation */}
             <div className="grid grid-cols-3 gap-6 w-48 mx-auto">
               {[1,2,3,4,5,6,7,8,9].map(num => (
                 <div 
@@ -246,8 +244,7 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
       case 'capture':
         return (
           <div className="bg-black h-full flex items-center justify-center relative overflow-hidden">
-            {/* Camera flash effect */}
-            <div className="absolute inset-0 bg-white animate-flash"></div>
+            <div className="absolute inset-0 bg-white animate-ping opacity-50"></div>
             <div className="text-center z-10">
               <div className="text-6xl mb-4">📸</div>
               <p className="text-red-400 font-bold animate-pulse">CAPTURING...</p>
@@ -261,7 +258,7 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
       
       case 'fake_mode':
         return (
-          <div className="bg-gradient-to-b from-amber-900/30 to-slate-900 h-full flex items-center justify-center animate-fadeIn">
+          <div className="bg-gradient-to-b from-amber-900/30 to-slate-900 h-full flex items-center justify-center">
             <div className="text-center">
               <div className="text-6xl mb-4">🎭</div>
               <p className="text-amber-400 font-bold text-lg">FAKE MODE</p>
@@ -276,11 +273,10 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
       
       case 'fake_browsing':
         return (
-          <div className="bg-slate-900 h-full p-4 animate-fadeIn">
+          <div className="bg-slate-900 h-full p-4">
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-2 mb-4">
               <p className="text-red-400 text-xs text-center">🎭 FAKE MODE ACTIVE - All data is decoy</p>
             </div>
-            {/* Fake messages */}
             <div className="space-y-2">
               <div className="bg-slate-800 rounded-lg p-3">
                 <p className="text-slate-400 text-sm font-medium">📱 Work Group</p>
@@ -301,7 +297,7 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
       
       case 'owner_return':
         return (
-          <div className="bg-gradient-to-b from-cyan-900/30 to-slate-900 h-full flex items-center justify-center animate-fadeIn">
+          <div className="bg-gradient-to-b from-cyan-900/30 to-slate-900 h-full flex items-center justify-center">
             <div className="text-center">
               <div className="text-6xl mb-4">👤</div>
               <p className="text-cyan-400">Owner detected</p>
@@ -312,11 +308,10 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
       
       case 'owner_unlock':
         return (
-          <div className="bg-slate-900 h-full p-4 animate-fadeIn">
+          <div className="bg-slate-900 h-full p-4">
             <div className="text-center mb-6">
               <p className="text-cyan-400 text-sm">Draw YOUR pattern</p>
             </div>
-            {/* Pattern grid with owner pattern */}
             <div className="grid grid-cols-3 gap-6 w-48 mx-auto">
               {[1,2,3,4,5,6,7,8,9].map(num => (
                 <div 
@@ -336,14 +331,13 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
       
       case 'summary':
         return (
-          <div className="bg-gradient-to-b from-slate-800 to-slate-900 h-full p-4 animate-fadeIn overflow-y-auto">
+          <div className="bg-gradient-to-b from-slate-800 to-slate-900 h-full p-4 overflow-y-auto">
             <div className="text-center mb-4">
               <div className="text-4xl mb-2">🛡️</div>
               <h2 className="text-white font-bold text-lg">While you were away...</h2>
               <p className="text-slate-400 text-sm">Aegis protected your phone</p>
             </div>
             
-            {/* Intruder alert */}
             <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-3 mb-3">
               <div className="flex items-center space-x-3">
                 <div className="w-16 h-16 bg-slate-700 rounded-lg flex items-center justify-center text-3xl">
@@ -352,14 +346,11 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
                 <div className="flex-1">
                   <p className="text-red-400 font-bold">Intruder Detected!</p>
                   <p className="text-slate-400 text-xs">Photo captured</p>
-                  <p className="text-slate-500 text-xs">
-                    {captureTime ? captureTime.toLocaleTimeString() : new Date().toLocaleTimeString()}
-                  </p>
+                  <p className="text-slate-500 text-xs">{new Date().toLocaleTimeString()}</p>
                 </div>
               </div>
             </div>
             
-            {/* Actions taken */}
             <div className="space-y-2">
               <div className="bg-slate-800 rounded-lg p-3 flex items-center space-x-2">
                 <span className="text-green-400">✓</span>
@@ -391,7 +382,7 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4">
       {/* Close button */}
       <button
         onClick={onClose}
@@ -415,43 +406,35 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
 
         {/* Phone mockup */}
         <div className="relative mx-auto" style={{ width: '280px' }}>
-          {/* Phone frame */}
           <div className="bg-slate-800 rounded-[2.5rem] p-3 shadow-2xl border-4 border-slate-700">
-            {/* Notch */}
             <div className="absolute top-5 left-1/2 transform -translate-x-1/2 w-24 h-6 bg-black rounded-full z-10"></div>
-            
-            {/* Screen */}
             <div className="bg-black rounded-[2rem] overflow-hidden" style={{ height: '500px' }}>
               {renderPhoneScreen()}
             </div>
-            
-            {/* Home indicator */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-slate-600 rounded-full"></div>
           </div>
         </div>
 
         {/* Progress */}
-        {isPlaying && (
-          <div className="mt-6">
-            <div className="flex justify-between text-xs text-slate-500 mb-2">
-              <span>Scene {currentScene + 1} of {STORY_SCENES.length}</span>
-              <span>{Math.round(((currentScene + 1) / STORY_SCENES.length) * 100)}%</span>
-            </div>
-            <div className="w-full bg-slate-800 rounded-full h-2">
-              <div 
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${((currentScene + 1) / STORY_SCENES.length) * 100}%` }}
-              ></div>
-            </div>
+        <div className="mt-6">
+          <div className="flex justify-between text-xs text-slate-500 mb-2">
+            <span>Scene {currentScene + 1} of {totalScenes}</span>
+            <span>{Math.round(progress)}%</span>
           </div>
-        )}
+          <div className="w-full bg-slate-800 rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
 
         {/* Controls */}
         <div className="mt-6 flex justify-center space-x-4">
-          {hasCompleted ? (
+          {isComplete ? (
             <>
               <button
-                onClick={restartStory}
+                onClick={handleRestart}
                 className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold hover:opacity-90 transition-all"
               >
                 🔄 Watch Again
@@ -463,31 +446,25 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
                 ✓ Done
               </button>
             </>
-          ) : isPlaying ? (
-            <>
-              <button
-                onClick={() => setIsPlaying(false)}
-                className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-500 transition-all"
-              >
-                ⏸️ Pause
-              </button>
-              <button
-                onClick={restartStory}
-                className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all"
-              >
-                🔄 Restart
-              </button>
-            </>
           ) : (
             <>
+              {isPlaying ? (
+                <button
+                  onClick={handlePause}
+                  className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-500 transition-all"
+                >
+                  ⏸️ Pause
+                </button>
+              ) : (
+                <button
+                  onClick={handleResume}
+                  className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold hover:opacity-90 transition-all"
+                >
+                  ▶️ Resume
+                </button>
+              )}
               <button
-                onClick={() => setIsPlaying(true)}
-                className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold hover:opacity-90 transition-all"
-              >
-                ▶️ Resume
-              </button>
-              <button
-                onClick={restartStory}
+                onClick={handleRestart}
                 className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all"
               >
                 🔄 Restart
@@ -496,24 +473,6 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
           )}
         </div>
       </div>
-
-      {/* CSS for flash animation */}
-      <style>{`
-        @keyframes flash {
-          0% { opacity: 1; }
-          100% { opacity: 0; }
-        }
-        .animate-flash {
-          animation: flash 0.5s ease-out forwards;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 };
