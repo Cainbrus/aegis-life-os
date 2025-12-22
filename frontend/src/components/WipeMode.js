@@ -228,19 +228,10 @@ const WipeMode = ({ onWipeTriggered }) => {
 
   return (
     <div className="wipe-mode-monitor">
-      {/* Hardware Sequence Status (Debug/Development) */}
-      <div className="fixed bottom-4 left-4 z-50 bg-slate-900 border border-red-700 rounded-lg p-3 text-xs text-red-300 opacity-75">
-        <div className="text-red-400 font-semibold mb-1">🚨 WIPE MODE ARMED</div>
-        <div>Power: {powerPresses}/5 | Volume: {volumeUpPresses}/1</div>
-        <div className="text-xs text-slate-400 mt-1">
-          Test: P=Power, V=Volume, Ctrl+Shift+W=Emergency
-        </div>
-        <button 
-          onClick={testRemoteWipe}
-          className="mt-2 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
-        >
-          Test Remote Wipe
-        </button>
+      {/* Hardware Sequence Status - Hidden on mobile, small on desktop */}
+      <div className="fixed bottom-20 left-2 z-20 bg-slate-900/80 backdrop-blur-sm border border-red-700/50 rounded-lg p-2 text-[10px] text-red-300/70 hidden sm:block">
+        <div className="text-red-400/80 font-semibold text-xs">🚨 WIPE ARMED</div>
+        <div className="text-slate-500">P:{powerPresses}/5 V:{volumeUpPresses}/1</div>
       </div>
 
       {/* Remote Wipe Listener Status */}
