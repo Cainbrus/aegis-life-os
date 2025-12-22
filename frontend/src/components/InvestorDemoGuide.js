@@ -185,7 +185,7 @@ const InvestorDemoGuide = ({ onClose, onAction }) => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] pointer-events-none">
       {/* Floating control panel */}
       <div className="flex justify-center mb-4">
         <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 pointer-events-auto max-w-2xl w-full mx-4">
