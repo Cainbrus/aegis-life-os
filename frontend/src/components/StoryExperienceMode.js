@@ -477,15 +477,14 @@ const StoryExperienceMode = ({ onClose }) => {
   );
 };
 
-// Button to launch story mode from home screen
+// Button to launch story mode from home screen - tiny, at very bottom
 export const StoryModeButton = ({ onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="fixed bottom-24 left-3 z-30 bg-cyan-600/90 text-white px-3 py-1.5 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center space-x-1 text-xs backdrop-blur-sm"
+      className="fixed bottom-1 left-1/2 -translate-x-16 z-30 bg-slate-800/80 text-slate-400 px-2 py-1 rounded-full text-[10px] backdrop-blur-sm border border-slate-700"
     >
-      <span>🎬</span>
-      <span className="font-bold">DEMO</span>
+      🎬 Demo
     </button>
   );
 };
