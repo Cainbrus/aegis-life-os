@@ -576,6 +576,14 @@ const AegisTrapSystem = () => {
   const [wipeTriggered, setWipeTriggered] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(null); // null = loading, true = show landing, false = skip landing
   
+  // SETUP WIZARD - Shows after pattern setup
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
+  const [setupComplete, setSetupComplete] = useState(() => {
+    // Check if setup was already completed
+    return localStorage.getItem('aegis_setup_complete') === 'true';
+  });
+  const [setupData, setSetupData] = useState(null);
+  
   // LEARNING MODE & INVISIBLE MODE STATES
   const [learningStatus, setLearningStatus] = useState(null); // { learning_complete: bool, invisible_mode: bool }
   const [showLearningMode, setShowLearningMode] = useState(false);
