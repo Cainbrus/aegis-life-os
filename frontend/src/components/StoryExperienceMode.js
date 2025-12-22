@@ -152,6 +152,7 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
     setIsPlaying(true);
     setCapturedPhoto(null);
     setCaptureTime(null);
+    setHasCompleted(false);
     playButtonClick();
   };
 
@@ -160,6 +161,7 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
     setIsPlaying(true);
     setCapturedPhoto(null);
     setCaptureTime(null);
+    setHasCompleted(false);
     playButtonClick();
   };
 
