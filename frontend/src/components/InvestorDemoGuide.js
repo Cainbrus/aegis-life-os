@@ -320,15 +320,14 @@ const InvestorDemoGuide = ({ onClose, onAction }) => {
   );
 };
 
-// Floating launcher button
+// Floating launcher button - tiny, at very bottom
 export const DemoGuideLauncher = ({ onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="fixed bottom-24 right-3 z-30 bg-purple-600/90 text-white px-3 py-1.5 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center space-x-1 text-xs backdrop-blur-sm"
+      className="fixed bottom-1 left-1/2 translate-x-4 z-30 bg-slate-800/80 text-slate-400 px-2 py-1 rounded-full text-[10px] backdrop-blur-sm border border-slate-700"
     >
-      <span>📋</span>
-      <span className="font-bold">SCRIPT</span>
+      📋 Script
     </button>
   );
 };
