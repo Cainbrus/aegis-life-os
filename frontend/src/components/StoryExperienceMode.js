@@ -129,10 +129,12 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
   useEffect(() => {
     if (!isPlaying) return;
 
+    const currentDuration = STORY_SCENES[currentScene]?.duration || 3000;
+    
     const timer = setTimeout(() => {
       if (currentScene < STORY_SCENES.length - 1) {
         // Special handling for photo capture
-        if (scene?.type === 'capture') {
+        if (STORY_SCENES[currentScene]?.type === 'capture') {
           setCaptureTime(new Date());
         }
         setCurrentScene(prev => prev + 1);
@@ -142,10 +144,10 @@ const StoryExperienceMode = ({ onClose, onComplete }) => {
         setHasCompleted(true);
         playSuccess();
       }
-    }, scene?.duration || 3000);
+    }, currentDuration);
 
     return () => clearTimeout(timer);
-  }, [isPlaying, currentScene, scene, onComplete]);
+  }, [isPlaying, currentScene]);
 
   const startStory = () => {
     setCurrentScene(0);
