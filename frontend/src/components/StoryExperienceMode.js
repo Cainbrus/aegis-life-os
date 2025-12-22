@@ -482,10 +482,10 @@ export const StoryModeButton = ({ onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="fixed top-4 left-4 z-50 bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center space-x-2"
+      className="fixed top-2 left-2 z-40 bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-2 py-1 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center space-x-1 text-xs sm:text-sm sm:px-3 sm:py-2"
     >
       <span>🎬</span>
-      <span className="text-sm font-bold">EXPERIENCE MODE</span>
+      <span className="font-bold hidden sm:inline">EXPERIENCE</span>
     </button>
   );
 };
