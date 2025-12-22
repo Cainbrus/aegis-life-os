@@ -1241,11 +1241,28 @@ const AegisTrapSystem = () => {
           onToggle={() => setDemoMode(!demoMode)}
         />
         
-        {/* Quick Demo Trigger Button */}
-        <QuickDemoButton 
-          onTrigger={handleDemoNotification} 
-          onOpenScreen={handleDemoOpenScreen}
-        />
+        {/* Investor Demo Guide - guided presentation script */}
+        <DemoGuideLauncher onClick={() => setShowInvestorGuide(true)} />
+        
+        {showInvestorGuide && (
+          <InvestorDemoGuide
+            onClose={() => setShowInvestorGuide(false)}
+            onAction={(action) => {
+              // Handle guided demo actions
+              switch(action) {
+                case 'show_home': break; // Already showing
+                case 'click_banking': setShowFinanceDashboard(true); break;
+                case 'click_family': setShowFamilyTracker(true); break;
+                case 'click_emergency': setShowEmergencySetup(true); break;
+                case 'click_lost_phone': setShowLostPhoneSetup(true); break;
+                case 'click_mail': setShowEmailInbox(true); break;
+                case 'show_trap': setShowStoryMode(true); break;
+                case 'show_vault': setCurrentApp('calculator'); break;
+                default: break;
+              }
+            }}
+          />
+        )}
         
         {/* Intruder Alert Screen (for demo) */}
         {showIntruderAlert && (
