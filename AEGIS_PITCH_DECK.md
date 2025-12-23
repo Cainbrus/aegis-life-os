@@ -1,0 +1,325 @@
+# AEGIS INVESTOR PITCH DECK 🛡️
+
+---
+
+## SLIDE 1: Title
+
+# AEGIS
+### Your Digital Guardian
+
+**Proactive Protection for Your Digital Life**
+
+*Seeking: $500K Seed Round*
+
+---
+
+## SLIDE 2: The Problem
+
+### 📱 Your Phone = Your Entire Life
+
+- Banking & finances
+- Private conversations
+- Personal photos
+- Health records
+- Family information
+- Work documents
+
+### 😰 Current Security is REACTIVE
+
+- Passwords can be guessed/stolen
+- Biometrics can be forced
+- Once breached, damage is done
+- No evidence against attackers
+- No protection under duress
+
+**"What happens when someone FORCES you to unlock your phone?"**
+
+---
+
+## SLIDE 3: The Solution
+
+### AEGIS: Proactive Protection
+
+**We don't just lock attackers out...**
+**We let them IN — to FAKE data.**
+
+🎭 **Trap Mode** (Patent Pending)
+- Wrong password? Show decoy data
+- Under duress? Silent alert + fake data
+- Meanwhile: Photo captured, location logged
+
+**Attackers think they succeeded. You have the evidence.**
+
+---
+
+## SLIDE 4: How It Works
+
+### Three Patterns, Three Modes
+
+| You Enter | What Happens |
+|-----------|-------------|
+| **Owner Pattern** | Full access to real data |
+| **Duress Pattern** | Fake data + silent alert to contacts |
+| **Wrong Pattern** | Photo captured + Trap Mode activated |
+
+### The Trap Mode Flow:
+
+1. ⚠️ Intruder picks up phone
+2. 🔐 Enters wrong pattern
+3. 📸 **Photo silently captured**
+4. 🎭 **Fake data displayed**
+5. 📍 Location logged
+6. 👤 Owner returns
+7. 📋 Full report of what happened
+
+---
+
+## SLIDE 5: Key Features
+
+### 🛡️ Security
+- Trap Mode with decoy data
+- Intruder photo capture
+- Remote wipe
+- Calculator vault
+
+### 🆘 Emergency
+- Crash detection
+- Fall detection
+- Duress phrase ("Call my lawyer")
+- Auto-call emergency services
+
+### 👨‍👩‍👧 Family Safety
+- Real-time location tracking
+- Geofencing alerts
+- Family SOS
+
+### 🤖 AI Protection
+- Spam/scam blocking
+- Phishing detection
+- Fraud alerts
+- Smart notifications
+
+---
+
+## SLIDE 6: Market Opportunity
+
+### 📊 $150 BILLION Mobile Security Market
+
+- Growing 15% annually
+- 6.8 billion smartphone users globally
+- Average person has 80+ apps with personal data
+- 1 in 4 people experience phone theft/loss
+
+### 🎯 Target Segments
+
+1. **Privacy-Conscious Individuals** (Primary)
+   - High-net-worth individuals
+   - Executives & professionals
+   - People in sensitive situations
+
+2. **Families** (Secondary)
+   - Parents tracking children
+   - Elderly care
+   - Family safety groups
+
+3. **Enterprise** (Future)
+   - Corporate device security
+   - Employee protection
+
+---
+
+## SLIDE 7: Competition
+
+### Current Solutions Are REACTIVE
+
+| Feature | Find My iPhone | Lookout | Norton | **AEGIS** |
+|---------|---------------|---------|--------|----------|
+| Remote Lock | ✅ | ✅ | ✅ | ✅ |
+| GPS Tracking | ✅ | ✅ | ✅ | ✅ |
+| Remote Wipe | ✅ | ✅ | ✅ | ✅ |
+| **Trap Mode** | ❌ | ❌ | ❌ | ✅ |
+| **Intruder Photo** | ❌ | ❌ | ❌ | ✅ |
+| **Duress Pattern** | ❌ | ❌ | ❌ | ✅ |
+| **Fake Data Decoy** | ❌ | ❌ | ❌ | ✅ |
+| **Evidence Gathering** | ❌ | ❌ | ❌ | ✅ |
+
+### Our Competitive Advantage
+**Patent-pending Trap Mode technology**
+
+---
+
+## SLIDE 8: Business Model
+
+### 💰 Subscription Revenue
+
+| Tier | Price | Features |
+|------|-------|----------|
+| Free | $0 | Basic protection |
+| **Premium** | $9.99/mo | Full features |
+| **Family** | $14.99/mo | 6 members |
+| Enterprise | Custom | Business features |
+
+### 📈 Revenue Projections
+
+| Year | Users | Revenue |
+|------|-------|--------|
+| Year 1 | 10,000 | $600K |
+| Year 2 | 50,000 | $3.6M |
+| Year 3 | 200,000 | $15M |
+
+*Assumes 50% premium conversion, 20% family tier*
+
+---
+
+## SLIDE 9: Traction
+
+### 🚀 Current Status
+
+- ✅ Fully functional prototype (PWA)
+- ✅ Core features implemented
+- ✅ Mobile-responsive design
+- ✅ AI integration (GPT-powered chat)
+- ✅ Demo-ready for investors
+
+### 📋 Completed Features
+
+- Pattern lock with 3 modes
+- Trap Mode with fake data
+- Emergency contact system
+- Lost phone features
+- Family tracker
+- Smart email inbox
+- Financial dashboard
+- Calculator vault
+
+---
+
+## SLIDE 10: Roadmap
+
+### 🗓️ Development Timeline
+
+**Q1 2025 - Beta Launch**
+- iOS app (TestFlight)
+- Android app (Beta)
+- 1,000 beta users
+
+**Q2 2025 - Public Launch**
+- App Store release
+- Marketing campaign
+- PR push
+
+**Q3 2025 - Growth**
+- Family features
+- Enterprise pilot
+- Partnerships
+
+**Q4 2025 - Scale**
+- International expansion
+- Hardware partnerships
+- Series A preparation
+
+---
+
+## SLIDE 11: Team
+
+### 👥 Why Us?
+
+*[Add your team details here]*
+
+- **Founder/CEO**: Vision & product
+- **CTO**: Technical execution
+- **Security Advisor**: Cybersecurity expertise
+
+### 🎯 What We Need
+
+- Mobile development (React Native)
+- Security engineering
+- Marketing & growth
+
+---
+
+## SLIDE 12: The Ask
+
+### 💵 Seeking $500K Seed Round
+
+**Use of Funds:**
+
+| Category | Amount | Purpose |
+|----------|--------|--------|
+| Development | $250K | Native apps, backend |
+| Marketing | $100K | Launch campaign |
+| Operations | $100K | Legal, patent, hosting |
+| Reserve | $50K | Contingency |
+
+**Milestones This Funding Achieves:**
+- Native iOS & Android apps
+- 10,000 users
+- $50K MRR
+- Patent filing
+- Series A ready
+
+---
+
+## SLIDE 13: Why Now?
+
+### 📈 Perfect Timing
+
+1. **Privacy awareness at all-time high**
+   - Data breaches in news daily
+   - People seeking protection
+
+2. **Smartphones are primary devices**
+   - Banking, health, work - all on phone
+   - Stakes are higher than ever
+
+3. **No one does proactive protection**
+   - All competitors are reactive
+   - Trap Mode is unique & patentable
+
+4. **Technology is ready**
+   - AI makes smart detection possible
+   - PWA/native hybrid is mature
+
+---
+
+## SLIDE 14: Vision
+
+### 🚀 The Future of Digital Protection
+
+**Phase 1**: Premium Security App
+- iOS & Android
+- Individual users
+
+**Phase 2**: Family & Enterprise
+- Family plans
+- Corporate security
+
+**Phase 3**: AEGIS OS
+- Full operating system
+- Security-first phone
+- Hardware partnerships
+
+**"We're not building an app. We're building the future of personal security."**
+
+---
+
+## SLIDE 15: Closing
+
+# AEGIS
+
+### The question isn't whether you need protection.
+### It's whether your protection is smart enough to protect you back.
+
+---
+
+**Contact:**
+*[Your contact details]*
+
+**Demo:**
+*[Your demo URL]*
+
+---
+
+*Thank you for your time.*
+
+🛡️
