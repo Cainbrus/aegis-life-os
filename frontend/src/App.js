@@ -1066,6 +1066,11 @@ const AegisTrapSystem = () => {
     );
   }
 
+  // Show Digital Mate Website
+  if (showWebsite) {
+    return <DigitalMateWebsite onLaunchApp={() => setShowWebsite(false)} />;
+  }
+
   // Show landing page for new visitors (onboarding not complete)
   if (showLandingPage) {
     return <LandingPage onGetStarted={handleGetStarted} />;
