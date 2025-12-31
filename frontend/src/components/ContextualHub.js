@@ -1,442 +1,300 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import AIWorkforceMonitor from './AIWorkforceMonitor';
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  LivingCityBackground, 
+  MateAvatar, 
+  MateAssistantPanel,
+  SecurityStatusBar,
+  ProactiveBriefingFeed,
+  WorkerAIIndicator,
+  ContextualCard
+} from './LivingCityComponents';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+// =============================================
+// AEGIS CONTEXTUAL HUB
+// The adaptive, time-aware home screen
+// =============================================
 
-const ContextualHub = ({ authStatus, onAppOpen, trapActive, ownerMode }) => {
-  const [currentContext, setCurrentContext] = useState('general');
-  const [contextualCards, setContextualCards] = useState([]);
-  const [proactiveBriefing, setProactiveBriefing] = useState(null);
-  const [privacyStats, setPrivacyStats] = useState(null);
-  const [chatMessage, setChatMessage] = useState('');
-  const [chatResponse, setChatResponse] = useState(null);
-  const [isThinking, setIsThinking] = useState(false);
-  const [goalInput, setGoalInput] = useState('');
-  const [goalPlan, setGoalPlan] = useState(null);
+const ContextualHub = ({ 
+  onOpenApp, 
+  onOpenMate, 
+  trapActive = false,
+  userData = {},
+  protectionStats = { threatsBlocked: 47 }
+}) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [mateOpen, setMateOpen] = useState(false);
+  const [activeWorkers, setActiveWorkers] = useState(['security', 'spam']);
+  const [briefings, setBriefings] = useState([]);
+  const [greeting, setGreeting] = useState('');
+  const [contextMode, setContextMode] = useState('morning');
 
+  // Update time every minute
   useEffect(() => {
-    determineContext();
-    loadContextualContent();
     const interval = setInterval(() => {
-      determineContext();
-      loadContextualContent();
-    }, 60000); // Update every minute
-
+      setCurrentTime(new Date());
+    }, 60000);
     return () => clearInterval(interval);
-  }, [authStatus, ownerMode]);
+  }, []);
 
-  const determineContext = () => {
-    const now = new Date();
-    const hour = now.getHours();
-    const dayOfWeek = now.getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-
-    let context = 'general';
-
-    if (hour >= 5 && hour < 12) {
-      context = 'morning';
-    } else if (hour >= 12 && hour < 17) {
-      context = isWeekend ? 'weekend_afternoon' : 'work';
-    } else if (hour >= 17 && hour < 22) {
-      context = 'evening';
+  // Determine context based on time
+  useEffect(() => {
+    const hour = currentTime.getHours();
+    
+    if (hour >= 5 && hour < 9) {
+      setContextMode('morning');
+      setGreeting('Good Morning');
+    } else if (hour >= 9 && hour < 12) {
+      setContextMode('work');
+      setGreeting('Stay Focused');
+    } else if (hour >= 12 && hour < 14) {
+      setContextMode('midday');
+      setGreeting('Good Afternoon');
+    } else if (hour >= 14 && hour < 18) {
+      setContextMode('work');
+      setGreeting('Keep It Up');
+    } else if (hour >= 18 && hour < 22) {
+      setContextMode('evening');
+      setGreeting('Good Evening');
     } else {
-      context = 'night';
+      setContextMode('night');
+      setGreeting('Rest Well');
     }
+  }, [currentTime]);
 
-    setCurrentContext(context);
-  };
+  // Generate contextual briefings
+  useEffect(() => {
+    const generateBriefings = () => {
+      const baseBriefings = [
+        {
+          type: 'suggestion',
+          title: '🛡️ Daily Protection Summary',
+          message: `${protectionStats.threatsBlocked} threats blocked today. Your digital city is secure.`,
+          actions: [{ label: 'View Details', id: 'view_security' }]
+        }
+      ];
 
-  const loadContextualContent = async () => {
-    try {
-      // Load contextual cards from backend
-      const cardsResponse = await axios.get(`${API}/context/cards`);
-      if (cardsResponse.data.cards) {
-        setContextualCards(cardsResponse.data.cards);
+      if (contextMode === 'morning') {
+        baseBriefings.unshift({
+          type: 'morning',
+          title: '☀️ Your Morning Briefing',
+          message: 'Traffic looks clear for your usual commute. 2 important emails overnight.',
+          actions: [
+            { label: 'View Emails', id: 'emails', primary: true },
+            { label: 'Check Calendar', id: 'calendar' }
+          ]
+        });
+      } else if (contextMode === 'work') {
+        baseBriefings.unshift({
+          type: 'work',
+          title: '📊 Focus Mode Active',
+          message: 'Social media notifications paused. Next meeting in 2 hours.',
+          actions: [
+            { label: 'View Schedule', id: 'calendar', primary: true },
+            { label: 'Disable Focus', id: 'disable_focus' }
+          ]
+        });
+      } else if (contextMode === 'evening') {
+        baseBriefings.unshift({
+          type: 'evening',
+          title: '🌙 Wind Down Mode',
+          message: 'Work notifications silenced. Family is all home safe.',
+          actions: [
+            { label: 'Family Status', id: 'family', primary: true },
+            { label: 'Entertainment', id: 'entertainment' }
+          ]
+        });
       }
 
-      if (ownerMode) {
-        // Load proactive briefing
-        try {
-          const briefingResponse = await axios.get(`${API}/intelligence/briefing`);
-          setProactiveBriefing(briefingResponse.data);
-        } catch (e) {
-          console.log('Briefing not available');
-        }
-
-        // Load privacy stats
-        try {
-          const privacyResponse = await axios.get(`${API}/privacy/stats`);
-          setPrivacyStats(privacyResponse.data);
-        } catch (e) {
-          console.log('Privacy stats not available');
-        }
+      // Add a random contextual alert occasionally
+      if (Math.random() > 0.5) {
+        baseBriefings.push({
+          type: 'alert',
+          title: '⚠️ Scheduling Conflict Detected',
+          message: 'Your 3pm meeting conflicts with dentist appointment. Should I reschedule?',
+          actions: [
+            { label: 'Resolve', id: 'resolve_conflict', primary: true },
+            { label: 'Ignore', id: 'ignore' }
+          ]
+        });
       }
-    } catch (error) {
-      console.error('Failed to load contextual content:', error);
-      // Generate fallback cards
-      setContextualCards(getFallbackCards());
-    }
+
+      setBriefings(baseBriefings);
+    };
+
+    generateBriefings();
+  }, [contextMode, protectionStats.threatsBlocked]);
+
+  // Simulate worker AI activity
+  useEffect(() => {
+    const workerInterval = setInterval(() => {
+      const allWorkers = ['security', 'spam', 'photos', 'calendar', 'messages', 'finance'];
+      const activeCount = Math.floor(Math.random() * 3) + 2;
+      const shuffled = allWorkers.sort(() => 0.5 - Math.random());
+      setActiveWorkers(shuffled.slice(0, activeCount));
+    }, 5000);
+    return () => clearInterval(workerInterval);
+  }, []);
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
   };
 
-  const getFallbackCards = () => {
-    const hour = new Date().getHours();
-    const cards = [];
-
-    if (hour >= 5 && hour < 12) {
-      cards.push({
-        id: 'greeting',
-        type: 'greeting',
-        title: 'Good Morning',
-        subtitle: 'Ready to start your day',
-        icon: '🌅',
-        priority: 1
-      });
-    } else if (hour >= 12 && hour < 17) {
-      cards.push({
-        id: 'greeting',
-        type: 'greeting',
-        title: 'Good Afternoon',
-        subtitle: 'Stay productive',
-        icon: '☀️',
-        priority: 1
-      });
-    } else {
-      cards.push({
-        id: 'greeting',
-        type: 'greeting',
-        title: 'Good Evening',
-        subtitle: 'Time to wind down',
-        icon: '🌙',
-        priority: 1
-      });
-    }
-
-    return cards;
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long',
+      month: 'long', 
+      day: 'numeric' 
+    });
   };
 
-  const handleChatSubmit = async () => {
-    if (!chatMessage.trim()) return;
+  // Quick action apps based on context
+  const getContextApps = () => {
+    const baseApps = [
+      { id: 'security', icon: '🛡️', label: 'Security', color: 'cyan' },
+      { id: 'family', icon: '👨‍👩‍👧', label: 'Family', color: 'amber' },
+    ];
 
-    setIsThinking(true);
-    try {
-      const response = await axios.post(`${API}/intelligence/chat`, {
-        message: chatMessage,
-        context: currentContext
-      });
-      
-      setChatResponse(response.data);
-      setChatMessage('');
-    } catch (error) {
-      console.error('Chat failed:', error);
-      setChatResponse({
-        response: "I'm having trouble connecting. Please try again.",
-        suggestions: []
-      });
-    } finally {
-      setIsThinking(false);
-    }
-  };
-
-  const handleGoalSubmit = async () => {
-    if (!goalInput.trim()) return;
-
-    setIsThinking(true);
-    try {
-      const response = await axios.post(`${API}/intelligence/process-goal`, {
-        goal: goalInput
-      });
-      
-      setGoalPlan(response.data.plan);
-      setGoalInput('');
-    } catch (error) {
-      console.error('Goal processing failed:', error);
-    } finally {
-      setIsThinking(false);
-    }
-  };
-
-  const getContextualStyling = () => {
-    switch (currentContext) {
+    switch (contextMode) {
       case 'morning':
-        return 'bg-gradient-to-br from-yellow-900 via-slate-900 to-orange-900';
+        return [
+          { id: 'calendar', icon: '📅', label: 'Calendar', color: 'green' },
+          { id: 'email', icon: '📧', label: 'Email', color: 'blue' },
+          { id: 'weather', icon: '⛅', label: 'Weather', color: 'cyan' },
+          { id: 'news', icon: '📰', label: 'News', color: 'purple' },
+          ...baseApps,
+        ];
       case 'work':
-        return 'bg-gradient-to-br from-blue-900 via-slate-900 to-indigo-900';
+        return [
+          { id: 'calendar', icon: '📅', label: 'Meetings', color: 'green' },
+          { id: 'email', icon: '📧', label: 'Email', color: 'blue' },
+          { id: 'slack', icon: '💬', label: 'Slack', color: 'purple' },
+          { id: 'drive', icon: '📁', label: 'Drive', color: 'yellow' },
+          ...baseApps,
+        ];
       case 'evening':
-        return 'bg-gradient-to-br from-purple-900 via-slate-900 to-pink-900';
-      case 'night':
-        return 'bg-gradient-to-br from-slate-900 via-gray-900 to-black';
+        return [
+          { id: 'entertainment', icon: '🎬', label: 'Netflix', color: 'red' },
+          { id: 'food', icon: '🍕', label: 'Food', color: 'orange' },
+          { id: 'music', icon: '🎵', label: 'Music', color: 'green' },
+          { id: 'messages', icon: '💬', label: 'Messages', color: 'blue' },
+          ...baseApps,
+        ];
       default:
-        return 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900';
+        return [
+          { id: 'calendar', icon: '📅', label: 'Calendar', color: 'green' },
+          { id: 'messages', icon: '💬', label: 'Messages', color: 'blue' },
+          { id: 'photos', icon: '📸', label: 'Photos', color: 'purple' },
+          { id: 'browser', icon: '🌐', label: 'Browser', color: 'cyan' },
+          ...baseApps,
+        ];
     }
   };
+
+  const contextApps = getContextApps();
 
   return (
-    <div className={`min-h-screen text-white transition-all duration-1000 ${getContextualStyling()}`}>
-      {/* Dynamic Header */}
-      <div className="p-6 border-b border-slate-700 bg-slate-900 bg-opacity-50">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">
-              {trapActive ? 'My Phone' : ownerMode ? 'Aegis Life OS' : 'Digital Assistant'}
-            </h1>
-            <p className="text-slate-400 text-sm">
-              {currentContext.charAt(0).toUpperCase() + currentContext.slice(1).replace('_', ' ')} Mode • {new Date().toLocaleTimeString()}
-            </p>
+    <LivingCityBackground intensity={trapActive ? 'high' : 'medium'}>
+      <div className="min-h-screen p-4 pb-24">
+        {/* Top Status Bar */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-2">
+            {activeWorkers.slice(0, 2).map((worker, i) => (
+              <WorkerAIIndicator key={i} type={worker} active={true} count={2} />
+            ))}
           </div>
-          
-          {ownerMode && (
-            <div className="text-right">
-              <div className="text-green-400 text-sm">🛡️ Owner Mode</div>
-              <div className="text-xs text-slate-400">Full Intelligence Active</div>
-            </div>
-          )}
-          
-          {trapActive && (
-            <div className="text-right">
-              <div className="text-blue-400 text-sm">📱 Phone Unlocked</div>
-              <div className="text-xs text-slate-400">Standard Access</div>
-            </div>
-          )}
+          <div className="text-slate-400 text-sm">
+            {trapActive && <span className="text-red-400 mr-2">🎭 DECOY</span>}
+            <span className="text-white font-mono">{formatTime(currentTime)}</span>
+          </div>
         </div>
-      </div>
 
-      {/* Contextual Cards */}
-      <div className="p-6 space-y-4">
-        {contextualCards.map((card) => (
-          <div
-            key={card.id}
-            className={`
-              rounded-lg p-4 transition-all duration-300 hover:transform hover:scale-[1.01]
-              ${card.type === 'greeting' ? 'bg-gradient-to-r from-blue-900 to-purple-900 border border-blue-700' :
-                card.type === 'status' ? 'bg-slate-800 border border-slate-700' :
-                card.type === 'action' ? 'bg-yellow-900 bg-opacity-30 border border-yellow-700' :
-                'bg-slate-800 border border-slate-700'}
-            `}
-          >
-            <div className="flex items-center space-x-3">
-              <span className="text-3xl">{card.icon}</span>
-              <div>
-                <h3 className="font-semibold">{card.title}</h3>
-                <p className="text-sm text-slate-400">{card.subtitle}</p>
-                {card.detail && (
-                  <p className="text-xs text-blue-400 mt-1">{card.detail}</p>
-                )}
-              </div>
+        {/* Greeting Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-black text-white mb-1">
+                {greeting}, {userData.name || 'Cain'}
+              </h1>
+              <p className="text-slate-400">{formatDate(currentTime)}</p>
             </div>
-            {card.action && (
-              <button 
-                onClick={() => console.log(card.action)}
-                className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm"
-              >
-                View
-              </button>
-            )}
+            <button onClick={() => setMateOpen(true)}>
+              <MateAvatar size="medium" mood={trapActive ? 'alert' : 'happy'} />
+            </button>
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* AI Workforce Monitor (Owner Mode Only) */}
-      {ownerMode && (
-        <div className="p-6 border-t border-slate-700">
-          <AIWorkforceMonitor 
-            ownerMode={ownerMode}
-            authStatus={authStatus}
+        {/* Security Status */}
+        <div className="mb-6">
+          <SecurityStatusBar 
+            threatsBlocked={protectionStats.threatsBlocked}
+            status={trapActive ? 'decoy' : 'protected'}
+            workers={activeWorkers}
           />
         </div>
-      )}
 
-      {/* Chat with Digital Mate (Owner Mode) */}
-      {ownerMode && (
-        <div className="p-6 border-t border-slate-700">
-          <h2 className="text-lg font-semibold mb-4">💬 Chat with Your Digital Mate</h2>
-          <div className="bg-slate-800 rounded-lg p-4">
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleChatSubmit()}
-                placeholder="Ask me anything..."
-                className="flex-1 bg-slate-700 border border-slate-600 rounded px-4 py-2 text-white"
-              />
+        {/* Context-Aware Quick Actions */}
+        <div className="mb-6">
+          <h3 className="text-slate-400 text-sm font-medium mb-3 flex items-center">
+            <span className="mr-2">⚡</span>
+            {contextMode === 'morning' ? 'Morning Essentials' : 
+             contextMode === 'work' ? 'Work Tools' : 
+             contextMode === 'evening' ? 'Evening Favorites' : 'Quick Actions'}
+          </h3>
+          <div className="grid grid-cols-4 gap-3">
+            {contextApps.slice(0, 8).map((app) => (
               <button
-                onClick={handleChatSubmit}
-                disabled={isThinking}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white px-4 py-2 rounded"
+                key={app.id}
+                onClick={() => onOpenApp?.(app.id)}
+                className={`bg-slate-800/60 backdrop-blur-sm rounded-2xl p-4 border border-slate-700/50 hover:border-${app.color}-500/50 transition-all hover:scale-105 active:scale-95`}
               >
-                {isThinking ? '...' : 'Send'}
+                <div className="text-3xl mb-2">{app.icon}</div>
+                <div className="text-xs text-slate-400 truncate">{app.label}</div>
               </button>
+            ))}
+          </div>
+        </div>
+
+        {/* MATE's Proactive Briefing */}
+        <div className="mb-6">
+          <ProactiveBriefingFeed 
+            briefings={briefings}
+            onAction={(actionId) => {
+              console.log('Action:', actionId);
+              if (actionId === 'calendar') onOpenApp?.('calendar');
+              if (actionId === 'emails' || actionId === 'email') onOpenApp?.('email');
+              if (actionId === 'family') onOpenApp?.('family');
+              if (actionId === 'view_security') onOpenApp?.('security');
+            }}
+            onDismiss={(index) => {
+              setBriefings(prev => prev.filter((_, i) => i !== index));
+            }}
+          />
+        </div>
+
+        {/* MATE Chat Panel */}
+        <MateAssistantPanel 
+          isOpen={mateOpen} 
+          onClose={() => setMateOpen(false)}
+        />
+
+        {/* Floating MATE button */}
+        <button
+          onClick={() => setMateOpen(true)}
+          className="fixed bottom-20 right-4 z-40"
+        >
+          <div className="relative">
+            <MateAvatar size="large" mood={trapActive ? 'protective' : 'neutral'} />
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-cyan-500 rounded-full flex items-center justify-center">
+              <span className="text-[10px] text-white font-bold">!</span>
             </div>
-            
-            {chatResponse && (
-              <div className="mt-4 p-4 bg-slate-900 rounded-lg">
-                <p className="text-slate-200">{chatResponse.response}</p>
-                {chatResponse.suggestions && chatResponse.suggestions.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {chatResponse.suggestions.map((suggestion, idx) => (
-                      <span key={idx} className="bg-blue-900 text-blue-200 px-2 py-1 rounded text-xs">
-                        💡 {suggestion}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
-        </div>
-      )}
-
-      {/* Goal Planner (Owner Mode) */}
-      {ownerMode && (
-        <div className="p-6 border-t border-slate-700">
-          <h2 className="text-lg font-semibold mb-4">🎯 AI Goal Planner</h2>
-          <div className="bg-slate-800 rounded-lg p-4">
-            <div className="flex space-x-2 mb-4">
-              <input
-                type="text"
-                value={goalInput}
-                onChange={(e) => setGoalInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleGoalSubmit()}
-                placeholder="What do you want to achieve? (e.g., 'Plan a vacation to Japan')"
-                className="flex-1 bg-slate-700 border border-slate-600 rounded px-4 py-2 text-white"
-              />
-              <button
-                onClick={handleGoalSubmit}
-                disabled={isThinking}
-                className="bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-white px-4 py-2 rounded"
-              >
-                {isThinking ? '...' : 'Plan'}
-              </button>
-            </div>
-            
-            {goalPlan && (
-              <div className="space-y-4">
-                <div className="p-4 bg-slate-900 rounded-lg">
-                  <h3 className="font-semibold text-green-400 mb-2">✓ Goal Understood</h3>
-                  <p className="text-slate-300">{goalPlan.understood_goal}</p>
-                </div>
-                
-                {goalPlan.execution_plan && goalPlan.execution_plan.length > 0 && (
-                  <div className="p-4 bg-slate-900 rounded-lg">
-                    <h3 className="font-semibold text-blue-400 mb-2">📋 Execution Plan</h3>
-                    <div className="space-y-2">
-                      {goalPlan.execution_plan.map((step, idx) => (
-                        <div key={idx} className="flex items-start space-x-2">
-                          <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-xs">{step.step}</span>
-                          <div>
-                            <p className="text-slate-200">{step.action}</p>
-                            <p className="text-xs text-slate-400">Agent: {step.agent}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {goalPlan.suggestions && goalPlan.suggestions.length > 0 && (
-                  <div className="p-4 bg-yellow-900 bg-opacity-30 rounded-lg border border-yellow-700">
-                    <h3 className="font-semibold text-yellow-400 mb-2">💡 AI Suggestions</h3>
-                    <ul className="space-y-1">
-                      {goalPlan.suggestions.map((suggestion, idx) => (
-                        <li key={idx} className="text-sm text-yellow-200">• {suggestion}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Privacy Guardian Status (Owner Mode) */}
-      {ownerMode && privacyStats && (
-        <div className="p-6 border-t border-slate-700">
-          <h2 className="text-lg font-semibold mb-4">🧠 Privacy Guardian</h2>
-          <div className="bg-slate-800 rounded-lg p-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">{privacyStats.total_analyzed}</div>
-                <div className="text-xs text-slate-400">Items Analyzed</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">{privacyStats.accepted_suggestions}</div>
-                <div className="text-xs text-slate-400">Accepted</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400">{Math.round(privacyStats.trust_level * 100)}%</div>
-                <div className="text-xs text-slate-400">Trust Level</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-purple-400 capitalize">{privacyStats.learning_mode?.replace('_', ' ')}</div>
-                <div className="text-xs text-slate-400">Learning Mode</div>
-              </div>
-            </div>
-            <p className="text-xs text-slate-400 text-center">
-              {privacyStats.mode_explanation?.[privacyStats.learning_mode] || 'AI is learning your privacy preferences'}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Proactive Briefing Section (Owner Mode Only) */}
-      {ownerMode && proactiveBriefing && proactiveBriefing.briefing_type !== 'locked' && (
-        <div className="p-6 border-t border-slate-700">
-          <h2 className="text-xl font-semibold mb-4">🧠 Proactive Intelligence</h2>
-          <div className="bg-slate-800 rounded-lg p-4">
-            <h3 className="font-medium mb-2">{proactiveBriefing.title}</h3>
-            <p className="text-slate-300 text-sm mb-3">{proactiveBriefing.summary}</p>
-            
-            {proactiveBriefing.insights && proactiveBriefing.insights.length > 0 && (
-              <div className="space-y-1 mb-4">
-                <h4 className="text-sm font-semibold text-blue-400">Insights:</h4>
-                {proactiveBriefing.insights.map((insight, idx) => (
-                  <div key={idx} className="text-xs text-blue-300">• {insight}</div>
-                ))}
-              </div>
-            )}
-            
-            {proactiveBriefing.action_items && proactiveBriefing.action_items.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {proactiveBriefing.action_items.map((item, idx) => (
-                  <button 
-                    key={idx}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
-                  >
-                    {item.text}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Quick App Access */}
-      <div className="p-6 border-t border-slate-700">
-        <h2 className="text-lg font-semibold mb-4">📱 Quick Access</h2>
-        <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
-          {[
-            { name: 'Messages', icon: '💬', app: 'messages' },
-            { name: 'Photos', icon: '📸', app: 'photos' },
-            { name: 'Calendar', icon: '📅', app: 'calendar' },
-            { name: 'Calculator', icon: '🔢', app: 'calculator' },
-            { name: 'Settings', icon: '⚙️', app: 'settings' },
-            { name: 'Banking', icon: '💳', app: 'banking' }
-          ].map((app, idx) => (
-            <button
-              key={idx}
-              onClick={() => onAppOpen(app.app)}
-              className="bg-slate-800 hover:bg-slate-700 rounded-lg p-3 text-center transition-all transform hover:scale-105"
-            >
-              <div className="text-2xl mb-1">{app.icon}</div>
-              <div className="text-xs font-medium">{app.name}</div>
-            </button>
-          ))}
-        </div>
+        </button>
       </div>
-    </div>
+    </LivingCityBackground>
   );
 };
 
