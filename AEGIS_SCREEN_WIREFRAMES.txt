@@ -1,0 +1,379 @@
+================================================================================
+                    AEGIS: SCREEN WIREFRAMES FOR DESIGNERS
+                         UI/UX Blueprint Documentation
+================================================================================
+
+                    Authored By: Cain Brunjes, Founder
+                          Company: Digital Mate
+                           Contact: 0457374662
+
+                        FOR DESIGNER/DEVELOPER USE
+                        Version 1.0 | December 2024
+
+================================================================================
+
+
+DESIGN SYSTEM NOTES:
+--------------------------------------------------------------------------------
+    Theme:          Dark mode (slate/charcoal backgrounds)
+    Primary Color:  Cyan (#00FFFF / #06B6D4)
+    Accent Color:   Purple (#8B5CF6)
+    Alert Color:    Red (#EF4444)
+    Success Color:  Green (#10B981)
+    Typography:     Clean sans-serif (Inter, SF Pro, or similar)
+    Style:          Modern, minimal, "alive" feeling
+    Corners:        Rounded (16-24px radius on cards)
+
+
+================================================================================
+                    SCREEN A: THE MAIN HUB
+                    (Proactive & Alive)
+================================================================================
+
+PURPOSE:
+    The user's intelligent home base. A curated, scrolling feed of 
+    AI-generated insights and actions.
+
+
+LAYOUT:
+--------------------------------------------------------------------------------
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  Good morning, Cain                                    [MATE avatar]   │
+    │  (small, elegant text - top left)                      (glowing cyan)   │
+    │                                                                         │
+    ├─────────────────────────────────────────────────────────────────────────┤
+    │                                                                         │
+    │  ┌─────────────────────────────────────────────────────────────────┐   │
+    │  │  ⚠️ CONFLICT ALERT                              HIGH PRIORITY   │   │
+    │  │                                                                  │   │
+    │  │  Your 'Project Phoenix' meeting at 4 PM clashes with the        │   │
+    │  │  'Dentist Appointment' I found in your email.                   │   │
+    │  │                                                                  │   │
+    │  │                        [ View Resolution Options ]              │   │
+    │  │                        (cyan button)                            │   │
+    │  └─────────────────────────────────────────────────────────────────┘   │
+    │  (Card has subtle red left border or glow)                              │
+    │                                                                         │
+    │  ┌─────────────────────────────────────────────────────────────────┐   │
+    │  │  💚 WELLNESS INSIGHT                           MEDIUM PRIORITY  │   │
+    │  │                                                                  │   │
+    │  │  I've noticed low sleep for 3 nights. Medical profile shows     │   │
+    │  │  no allergies to Panadol. Remember to take it easy before       │   │
+    │  │  your 10 AM meeting.                                            │   │
+    │  │                                                                  │   │
+    │  │                        [ Snooze Notifications ]                 │   │
+    │  │                        (outlined button)                        │   │
+    │  └─────────────────────────────────────────────────────────────────┘   │
+    │  (Card has subtle green left border)                                    │
+    │                                                                         │
+    │  ┌─────────────────────────────────────────────────────────────────┐   │
+    │  │  🔒 PRIVACY SUGGESTION                          LOW PRIORITY    │   │
+    │  │                                                                  │   │
+    │  │  I've noticed a pattern of you deleting chats with              │   │
+    │  │  'Alex Johnson'. I can automate this.                           │   │
+    │  │                                                                  │   │
+    │  │                        [ Set Up Rule ]                          │   │
+    │  │                        (outlined button)                        │   │
+    │  └─────────────────────────────────────────────────────────────────┘   │
+    │  (Card has subtle blue left border)                                     │
+    │                                                                         │
+    │                         (scrollable area)                               │
+    │                                                                         │
+    ├─────────────────────────────────────────────────────────────────────────┤
+    │                                                                         │
+    │     [🏠]        [📅]        [🛡️]        [⚙️]                           │
+    │     Home       Plans       Vault      Settings                         │
+    │   (cyan glow)                                                           │
+    │                                                                         │
+    │  (Floating bottom nav bar with frosted glass effect)                    │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+
+DESIGN NOTES:
+--------------------------------------------------------------------------------
+    • Cards should feel like Google Discover - not a rigid list
+    • High priority cards are wider and have warning styling
+    • Each card type has a color-coded icon and subtle left border
+    • Feed is vertically scrollable
+    • Bottom nav is floating with blur backdrop
+    • MATE avatar in top right - tappable to open chat
+
+
+INTERACTIONS:
+--------------------------------------------------------------------------------
+    • Swipe left on card = dismiss
+    • Swipe right on card = mark as done
+    • Tap card button = perform action
+    • Long press card = more options
+    • Tap MATE avatar = open AI chat
+
+
+================================================================================
+                    SCREEN B: THE "HIDDEN PLAN" WORKSPACE
+                    (Command Center Style)
+================================================================================
+
+PURPOSE:
+    A unified workspace for managing a secret project or goal.
+    All related tools, files, and contacts in one place.
+
+
+LAYOUT:
+--------------------------------------------------------------------------------
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  ← Back          Project: Sarah's Birthday Surprise                     │
+    │                                                                         │
+    ├─────────────────────────────────────────────────────────────────────────┤
+    │                                                                         │
+    │  ┌──────────────────────────────┐  ┌─────────────────────────────────┐ │
+    │  │  📋 CHECKLIST                │  │  👥 KEY CONTACTS               │ │
+    │  │                              │  │                                 │ │
+    │  │  [ ] Book restaurant         │  │   (○)          (○)             │ │
+    │  │  [✓] Pick up gift from       │  │  Sarah's      Jewelry          │ │
+    │  │      jeweler                 │  │  Sister        Store           │ │
+    │  │  [ ] Coordinate with         │  │                                 │ │
+    │  │      Sarah's sister          │  │  (tap to call)                 │ │
+    │  │                              │  │                                 │ │
+    │  │  [ + Add item ]              │  │                                 │ │
+    │  │                              │  │                                 │ │
+    │  └──────────────────────────────┘  └─────────────────────────────────┘ │
+    │                                                                         │
+    │  ┌──────────────────────────────┐  ┌─────────────────────────────────┐ │
+    │  │  📁 RELEVANT FILES           │  │  🗺️ CONTEXTUAL TOOL            │ │
+    │  │                              │  │                                 │ │
+    │  │  ┌────┐  ┌────┐              │  │  ┌─────────────────────────┐   │ │
+    │  │  │PDF │  │DOC │              │  │  │                         │   │ │
+    │  │  │    │  │    │              │  │  │    [Mini Map showing    │   │ │
+    │  │  └────┘  └────┘              │  │  │     route to            │   │ │
+    │  │  Jewelry   Gift              │  │  │     restaurant]         │   │ │
+    │  │  Receipt   Ideas             │  │  │                         │   │ │
+    │  │                              │  │  │         📍              │   │ │
+    │  │  (tap to open)               │  │  └─────────────────────────┘   │ │
+    │  └──────────────────────────────┘  └─────────────────────────────────┘ │
+    │                                                                         │
+    │                                                                         │
+    ├─────────────────────────────────────────────────────────────────────────┤
+    │                                                                         │
+    │     [🏠]        [📅]        [🛡️]        [⚙️]                           │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+
+DESIGN NOTES:
+--------------------------------------------------------------------------------
+    • Flexible 2x2 grid of widgets
+    • Widgets can be resized/rearranged
+    • Each widget has a clear icon and title
+    • Checklist shows completion status
+    • Contacts show circular avatars
+    • Files show thumbnail previews
+    • Map is interactive/zoomable
+
+
+INTERACTIONS:
+--------------------------------------------------------------------------------
+    • Tap checklist item = toggle complete
+    • Tap contact = initiate call
+    • Tap file = open file viewer
+    • Tap map = expand to full screen
+    • Long press widget = resize/move options
+
+
+================================================================================
+                    SCREEN C: THE "INTRUDER EVIDENCE" FILE
+                    (Incident Report Style)
+================================================================================
+
+PURPOSE:
+    An official-looking incident report documenting an intruder detection.
+    Provides all evidence needed for authorities.
+
+
+LAYOUT:
+--------------------------------------------------------------------------------
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  ← Back                 🚨 SECURITY INCIDENT REPORT                     │
+    │                                                                         │
+    │                    9:41 PM - October 27, 2023                           │
+    │                                                                         │
+    ├─────────────────────────────────────────────────────────────────────────┤
+    │                                                                         │
+    │                  ┌─────────────────────────────────┐                    │
+    │                  │                                 │                    │
+    │                  │                                 │                    │
+    │                  │      [INTRUDER'S PHOTO]         │                    │
+    │                  │                                 │                    │
+    │                  │      (captured silently)        │                    │
+    │                  │                                 │                    │
+    │                  │                                 │                    │
+    │                  └─────────────────────────────────┘                    │
+    │                  (RED BORDER around photo)                              │
+    │                                                                         │
+    │                  Evidence Photo Captured                                │
+    │                                                                         │
+    ├─────────────────────────────────────────────────────────────────────────┤
+    │                                                                         │
+    │                  ┌─────────────────────────────────┐                    │
+    │                  │                                 │                    │
+    │                  │      [MAP WITH RED PIN]         │                    │
+    │                  │                                 │                    │
+    │                  └─────────────────────────────────┘                    │
+    │                                                                         │
+    │                  📍 Incident Location:                                  │
+    │                  123 Main St, Sydney                                    │
+    │                                                                         │
+    ├─────────────────────────────────────────────────────────────────────────┤
+    │                                                                         │
+    │  📋 ACTIVITY LOG                                                        │
+    │  ────────────────────────────────────────────────────────────────       │
+    │                                                                         │
+    │  ┌─────────────────────────────────────────────────────────────────┐   │
+    │  │  [21:41:15] - UNLOCK: Valid passcode entered.                   │   │
+    │  │  [21:41:16] - ANOMALY: Behavioral mismatch detected.            │   │
+    │  │  [21:41:17] - ACTION: DECOY MODE ACTIVATED.                     │   │
+    │  │  [21:41:25] - ATTEMPT: 'Messages' accessed. Served decoy.       │   │
+    │  │  [21:41:38] - ATTEMPT: 'Photos' accessed. Served decoy.         │   │
+    │  │  [21:41:55] - ATTEMPT: App search 'Bank of America'. Hidden.    │   │
+    │  │  [21:42:10] - ACTION: Device locked by user.                    │   │
+    │  └─────────────────────────────────────────────────────────────────┘   │
+    │  (monospace font, scrollable, terminal-style)                           │
+    │                                                                         │
+    ├─────────────────────────────────────────────────────────────────────────┤
+    │                                                                         │
+    │                        [ Archive Report ]                               │
+    │                        [ Share with Police ]                            │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+
+DESIGN NOTES:
+--------------------------------------------------------------------------------
+    • Official, serious tone - like a police report
+    • Photo has red warning border
+    • Map shows exact GPS location
+    • Activity log uses monospace font (terminal style)
+    • Timestamps are prominent
+    • Everything feels like legal evidence
+
+
+INTERACTIONS:
+--------------------------------------------------------------------------------
+    • Tap photo = full screen view
+    • Tap map = expand/get directions
+    • Scroll activity log = see all events
+    • Archive = save to Phantom Folder
+    • Share = export for authorities
+
+
+================================================================================
+                    SCREEN D: THE "LEARNING & CORRECTION" POP-UP
+                    (Friendly Modal Style)
+================================================================================
+
+PURPOSE:
+    When the AI makes a mistake and user hits "Undo", this modal helps
+    the AI learn from the correction. Non-threatening, helpful tone.
+
+
+LAYOUT:
+--------------------------------------------------------------------------------
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │                     (blurred background)                                │
+    │                                                                         │
+    │         ┌───────────────────────────────────────────────────┐           │
+    │         │                                                   │           │
+    │         │              [AEGIS LOGO] ❓                      │           │
+    │         │                                                   │           │
+    │         │              Help Me Learn                        │           │
+    │         │                                                   │           │
+    │         │  ─────────────────────────────────────────────    │           │
+    │         │                                                   │           │
+    │         │  My apologies. I've moved the screenshot back     │           │
+    │         │  to your gallery. Can you tell me why my last     │           │
+    │         │  action was incorrect?                            │           │
+    │         │                                                   │           │
+    │         │  ┌─────────────────────────────────────────────┐  │           │
+    │         │  │  This wasn't a sensitive document.          │  │           │
+    │         │  └─────────────────────────────────────────────┘  │           │
+    │         │                                                   │           │
+    │         │  ┌─────────────────────────────────────────────┐  │           │
+    │         │  │  Just ask me before moving files for a      │  │           │
+    │         │  │  while.                                     │  │           │
+    │         │  └─────────────────────────────────────────────┘  │           │
+    │         │                                                   │           │
+    │         │  ┌─────────────────────────────────────────────┐  │           │
+    │         │  │  Don't automatically move screenshots       │  │           │
+    │         │  │  anymore.                                   │  │           │
+    │         │  └─────────────────────────────────────────────┘  │           │
+    │         │                                                   │           │
+    │         │  ─────────────────────────────────────────────    │           │
+    │         │                                                   │           │
+    │         │  It was correct, I just hit Undo by mistake.      │           │
+    │         │  (small link text)                                │           │
+    │         │                                                   │           │
+    │         └───────────────────────────────────────────────────┘           │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+
+DESIGN NOTES:
+--------------------------------------------------------------------------------
+    • Modal appears over blurred background
+    • Friendly, apologetic tone - NOT an error message
+    • Logo with question mark indicates learning mode
+    • Buttons are full-width, easy to tap
+    • Options are simple, plain language
+    • Small escape link at bottom for accidental undos
+
+
+INTERACTIONS:
+--------------------------------------------------------------------------------
+    • Tap option = AI learns and modal closes
+    • Tap outside modal = dismiss (no learning)
+    • Tap small link = confirm original action was correct
+
+
+================================================================================
+                    ADDITIONAL NOTES FOR DESIGNERS
+================================================================================
+
+ANIMATIONS:
+    • Cards should slide in smoothly when loading
+    • Pop-ups should fade in with slight scale (0.95 → 1.0)
+    • Buttons should have subtle press feedback
+    • MATE avatar should have gentle pulse/glow
+    • Data streams in background should flow continuously
+
+ACCESSIBILITY:
+    • All text should meet WCAG contrast ratios
+    • Touch targets minimum 44x44px
+    • Support for dynamic text sizes
+    • Screen reader labels on all interactive elements
+
+RESPONSIVE:
+    • Designs should work on phones 375px-428px wide
+    • Tablet versions can show 2-column layouts
+    • Desktop web version for security dashboard
+
+
+================================================================================
+
+                              AEGIS
+                         Your Digital Mate
+
+================================================================================
+
+                         Cain Brunjes
+                         Founder & CEO
+                         Digital Mate
+                         0457374662
+
+================================================================================
