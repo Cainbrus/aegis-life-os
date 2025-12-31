@@ -1001,6 +1001,19 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
           </div>
         </div>
 
+        {/* Floating MATE Avatar - Click to open chat */}
+        <button
+          onClick={() => onOpenChat && onOpenChat()}
+          className="fixed bottom-24 right-4 z-40 group"
+        >
+          <div className="relative">
+            <MateAvatar size="large" mood="happy" />
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-cyan-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <span className="text-[10px] text-white font-bold">AI</span>
+            </div>
+          </div>
+        </button>
+
         {/* Dock */}
         <div className="fixed bottom-4 left-4 right-4 sm:left-6 sm:right-6">
           <div className="bg-slate-800/70 backdrop-blur-2xl rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-slate-700/50">
