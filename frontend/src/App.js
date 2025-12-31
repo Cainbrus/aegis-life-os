@@ -1240,83 +1240,103 @@ const AegisTrapSystem = () => {
       );
     }
     
-    // Show invisible home screen (looks like normal phone)
+    // Common app handler for both views
+    const handleAppOpen = (appName) => {
+      logAction("app_opened_invisible_mode", appName, { 
+        timestamp: new Date().toISOString() 
+      });
+      switch(appName) {
+        case 'finance': setShowFinanceDashboard(true); break;
+        case 'health': setShowHealthDashboard(true); break;
+        case 'family': setShowFamilyTracker(true); break;
+        case 'settings': setShowPushSettings(true); break;
+        case 'emergency': setShowEmergencySetup(true); break;
+        case 'lost_phone': setShowLostPhoneSetup(true); break;
+        case 'calendar': setShowCalendar(true); break;
+        case 'email': case 'mail': setShowEmailInbox(true); break;
+        case 'security': 
+          triggerNotification({
+            type: 'security',
+            icon: '🛡️',
+            title: 'Security Dashboard',
+            message: '47 threats blocked today. All systems operational. Your digital city is secure.',
+          });
+          break;
+        case 'photos':
+          triggerNotification({
+            type: 'privacy',
+            icon: '🖼️',
+            title: 'Photos Protected',
+            message: '2 sensitive photos have been moved to your secure vault. Tap Calculator → 8675309 to access.',
+          });
+          break;
+        case 'messages':
+          triggerNotification({
+            type: 'security',
+            icon: '💬',
+            title: 'Messages Filtered',
+            message: 'Aegis blocked 3 spam messages and 1 suspicious link today. Your inbox is clean.',
+          });
+          break;
+        case 'phone_app':
+          triggerNotification({
+            type: 'security',
+            icon: '📞',
+            title: 'Call Protection Active',
+            message: '2 scam calls blocked this week. Unknown callers are screened automatically.',
+          });
+          break;
+        case 'notes':
+          triggerNotification({
+            type: 'suggestion',
+            icon: '📝',
+            title: 'Notes Synced & Encrypted',
+            message: 'All your notes are end-to-end encrypted. Last backup: 2 hours ago.',
+          });
+          break;
+        default:
+          break;
+      }
+    };
+
+    // Show Living City Hub (proactive AI briefing cards) or normal phone view
     return (
       <>
-        <InvisibleHomeScreen
-          onOpenCalculator={() => setCurrentApp('calculator')}
-          onOpenCalendar={() => setShowCalendar(true)}
-          onOpenChat={() => setShowChat(true)}
-          onOpenSettings={() => setShowPushSettings(true)}
-          onOpenEmergency={() => setShowEmergencySetup(true)}
-          onOpenLostPhone={() => setShowLostPhoneSetup(true)}
-          onOpenApp={(appName) => {
-            // Log app opens
-            logAction("app_opened_invisible_mode", appName, { 
-              timestamp: new Date().toISOString() 
-            });
-            // Handle different apps - open Aegis feature screens
-            switch(appName) {
-              case 'finance':
-                setShowFinanceDashboard(true);
-                break;
-              case 'health':
-                setShowHealthDashboard(true);
-                break;
-              case 'family':
-                setShowFamilyTracker(true);
-                break;
-              case 'settings':
-                setShowPushSettings(true);
-                break;
-              case 'emergency':
-                setShowEmergencySetup(true);
-                break;
-              case 'lost_phone':
-                setShowLostPhoneSetup(true);
-                break;
-              case 'photos':
-                // Could show protected photos vault
-                triggerNotification({
-                  type: 'privacy',
-                  icon: '🖼️',
-                  title: 'Photos Protected',
-                  message: '2 sensitive photos have been moved to your secure vault. Tap Calculator → 8675309 to access.',
-                });
-                break;
-              case 'messages':
-                triggerNotification({
-                  type: 'security',
-                  icon: '💬',
-                  title: 'Messages Filtered',
-                  message: 'Aegis blocked 3 spam messages and 1 suspicious link today. Your inbox is clean.',
-                });
-                break;
-              case 'phone_app':
-                triggerNotification({
-                  type: 'security',
-                  icon: '📞',
-                  title: 'Call Protection Active',
-                  message: '2 scam calls blocked this week. Unknown callers are screened automatically.',
-                });
-                break;
-              case 'mail':
-                // Open the smart email inbox
-                setShowEmailInbox(true);
-                break;
-              case 'notes':
-                triggerNotification({
-                  type: 'suggestion',
-                  icon: '📝',
-                  title: 'Notes Synced & Encrypted',
-                  message: 'All your notes are end-to-end encrypted. Last backup: 2 hours ago.',
-                });
-                break;
-              default:
-                break;
-            }
-          }}
-        />
+        {/* View Mode Toggle Button */}
+        <button
+          onClick={() => setShowLivingCityHub(!showLivingCityHub)}
+          className="fixed top-4 left-4 z-50 px-3 py-2 bg-slate-800/80 backdrop-blur-lg text-white text-xs font-bold rounded-lg shadow-lg hover:bg-slate-700/80 transition-all border border-slate-700 flex items-center space-x-2"
+        >
+          <span>{showLivingCityHub ? '📱' : '🏙️'}</span>
+          <span>{showLivingCityHub ? 'Phone View' : 'Hub View'}</span>
+        </button>
+
+        {showLivingCityHub ? (
+          // LIVING CITY HUB - Proactive AI briefing cards
+          <ContextualHub
+            onOpenApp={handleAppOpen}
+            onOpenMate={() => setShowChat(true)}
+            onOpenVault={() => setCurrentApp('calculator')}
+            onOpenSettings={() => setShowPushSettings(true)}
+            trapActive={trapActive}
+            userData={{ name: 'Cain' }}
+            protectionStats={{ threatsBlocked: 47 }}
+            onTabChange={(tab) => {
+              if (tab === 'home') setShowLivingCityHub(true);
+            }}
+          />
+        ) : (
+          // INVISIBLE HOME SCREEN - Normal phone look
+          <InvisibleHomeScreen
+            onOpenCalculator={() => setCurrentApp('calculator')}
+            onOpenCalendar={() => setShowCalendar(true)}
+            onOpenChat={() => setShowChat(true)}
+            onOpenSettings={() => setShowPushSettings(true)}
+            onOpenEmergency={() => setShowEmergencySetup(true)}
+            onOpenLostPhone={() => setShowLostPhoneSetup(true)}
+            onOpenApp={handleAppOpen}
+          />
+        )}
         {/* Always show notifications in invisible mode */}
         {currentNotification && (
           <AegisNotification
