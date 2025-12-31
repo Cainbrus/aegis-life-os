@@ -1026,6 +1026,7 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
         </div>
       </div>
     </div>
+    </LivingCityBackground>
   );
 };
 
