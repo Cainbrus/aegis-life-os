@@ -893,7 +893,8 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-800 via-slate-900 to-black text-white relative overflow-hidden">
+    <LivingCityBackground intensity="medium">
+    <div className="min-h-screen text-white relative overflow-hidden">
       {/* SOS Trigger Area - Tap 5 times rapidly */}
       <div 
         className="absolute top-0 right-0 w-20 h-20 z-50"
@@ -906,13 +907,6 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
           SOS: {shakeCount}/5
         </div>
       )}
-
-      {/* Animated wallpaper effect */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl -translate-x-1/2 animate-pulse"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-56 h-56 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-2/3 left-1/4 w-48 h-48 bg-cyan-500/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-      </div>
 
       <div className="relative z-10">
         {/* Status bar */}
