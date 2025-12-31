@@ -1339,6 +1339,14 @@ const AegisTrapSystem = () => {
         {/* Script Guide Button - small button at bottom */}
         <DemoGuideLauncher onClick={() => setShowInvestorGuide(true)} />
         
+        {/* Website Button */}
+        <button
+          onClick={() => setShowWebsite(true)}
+          className="fixed bottom-4 left-4 z-40 px-3 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 text-white text-xs font-bold rounded-lg shadow-lg hover:opacity-90 transition-all"
+        >
+          🌐 Website
+        </button>
+        
         {showInvestorGuide && (
           <InvestorDemoGuide
             onClose={() => setShowInvestorGuide(false)}
