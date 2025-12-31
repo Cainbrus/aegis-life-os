@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { playButtonClick, playNotification, playAppOpen, playAppClose, playSuccess, playError, playMessageReceived, playVaultUnlock, playSosActivate } from '../services/SoundService';
+import { 
+  LivingCityBackground, 
+  MateAvatar, 
+  MateAssistantPanel,
+  SecurityStatusBar,
+  WorkerAIIndicator,
+  IntruderDetectionOverlay,
+  OwnerCoreVisualization 
+} from './LivingCityComponents';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
