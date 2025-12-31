@@ -598,6 +598,9 @@ const AegisTrapSystem = () => {
   const [showFamilyTracker, setShowFamilyTracker] = useState(false);
   const [showHealthDashboard, setShowHealthDashboard] = useState(false);
   const [showPushSettings, setShowPushSettings] = useState(false);
+  
+  // LIVING CITY HUB VIEW - Toggles between normal phone look and proactive hub
+  const [showLivingCityHub, setShowLivingCityHub] = useState(false);
   const [showEmergencySetup, setShowEmergencySetup] = useState(false);
   const [showLostPhoneSetup, setShowLostPhoneSetup] = useState(false);
   
