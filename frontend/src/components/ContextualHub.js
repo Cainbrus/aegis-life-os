@@ -619,7 +619,7 @@ const ContextualHub = ({
         <div className="px-4" ref={feedRef}>
           <div className="flex items-center space-x-2 mb-4">
             <MateAvatar size="small" mood="thinking" />
-            <span className="text-sm text-cyan-400 font-medium">MATE's Briefing</span>
+            <span className="text-sm text-cyan-400 font-medium">MATE&apos;s Briefing</span>
             <span className="text-xs text-slate-500">• Swipe cards to dismiss or mark done</span>
           </div>
           
