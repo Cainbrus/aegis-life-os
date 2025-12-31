@@ -1,0 +1,117 @@
+========================================
+AEGIS - EXECUTIVE SUMMARY
+========================================
+Digital Mate | Cain Brunjes
+
+
+THE ONE-LINER
+-------------
+Aegis is a mobile security app that lets intruders into FAKE data while capturing their photo and location. Proactive protection, not reactive.
+
+
+THE PROBLEM
+-----------
+Your phone is your entire life - bank, conversations, photos, health records, work. Current security is reactive: once someone gets in, damage is done. And what happens when someone FORCES you to unlock?
+
+
+THE SOLUTION: TRAP MODE
+-----------------------
+Instead of locking attackers out, we let them in - to decoy data.
+
+- Wrong pattern? They see fake messages, fake photos
+- Under duress? Silent alert + fake data shown
+- Meanwhile: Photo captured, location logged, actions recorded
+
+They think they've won. You've got evidence.
+
+PATENT PENDING. No competitor has this.
+
+
+MARKET
+------
+- $150 billion mobile security market
+- Growing 15% annually  
+- 6.8 billion smartphones globally
+- 1 in 4 people experience phone theft/loss
+
+
+TRACTION
+--------
+- Working prototype (PWA) - demo ready
+- All core features built and functional
+- Mobile-responsive design
+- AI chat integrated
+
+
+BUSINESS MODEL
+--------------
+Subscription:
+- Free: Basic protection
+- Premium: $9.99/mo (all features)
+- Family: $14.99/mo (6 members)
+
+Year 1: 10,000 users / $600K revenue
+Year 3: 200,000 users / $15M revenue
+
+
+COMPETITION
+-----------
+Find My, Lookout, Norton, McAfee, Life360 - ALL reactive.
+
+None have: Trap Mode, intruder photos, duress pattern, fake data, evidence gathering.
+
+We own proactive protection.
+
+
+THE ASK
+-------
+$500K Seed Round
+
+Use of funds:
+- $250K Development (native iOS/Android)
+- $100K Marketing (launch campaign)
+- $100K Operations (legal, patent, hosting)
+- $50K Reserve
+
+Milestones:
+- Native apps shipped
+- 10,000 users
+- $50K MRR
+- Patent filed
+- Series A ready
+
+
+TEAM
+----
+Cain Brunjes - Founder & CEO
+Building this because it needs to exist.
+
+
+WHY NOW
+-------
+- Privacy awareness at all-time high
+- Phones are primary devices for everything
+- No one does proactive protection
+- Tech (AI, PWA/native) is mature
+
+
+VISION
+------
+Phase 1: Premium security app (iOS/Android)
+Phase 2: Family & enterprise plans
+Phase 3: Aegis OS - security-first operating system
+
+"We're not building an app. We're building the future of personal security."
+
+
+========================================
+CONTACT
+========================================
+
+Cain Brunjes
+Founder & CEO, Digital Mate
+Phone: 0457374662
+
+Ready to demo anytime.
+
+========================================

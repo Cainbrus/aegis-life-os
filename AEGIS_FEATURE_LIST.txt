@@ -1,154 +1,165 @@
-AEGIS - Complete Feature List
+AEGIS - What It Actually Does
 ================================
+By Cain Brunjes | Digital Mate
 
-Core Philosophy
----------------
-Proactive Protection - Aegis doesn't just respond to threats, it anticipates and prevents them while gathering evidence against attackers.
+The Simple Version
+------------------
+Aegis is your phone's bodyguard. But instead of just locking bad guys out, we let them IN - to fake stuff - while we grab their photo and location. They think they're in, but they've got nothing. That's the difference.
 
 
 ========================================
-SECURITY FEATURES
+SECURITY STUFF
 ========================================
 
-1. Multi-Pattern Authentication
--------------------------------
-Pattern              | Purpose        | What Happens
----------------------|----------------|------------------------------------------
-Owner Pattern (1-5-9-8-7) | Full access    | All real data, full Aegis control
-Duress Pattern (2-5-8)    | Under threat   | Shows fake data, silently alerts contacts
-Wrong Pattern             | Intruder       | Captures photo, activates Trap Mode
+1. Three Different Unlock Patterns
+----------------------------------
+This is the core of Aegis:
 
-2. Trap Mode (PATENTABLE)
--------------------------
-Concept: Instead of locking intruders out, let them IN to FAKE data
+Pattern                    | What Happens
+---------------------------|------------------------------------------
+Your Real Pattern          | Full access, everything's normal
+Duress Pattern (someone's forcing you) | Shows fake data, secretly alerts your people
+Wrong Pattern (intruder)   | Snaps their photo, shows them fake stuff
 
-What Happens:
-- Intruder photo captured silently
-- GPS location logged
-- Timestamp recorded
-- Fake messages, photos, apps shown
-- Real data completely hidden
+Simple as that. Three patterns, three different outcomes.
 
-Evidence Gathering: All intruder actions logged for later review
-Unique Value: No competitor does this
+
+2. Trap Mode - This Is The Big One
+----------------------------------
+Every other security app locks people out. We don't.
+
+We let them in. To fake data.
+
+While they're looking at fake messages and fake photos thinking they've cracked it:
+- We've taken their photo
+- We've got their GPS location  
+- We're logging everything they touch
+- Your real stuff? Completely hidden
+
+They walk away thinking they won. You've got evidence for the cops.
+
+Nobody else does this. It's patentable.
+
 
 3. Intruder Detection
 ---------------------
-- Wrong pattern detection (3 attempts)
-- Silent photo capture using front camera
-- Location tracking of intruder
-- Timestamp logging
-- Action logging (what they tried to access)
+Someone tries to get into your phone:
+- Wrong pattern 3 times = photo taken (they don't know)
+- Location logged
+- Time stamped
+- You get a full report of what they tried to access
+
 
 4. Remote Wipe
 --------------
-- Trigger via web portal
-- Trigger after X failed attempts (configurable)
-- Complete data destruction
-- Confirmation to owner
+Phone's gone for good? Nuke it.
+- Do it from any web browser
+- Or set it to auto-wipe after X failed attempts
+- Everything gone, confirmed
+
 
 5. Calculator Vault
 -------------------
-- Appears as normal calculator
-- Secret code (8675309) opens secure vault
-- Store sensitive photos, documents, passwords
-- Hidden in plain sight
+Looks like a normal calculator. Type in 8675309 and boom - secret vault opens.
+- Hide photos
+- Hide documents  
+- Hide whatever you need hidden
+- In plain sight
 
 
 ========================================
-EMERGENCY FEATURES
+EMERGENCY STUFF
 ========================================
 
 1. Emergency Contacts
 ---------------------
-- Add unlimited contacts with priority order
-- Relationship tags (spouse, parent, doctor)
-- Auto-call in sequence during emergency
+- Add your people in order of priority
+- Tag them (wife, mum, doctor, whatever)
+- In an emergency, Aegis calls them one by one until someone picks up
 
-2. Auto-Call 000 (Emergency Services)
--------------------------------------
-- Configurable trigger conditions
-- Can be disabled if needed
-- Sends location to responders
+
+2. Auto-Call 000
+----------------
+Configure it how you want:
+- Auto-call emergency services in certain situations
+- Or disable it if you'd rather handle it yourself
+- Sends your location to responders
+
 
 3. Crash Detection
 ------------------
-- Uses accelerometer to detect car accidents
-- Auto-alerts emergency contacts
-- Shares GPS location
-- Countdown before calling (can cancel if false alarm)
+Car accident? Phone detects the impact.
+- Alerts your emergency contacts automatically
+- Shares your GPS
+- Gives you a countdown to cancel (in case it's a false alarm)
+
 
 4. Shake SOS
 ------------
-- Shake phone 5 times rapidly
-- Triggers silent emergency alert
-- Sends location to contacts
-- Works even from lock screen
+In trouble but can't get to your phone properly?
+- Shake it 5 times fast
+- Silent alert goes to your contacts
+- Works from lock screen
+- Nobody around you knows you've done it
+
 
 5. Duress Phrase
 ----------------
-- Voice-activated emergency
-- Say "Call my lawyer" (customizable)
-- Silently alerts contacts
-- Phone appears normal to attacker
-- Records audio (optional)
+Someone's got you and your phone. You say "Call my lawyer" (or whatever phrase you set).
+- Phone looks normal
+- But it's secretly alerting your contacts
+- Can record audio too
+- Attacker has no idea
+
 
 6. Fall Detection
 -----------------
-- Detects sudden falls (especially for elderly)
-- Auto-alerts emergency contacts
-- Countdown before calling
-- GPS location shared
+Mainly for older folks or anyone at risk:
+- Detects sudden falls
+- Alerts your people
+- Countdown to cancel false alarms
+- Location shared
 
 
 ========================================
-LOST PHONE FEATURES
+LOST PHONE STUFF
 ========================================
 
 1. GPS Tracking
 ---------------
-- Real-time location tracking
-- Location history
-- Works even when phone is "off" (low power mode)
+- Track your phone in real-time
+- See location history
+- Works even in low power mode
+
 
 2. Remote Lock
 --------------
-- Lock phone instantly from web portal
-- Custom lock message displayed
-- Contact info shown to finder
+- Lock it instantly from any browser
+- Show a custom message ("Call this number for reward")
+- Your contact info displayed to finder
+
 
 3. Sound Alarm
 --------------
-- Play loud sound remotely
-- Works even if phone is on silent
-- Helps locate nearby phone
+- Make it scream from anywhere
+- Works even on silent
+- Good for finding it down the couch
+
 
 4. Lost Mode Message
 --------------------
-- Custom message to finder
-- Reward offer display
-- Contact email/phone shown
-- "Return this phone" prompt
+- Custom message to whoever finds it
+- Offer a reward
+- Show your email/phone
+- "Please return this phone" prompt
 
-5. Remote Wipe
---------------
-- Erase all data remotely
-- Configurable: after X failed attempts
-- Confirmation required
-- Factory reset option
 
-6. Aegis Find Network
+5. Aegis Find Network
 ---------------------
-- Uses OTHER Aegis users to locate your phone
-- Works even when phone is offline
-- Anonymous and encrypted
-- Like AirTags but built-in
-
-7. Trusted Devices
-------------------
-- Designate devices that can locate your phone
-- Family members' phones
-- Home tablet/computer
+This is cool - uses OTHER Aegis users to find your phone.
+- Works even when your phone's offline
+- Completely anonymous and encrypted
+- Like AirTags but built into the app
 
 
 ========================================
@@ -157,247 +168,191 @@ FAMILY SAFETY
 
 1. Family Tracker
 -----------------
-- Real-time location of family members
+- See where everyone is in real-time
 - Battery status
-- Last seen timestamp
-- Safety status indicators
+- When they were last seen
+- Peace of mind for the fam
+
 
 2. Geofencing
 -------------
-- Set safe zones (home, school, work)
-- Alerts when family members leave/arrive
-- Custom zones with custom alerts
+- Set safe zones (home, school, nan's place)
+- Get alerts when people arrive/leave
+- Custom zones, custom alerts
+
 
 3. Check-In Requests
 --------------------
-- Send "Are you OK?" prompts
-- One-tap response
-- Escalation if no response
+- Send "You alright?" to anyone
+- They tap once to respond
+- If no response, you can escalate
+
 
 4. Family SOS
 -------------
-- Any family member can trigger group alert
-- All members notified instantly
-- Location shared with all
+- Anyone in the family can hit the panic button
+- Everyone gets notified instantly
+- Everyone sees everyone's location
 
 
 ========================================
 COMMUNICATION PROTECTION
 ========================================
 
-1. SMS/Message Filtering
-------------------------
-- Spam detection and blocking
-- Scam link detection
-- Phishing attempt blocking
-- Safe sender whitelist
+1. Message Filtering
+--------------------
+- Blocks spam texts
+- Catches scam links
+- Stops phishing attempts
+- Whitelist your trusted senders
+
 
 2. Call Screening
 -----------------
-- Scam call detection
-- Unknown caller screening
-- Robocall blocking
-- Custom block lists
+- Spots scam calls
+- Blocks robocalls
+- Screens unknown numbers
+- Your own block list
 
-3. Smart Email Inbox
---------------------
+
+3. Smart Email
+--------------
 - AI-powered phishing detection
-- Scam email blocking
-- Automatic reminder extraction
-- Priority inbox sorting
-- Threat categorization
+- Blocks scam emails
+- Pulls out reminders automatically
+- Sorts by priority
 
 
 ========================================
-FINANCIAL PROTECTION
+MONEY PROTECTION
 ========================================
 
 1. Transaction Monitoring
 -------------------------
-- Real-time transaction alerts
-- Suspicious activity detection
-- Unusual spending patterns flagged
+- Real-time alerts for transactions
+- Flags suspicious stuff
+- Catches unusual patterns
+
 
 2. Fraud Detection
 ------------------
-- AI-powered fraud detection
-- Instant block of suspicious transactions
-- Notification before damage done
+- AI spots dodgy transactions
+- Alerts you before damage is done
+- Can block instantly
+
 
 3. Spending Insights
 --------------------
-- Category breakdown
-- Monthly trends
+- See where your money goes
+- Monthly breakdowns
 - Budget warnings
-- Unusual merchant alerts
+- "You spent $500 at a place you've never been" alerts
 
 
 ========================================
-HEALTH & WELLNESS
+HEALTH STUFF
 ========================================
 
 1. Medication Reminders
 -----------------------
-- Customizable schedules
-- Confirmation tracking
-- Missed dose alerts to contacts
+- Set your schedule
+- Confirm you've taken them
+- Alerts your people if you miss doses
+
 
 2. Appointment Sync
 -------------------
-- Calendar integration
-- Travel time calculation
-- Reminder notifications
+- Links with your calendar
+- Calculates travel time
+- Reminds you to leave
+
 
 3. Health Data Protection
 -------------------------
 - Encrypted health records
-- Emergency medical info access
-- Shareable with responders
+- Emergency medical info available to responders
+- Share with doctors easily
 
 
 ========================================
-PRIVACY PROTECTION
+PRIVACY STUFF
 ========================================
 
 1. Photo Vault
 --------------
 - Hide sensitive photos
-- Access via Calculator secret code
-- Encrypted storage
-- Decoy photos in main gallery
+- Access through the calculator trick
+- Encrypted
+- Decoy photos in your normal gallery
+
 
 2. App Hiding
 -------------
-- Hide sensitive apps
-- Access via secret methods
-- Decoy app icons
-
-3. Private Browsing
--------------------
-- No history saved
-- Auto-clear on exit
-- VPN integration (future)
+- Hide apps you don't want people seeing
+- Secret ways to access them
+- Decoy icons if you want
 
 
 ========================================
 AI FEATURES
 ========================================
 
-1. Aegis Chat Assistant
------------------------
-- Natural language interaction
-- Security advice
-- Feature guidance
-- Threat explanations
+1. Aegis Chat
+-------------
+- Talk to Aegis naturally
+- Get security advice
+- Help with features
+- Understands what you're asking
 
-2. Proactive Notifications
---------------------------
-- Route change alerts (traffic/accidents)
+
+2. Smart Notifications
+----------------------
+- Heads up about traffic/accidents on your route
 - Weather warnings
 - Schedule optimization
-- Smart reminders
-
-3. Behavior Learning
---------------------
-- Learns your patterns
-- Detects anomalies
-- Personalized protection
-- Reduces false alarms
+- Actually useful reminders
 
 
-========================================
-REPORTING & INSIGHTS
-========================================
-
-1. Protection Summary
----------------------
-- Daily/weekly/monthly reports
-- Threats blocked
-- Suspicious activity log
-- Family safety status
-
-2. Intruder Evidence
---------------------
-- Photos captured
-- Timestamps
-- Location data
-- Actions attempted
-
-3. Activity Log
----------------
-- Complete audit trail
-- Exportable reports
-- Legal evidence quality
+3. Learns You
+-------------
+- Figures out your patterns
+- Spots when something's off
+- Personalizes your protection
+- Gets smarter, fewer false alarms
 
 
 ========================================
-SETTINGS & CUSTOMIZATION
+PRICING
 ========================================
 
-1. Pattern Configuration
-------------------------
-- Set owner pattern
-- Set duress pattern
-- Pattern complexity options
-
-2. Notification Preferences
----------------------------
-- Which alerts to show
-- Sound/vibration options
-- Do not disturb integration
-
-3. Family Management
---------------------
-- Add/remove members
-- Permission levels
-- Tracking preferences
-
-4. Emergency Preferences
-------------------------
-- Contact priority order
-- Auto-call settings
-- Location sharing options
-
-
-========================================
-FUTURE FEATURES (ROADMAP)
-========================================
-
-Phase 2:
-- Real camera integration for intruder photos
-- Actual Plaid integration for banking
-- Google Calendar sync
-- Apple Health integration
-- Wear OS / Apple Watch app
-
-Phase 3:
-- Aegis OS - Full operating system
-- Enterprise version for businesses
-- API for third-party integration
-- Hardware partnerships (phones with Aegis built-in)
-
-
-========================================
-MONETIZATION
-========================================
-
-Tier        | Price      | Features
+Tier        | Price      | What You Get
 ------------|------------|----------------------------------
 Free        | $0         | Basic protection, 1 emergency contact
-Premium     | $9.99/mo   | All features, unlimited contacts
-Family      | $14.99/mo  | Up to 6 family members
-Enterprise  | Custom     | Business features, admin console
+Premium     | $9.99/mo   | Everything, unlimited contacts
+Family      | $14.99/mo  | Up to 6 people
+Enterprise  | Custom     | Business features
 
 
 ========================================
-KEY METRICS (Targets)
+WHAT'S COMING
 ========================================
 
-- Threats Blocked: 50+ per user/month
-- Response Time: <1 second for alerts
-- Uptime: 99.9%
-- User Retention: >80% after 6 months
-- NPS Score: >50
+Next Up:
+- Real camera integration (not mocked)
+- Real bank integration via Plaid
+- Google Calendar sync
+- Apple Health integration
+- Smartwatch app
+
+Down The Track:
+- Aegis OS (full operating system)
+- Enterprise version
+- API for other apps
+- Phones with Aegis built-in
 
 
-Last Updated: December 2024
+----------------------------------------
+Contact: Cain Brunjes
+Phone: 0457374662
+Company: Digital Mate
+----------------------------------------

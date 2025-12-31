@@ -1,102 +1,106 @@
 Finding Investors for AEGIS
 ===========================
+Notes for Cain | Digital Mate
 
-Overview
+
+The Plan
 --------
-This guide outlines where to find investors, how to approach them, and what materials to prepare.
+This is your playbook for finding investors and getting meetings. Straight to the point.
 
 
 ========================================
-TYPES OF INVESTORS TO TARGET
+WHO TO TARGET
 ========================================
 
-1. ANGEL INVESTORS
-------------------
-Best for seed stage ($50K - $500K)
+ANGEL INVESTORS
+---------------
+Best for: $50K - $500K
 
-Where to Find:
-- AngelList (angel.co) - Create a startup profile
-- Gust (gust.com) - Connect with angel networks
-- LinkedIn - Search "angel investor" + "cybersecurity" or "mobile"
+Where to find them:
+- AngelList (angel.co) - make a profile
+- Gust (gust.com) - connects you to angel networks
+- LinkedIn - search "angel investor" + "cybersecurity" or "mobile"
 
-Angel Groups:
+Angel Groups worth looking at:
 - Tech Coast Angels
-- Golden Seeds
+- Golden Seeds  
 - Band of Angels
 - New York Angels
-- Australian Angel investors (if in AU)
+- Sydney Angels (local option)
+- Melbourne Angels
 
-How to Approach:
-- Warm intros are best (ask your network)
-- Cold email with concise pitch (see template below)
-- Apply to angel group pitch events
+How to approach:
+- Warm intros work best (who do you know who knows them?)
+- Cold email with a tight pitch (templates below)
+- Apply to their pitch nights
 
 
-2. SEED STAGE VCs
------------------
-Best for $500K - $2M
+SEED STAGE VCs
+--------------
+Best for: $500K - $2M
 
-Cybersecurity Focused:
-- YL Ventures - Cybersecurity specialist
-- Cyber Mentor Fund - Early stage cyber
-- DataTribe - Cyber & data
-- Paladin Capital - Security focused
-- ForgePoint Capital - Cybersecurity
+Cybersecurity focused:
+- YL Ventures
+- Cyber Mentor Fund
+- DataTribe
+- Paladin Capital
+- ForgePoint Capital
 
 Mobile/Consumer:
-- Lowercase Capital - Consumer apps
-- Initialized Capital - Early stage
-- First Round Capital - Seed focus
-- Precursor Ventures - Pre-seed/seed
+- Lowercase Capital
+- Initialized Capital
+- First Round Capital
+- Precursor Ventures
 
-Australian VCs (if applicable):
-- Blackbird Ventures - Aussie startups
-- Square Peg - AU/global
-- AirTree Ventures - AU focused
-- Main Sequence - Deep tech
+Aussie VCs:
+- Blackbird Ventures (the big one locally)
+- Square Peg
+- AirTree Ventures
+- Main Sequence
 
 
-3. ACCELERATORS/INCUBATORS
---------------------------
-Best for mentorship + funding ($50K - $150K)
+ACCELERATORS
+------------
+Best for: Mentorship + $50K-$150K
 
-Top Programs:
-- Y Combinator - Top accelerator, apply online
-- Techstars - Multiple programs (some security focused)
-- 500 Startups - Global program
-- Plug and Play - Corporate connections
-- Startmate (Australia) - If AU based
-- Antler - Global, multiple locations
+Top ones:
+- Y Combinator (the dream - apply online)
+- Techstars
+- 500 Startups
+- Plug and Play
+- Startmate (Aussie - good option)
+- Antler
 
-Cybersecurity Specific:
-- Mach37 - Cyber accelerator
-- CyberLaunch - Security startups
-- Citi Ventures - Fintech/security
+Security-specific:
+- Mach37
+- CyberLaunch
 
 
 ========================================
-OUTREACH TEMPLATES
+EMAIL TEMPLATES
 ========================================
 
-COLD EMAIL TO ANGEL INVESTOR
-----------------------------
-Subject: AEGIS - Trap Mode Security (Seeking Angel Investment)
+COLD EMAIL TO ANGEL
+-------------------
+Subject: AEGIS - Trap Mode Security (Looking for Angel)
 
-Hi [Name],
+G'day [Name],
 
-I'm building AEGIS - a mobile security app with a unique "Trap Mode" feature that shows intruders FAKE data while capturing their photo and location.
+I'm Cain, building AEGIS - a mobile security app with a "Trap Mode" feature that shows intruders FAKE data while we capture their photo and location.
 
-Instead of just locking attackers out, we let them in - to decoy data - while gathering evidence. No one else does this, and we're pursuing a patent.
+Instead of locking attackers out, we let them in - to decoy data - while gathering evidence. Nobody else does this, and we're getting it patented.
 
-Key metrics:
-- Fully functional prototype live
+Quick facts:
+- Working prototype live right now
 - $150B mobile security market
-- Seeking $500K seed round
+- Looking for $500K seed
 
-Would you have 15 minutes this week for a quick demo?
+Got 15 minutes this week for a quick demo?
 
-[Your name]
-[LinkedIn/Website]
+Cheers,
+Cain Brunjes
+Digital Mate
+0457374662
 
 
 COLD EMAIL TO VC
@@ -105,66 +109,69 @@ Subject: AEGIS - Patent-Pending "Trap Mode" Security (Seed)
 
 Hi [Name],
 
-I noticed [Firm] invests in cybersecurity/mobile - I'm raising a seed round for AEGIS.
+Saw that [Firm] backs cybersecurity/mobile plays - I'm raising seed for AEGIS.
 
-The problem: Current phone security is reactive. Once someone gets in, the damage is done.
+The problem: Phone security is reactive. Once someone's in, damage is done.
 
-Our solution: "Trap Mode" - when intruders access your phone, they see FAKE data while we capture their photo, location, and actions. It's proactive protection.
+Our fix: "Trap Mode" - intruders see FAKE data while we capture their photo, location, and log everything. Proactive protection.
 
-Traction:
+Where we're at:
 - Working prototype (PWA)
-- Patent-pending technology
+- Patent-pending tech
 - Demo-ready
 
-Seeking: $500K seed to launch native iOS/Android apps.
+Looking for: $500K to ship native iOS/Android.
 
-Would [Firm] be a good fit? Happy to send our deck or do a quick demo.
+Worth a chat?
 
-[Your name]
+Cain Brunjes
+Digital Mate
+0457374662
 
 
-LINKEDIN CONNECTION REQUEST
----------------------------
-Hi [Name], I'm building a mobile security startup with a unique "Trap Mode" feature. I see you invest in [cybersecurity/mobile] and would love to share what we're building. No pitch - just a genuine connection!
+LINKEDIN MESSAGE
+----------------
+G'day [Name], I'm building a mobile security startup with a unique "Trap Mode" feature - we let intruders into fake data while capturing evidence. Saw you invest in [cybersecurity/mobile]. Would love to share what we're building. No hard sell - just a genuine chat!
 
 
 ========================================
-MATERIALS TO PREPARE
+WHAT YOU NEED READY
 ========================================
 
-Must Have:
-[DONE] Pitch Deck (10-15 slides)
-[DONE] Feature List
-[DONE] Demo Script
-[DONE] Working Prototype - The app!
-[ ] Executive Summary (1-pager)
-[ ] Financial Model (spreadsheet)
+Must have:
+[x] Pitch Deck - DONE
+[x] Feature List - DONE  
+[x] Competition Analysis - DONE
+[x] Working Prototype - DONE (the app!)
+[ ] Executive Summary (1-pager) - COMING
+[ ] Financial Model spreadsheet
 
-Nice to Have:
-- Video demo/walkthrough
+Nice to have:
+- Video walkthrough
 - Patent application draft
-- Customer testimonials (from beta)
-- Press coverage
-- Technical architecture doc
+- Beta user testimonials
+- Press mentions
 
 
 ========================================
-PITCH EVENTS & COMPETITIONS
+PITCH COMPETITIONS
 ========================================
+
+Worth entering:
 
 Global:
 - TechCrunch Disrupt Startup Battlefield
 - Web Summit PITCH
 - Collision Conference
 - SXSW Pitch
-- Slush 100 Pitching Competition
+- Slush 100
 
-Security Focused:
+Security:
 - RSA Conference Innovation Sandbox
 - Black Hat Startup Spotlight
 - CyberTech Global
 
-Australia (if applicable):
+Australia:
 - SydStart
 - Pause Fest
 - StartCon
@@ -172,107 +179,99 @@ Australia (if applicable):
 
 
 ========================================
-NETWORKING STRATEGIES
+NETWORKING TIPS
 ========================================
 
-1. Warm Introductions
-- Best success rate (30-40% vs 1-2% cold)
-- Ask: "Who do you know that invests in security/mobile?"
-- Use LinkedIn to find 2nd connections
-- Offer to help others first
+1. Warm Intros Are Gold
+- 30-40% success rate vs 1-2% cold
+- Ask everyone: "Who do you know that invests in security/mobile?"
+- LinkedIn 2nd connections
+- Help others first
 
 2. Twitter/X
-- Follow investors who tweet about security
+- Follow investors who talk about security
 - Engage genuinely (not just pitching)
 - Share your building journey
-- Tag investors thoughtfully
 
 3. Events
-- Attend startup/VC events
-- Demo days (even as audience)
+- Go to startup events
+- Demo days (even just as audience)
 - Security conferences
-- Don't pitch immediately - build relationships
+- Build relationships before pitching
 
-4. Community
-- Join Indie Hackers
+4. Communities
+- Indie Hackers
 - Reddit: r/startups, r/entrepreneur
-- Hacker News (Show HN)
+- Hacker News (do a Show HN when ready)
 - Product Hunt launch
 
 
 ========================================
-FUNDRAISING TIMELINE
+TIMELINE
 ========================================
 
-Typical Seed Round: 3-6 months
+Typical seed round: 3-6 months
 
-Month 1: Preparation
-- Finalize pitch deck
-- Build target investor list (50-100)
-- Practice pitch
-- Get warm intros lined up
+Month 1: Prep
+- Finalize deck
+- Build investor list (aim for 50-100 names)
+- Practice your pitch
+- Line up warm intros
 
 Month 2-3: Outreach
-- Send 10-20 emails per week
-- Take all meetings offered
-- Iterate on pitch based on feedback
+- 10-20 emails per week
+- Take every meeting
+- Improve pitch based on feedback
 - Apply to accelerators
 
-Month 4-5: Deep Conversations
-- Follow up with interested investors
-- Share more materials
+Month 4-5: Deep Talks
+- Follow up with interested ones
+- Share more details
 - Due diligence calls
-- Term sheet negotiations
+- Negotiate terms
 
 Month 6: Close
 - Legal review
-- Sign documents
-- Money in bank!
+- Sign papers
+- Money lands
 
 
 ========================================
-TIPS FOR SUCCESS
+DO'S AND DON'TS
 ========================================
 
 DO:
-- Lead with the problem, not the solution
-- Show, don't tell (demo the Trap Mode!)
+- Lead with the problem
+- Show, don't tell (demo Trap Mode!)
 - Know your numbers
-- Be honest about stage/traction
-- Follow up (but don't spam)
-- Ask for intros even if they pass
+- Be honest about where you're at
+- Follow up
+- Ask for intros even if they say no
 
 DON'T:
 - Send deck without context
 - Ask for NDA (red flag to investors)
-- Overvalue your company
+- Overvalue yourself early on
 - Badmouth competitors
-- Be desperate
+- Act desperate
 - Take rejection personally
-
-
-========================================
-IDEAL INVESTOR PROFILE FOR AEGIS
-========================================
-
-Look for investors who:
-- Have invested in cybersecurity or mobile apps
-- Understand consumer products
-- Are patient (consumer apps take time)
-- Can add strategic value (introductions, advice)
-- Are based in your region (or invest globally)
 
 
 ========================================
 NEXT STEPS
 ========================================
 
-1. Today: Review and customize pitch deck
-2. This Week: Build list of 50 target investors
-3. Next Week: Start outreach (10/day)
-4. Ongoing: Apply to accelerators, attend events
+1. Today: Go through pitch deck, make it yours
+2. This week: List 50 target investors
+3. Next week: Start emailing (10 per day)
+4. Ongoing: Apply to accelerators, hit events
 
 
 ----------------------------------------
+Lead with Trap Mode every time. It's unique.
+Nobody else has it. That's your hook.
+----------------------------------------
 
-Good luck! The Trap Mode concept is unique and compelling - lead with that in every conversation.
+Cain Brunjes
+Digital Mate
+0457374662
