@@ -909,9 +909,11 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
       )}
 
       <div className="relative z-10">
-        {/* Status bar */}
-        <div className="flex items-center justify-between px-6 py-2 text-xs">
-          <span className="font-medium">{timeString.split(' ')[0]}</span>
+        {/* Status bar with Worker AI indicators */}
+        <div className="flex items-center justify-between px-4 py-2 text-xs">
+          <div className="flex items-center space-x-2">
+            <WorkerAIIndicator type="security" active={true} count={2} />
+          </div>
           <div className="flex items-center space-x-2">
             <span>📶</span>
             <span>📡</span>
@@ -922,9 +924,18 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
           </div>
         </div>
 
+        {/* Security Status Bar */}
+        <div className="px-4 mb-4">
+          <SecurityStatusBar 
+            threatsBlocked={47}
+            status="protected"
+            workers={['security', 'spam', 'messages']}
+          />
+        </div>
+
         {/* Time display - Prominent like iOS lock screen */}
-        <div className="text-center py-16">
-          <div className="text-7xl font-extralight tracking-tight text-white drop-shadow-lg">
+        <div className="text-center py-8">
+          <div className="text-6xl font-extralight tracking-tight text-white drop-shadow-lg">
             {timeString}
           </div>
           <div className="text-lg text-slate-300 mt-3 font-light">{dateString}</div>
