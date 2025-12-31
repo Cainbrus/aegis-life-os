@@ -22,7 +22,7 @@ import InvestorDemoGuide, { DemoGuideLauncher } from './components/InvestorDemoG
 import SetupWizard from './components/SetupWizard';
 import DigitalMateWebsite from './components/DigitalMateWebsite';
 import smartProtection from './services/SmartProtectionService';
-import { playUnlock, playLock, playError, playNotification, playSuccess } from './services/SoundService';
+import { playUnlock, playLock, playError, playNotification, playSuccess, playButtonClick } from './services/SoundService';
 import './App.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
