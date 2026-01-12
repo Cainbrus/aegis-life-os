@@ -547,6 +547,512 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
   );
 
   // CONTACT PAGE
+  // INVESTOR INQUIRY TYPES for auto-reply
+  const investorInquiryTypes = [
+    { id: 'pitch_deck', label: 'Pitch Deck & Overview', icon: '📊' },
+    { id: 'financials', label: 'Financial Projections', icon: '💰' },
+    { id: 'demo', label: 'Product Demo', icon: '🎬' },
+    { id: 'team_meeting', label: 'Meet the Founder', icon: '👤' },
+    { id: 'due_diligence', label: 'Due Diligence Materials', icon: '📋' },
+    { id: 'term_sheet', label: 'Investment Terms', icon: '📝' },
+  ];
+
+  const [investorForm, setInvestorForm] = useState({
+    name: '',
+    email: '',
+    firm: '',
+    inquiryType: '',
+    message: ''
+  });
+  const [investorSubmitted, setInvestorSubmitted] = useState(false);
+  const [autoReplyContent, setAutoReplyContent] = useState(null);
+
+  // Auto-reply content based on inquiry type
+  const getAutoReply = (inquiryType) => {
+    const replies = {
+      pitch_deck: {
+        subject: 'Digital Mate - Pitch Deck & Investment Overview',
+        content: `Thank you for your interest in Digital Mate!
+
+Attached you'll find our comprehensive investor package including:
+• Executive Summary
+• Product Overview & Demo Access
+• Market Analysis
+• Business Model & Revenue Projections
+• 5-Year Financial Forecast
+• Team & Roadmap
+
+KEY HIGHLIGHTS:
+📱 $150B mobile security market by 2030
+🎭 Proprietary Trap Mode™ technology (patent pending)
+📈 Clear path to $135M ARR by Year 5
+💰 Seeking $500K seed at $3M cap
+
+NEXT STEPS:
+1. Review the attached materials
+2. Try our live demo: [Demo Link]
+3. Schedule a call with Cain: calendly.com/digitalmate
+
+Looking forward to discussing how Digital Mate will revolutionize personal security.
+
+Best regards,
+Cain Brunjes
+Founder & CEO, Digital Mate
+📞 0457374662`
+      },
+      financials: {
+        subject: 'Digital Mate - Financial Model & Projections',
+        content: `Thank you for requesting our financial information!
+
+FINANCIAL HIGHLIGHTS:
+
+Year 1: $300K ARR | 100K users
+Year 2: $2.4M ARR | 500K users  
+Year 3: $12M ARR | 2M users
+Year 5: $135M ARR | 15M users
+
+UNIT ECONOMICS:
+• LTV:CAC Ratio: 16-22x
+• Gross Margin: 85%
+• Blended CAC: $6
+• Pro LTV: $99.80
+• Family LTV: $329.67
+
+USE OF FUNDS ($500K):
+• 40% Product Development
+• 24% Marketing & UA
+• 20% Team Expansion
+• 16% Operations & Legal
+
+Full financial model and assumptions attached.
+
+Schedule a deep-dive call: calendly.com/digitalmate
+
+Best regards,
+Cain Brunjes`
+      },
+      demo: {
+        subject: 'Digital Mate - Live Demo Access',
+        content: `Excited to show you Digital Mate in action!
+
+🎬 LIVE DEMO ACCESS:
+[Demo Link - Try it now!]
+
+DEMO HIGHLIGHTS TO TRY:
+1. Trap Mode™ - Enter wrong pattern 3x to see decoy activation
+2. Dial-to-Unlock Vault - Open Phone, dial 8675309, press Call
+3. Intruder Photo Capture - See evidence collection in real-time
+4. Behavioral Guard - Watch how we detect suspicious behavior
+
+PATTERNS TO TEST:
+• Owner: 1-5-9-8-7 (full access)
+• Duress: 2-5-8 (fake data + silent alert)
+• Wrong: Any other (triggers Trap Mode)
+
+VAULT CODE: 8675309 (dial on phone app)
+
+Want a guided walkthrough? Let's schedule a call!
+calendly.com/digitalmate
+
+Best regards,
+Cain Brunjes`
+      },
+      team_meeting: {
+        subject: 'Digital Mate - Meeting with Cain Brunjes',
+        content: `Thank you for wanting to connect!
+
+I'd love to share the Digital Mate vision with you personally.
+
+ABOUT ME:
+I created Digital Mate because I was frustrated that our smartphones - devices that know everything about us - have such basic security. I believe everyone deserves a phone that actively protects them, not just locks out intruders, but outsmarts them.
+
+AVAILABLE FOR:
+• 30-min intro call
+• 1-hour deep dive
+• In-person meeting (Australia-based, happy to video call globally)
+
+SCHEDULE DIRECTLY:
+calendly.com/digitalmate
+
+Or call me: 0457374662
+Best times: 9am-6pm AEST, weekdays
+
+Looking forward to meeting you!
+
+Best regards,
+Cain Brunjes
+Founder & CEO, Digital Mate`
+      },
+      due_diligence: {
+        subject: 'Digital Mate - Due Diligence Package',
+        content: `Thank you for your serious interest in Digital Mate!
+
+DUE DILIGENCE MATERIALS:
+
+📊 COMPANY DOCUMENTS:
+• Certificate of Incorporation
+• Cap Table
+• Articles of Association
+• IP Assignment Agreements
+
+💼 BUSINESS DOCUMENTS:
+• Detailed Business Plan
+• Market Research & Analysis
+• Competitive Landscape
+• Customer Testimonials & Feedback
+
+💰 FINANCIAL DOCUMENTS:
+• Historical Financials
+• 5-Year Projections (3 scenarios)
+• Unit Economics Deep Dive
+• Use of Funds Breakdown
+
+🔧 TECHNICAL DOCUMENTS:
+• Architecture Overview
+• Security Audit (pending)
+• Patent Applications
+• Technology Roadmap
+
+📋 LEGAL:
+• Privacy Policy
+• Terms of Service
+• Regulatory Compliance Plan
+
+All materials will be shared via secure data room upon signing NDA.
+
+Ready to proceed? Let's schedule a call.
+calendly.com/digitalmate
+
+Best regards,
+Cain Brunjes`
+      },
+      term_sheet: {
+        subject: 'Digital Mate - Investment Terms',
+        content: `Thank you for your interest in investing!
+
+CURRENT ROUND: Seed
+RAISING: $500,000 AUD
+INSTRUMENT: SAFE or Convertible Note
+
+TERMS:
+• Valuation Cap: $3,000,000 AUD
+• Discount: 20%
+• Pro-rata Rights: Yes
+• Information Rights: Quarterly updates
+
+EXPECTED MILESTONES (18 months):
+• Launch on Android & iOS
+• 500,000+ users
+• $2M+ ARR run rate
+• Series A ready
+
+INVESTOR BENEFITS:
+• Early entry at attractive valuation
+• Board observer seat (for $100K+)
+• Direct founder access
+• Strategic input opportunity
+
+MINIMUM INVESTMENT: $25,000
+
+Ready to discuss terms? Let's schedule a call to go through the details.
+calendly.com/digitalmate
+
+Best regards,
+Cain Brunjes
+Founder & CEO, Digital Mate
+📞 0457374662`
+      }
+    };
+    return replies[inquiryType] || replies.pitch_deck;
+  };
+
+  const handleInvestorSubmit = (e) => {
+    e.preventDefault();
+    const reply = getAutoReply(investorForm.inquiryType);
+    setAutoReplyContent(reply);
+    setInvestorSubmitted(true);
+    // In production, this would send email via backend
+  };
+
+  // INVESTORS PAGE
+  const InvestorsPage = () => (
+    <div className="pt-20">
+      {/* Hero Section */}
+      <section className="py-20 bg-gradient-to-b from-slate-900 to-slate-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+          <div className="inline-flex items-center space-x-2 px-4 py-2 bg-green-500/20 rounded-full border border-green-500/30 mb-6">
+            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+            <span className="text-green-400 text-sm font-medium">Now Raising - Seed Round</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black mb-6">
+            <span className="text-white">Invest in the Future of</span>
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Personal Security</span>
+          </h1>
+          <p className="text-slate-300 text-lg max-w-3xl mx-auto mb-8">
+            Digital Mate is revolutionizing smartphone security with proprietary technology that doesn't just lock intruders out - it lets them into fake data while gathering evidence.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => {
+                setInvestorForm({...investorForm, inquiryType: 'pitch_deck'});
+                document.getElementById('investor-form')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl font-bold text-lg text-white hover:opacity-90 transition-all shadow-lg"
+            >
+              Get Pitch Deck →
+            </button>
+            <button
+              onClick={onLaunchApp}
+              className="px-8 py-4 border-2 border-cyan-500/50 rounded-xl font-bold text-lg text-cyan-400 hover:bg-cyan-500/10 transition-all"
+            >
+              Try Live Demo
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Key Metrics */}
+      <section className="py-16 bg-slate-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { value: '$150B', label: 'Market by 2030', icon: '📈' },
+              { value: '$500K', label: 'Raising', icon: '💰' },
+              { value: '$3M', label: 'Valuation Cap', icon: '🎯' },
+              { value: '50-100x', label: 'Target Return', icon: '🚀' },
+            ].map((stat, i) => (
+              <div key={i} className="bg-slate-800/50 rounded-2xl p-6 text-center border border-slate-700">
+                <div className="text-3xl mb-2">{stat.icon}</div>
+                <div className="text-2xl sm:text-3xl font-black text-cyan-400">{stat.value}</div>
+                <div className="text-slate-400 text-sm">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Invest */}
+      <section className="py-16 bg-slate-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <h2 className="text-3xl font-black text-white text-center mb-12">Why Invest in Digital Mate?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: '🎭',
+                title: 'Proprietary Technology',
+                desc: 'Patent-pending Trap Mode™ and Behavioral Guard™ create an unbreachable moat. No competitor has anything like it.'
+              },
+              {
+                icon: '📱',
+                title: 'Massive Market',
+                desc: '6.8 billion smartphone users. $150B security market. 60% have had their phone snooped. Everyone needs this.'
+              },
+              {
+                icon: '📊',
+                title: 'Strong Unit Economics',
+                desc: 'LTV:CAC ratio of 16-22x. 85% gross margins. Clear path to $135M ARR by Year 5.'
+              },
+              {
+                icon: '🛡️',
+                title: 'First Mover Advantage',
+                desc: 'No one else is doing deception-based security. By the time competitors catch up, we\'ll own the market.'
+              },
+              {
+                icon: '🎯',
+                title: 'Clear Exit Path',
+                desc: 'Multiple acquisition targets: Apple, Google, Samsung, Norton, McAfee. $500M-$1B exit potential.'
+              },
+              {
+                icon: '👨‍💼',
+                title: 'Passionate Founder',
+                desc: 'Cain built this because he needed it. That authenticity drives product decisions and user trust.'
+              },
+            ].map((item, i) => (
+              <div key={i} className="bg-slate-900/50 rounded-2xl p-6 border border-slate-700">
+                <div className="text-4xl mb-4">{item.icon}</div>
+                <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                <p className="text-slate-400">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Financial Projections */}
+      <section className="py-16 bg-slate-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <h2 className="text-3xl font-black text-white text-center mb-12">Financial Projections</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-slate-700">
+                  <th className="py-4 px-4 text-slate-400 font-medium">Metric</th>
+                  <th className="py-4 px-4 text-slate-400 font-medium">Year 1</th>
+                  <th className="py-4 px-4 text-slate-400 font-medium">Year 2</th>
+                  <th className="py-4 px-4 text-slate-400 font-medium">Year 3</th>
+                  <th className="py-4 px-4 text-slate-400 font-medium">Year 5</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { metric: 'Users', y1: '100K', y2: '500K', y3: '2M', y5: '15M' },
+                  { metric: 'Revenue', y1: '$300K', y2: '$2.4M', y3: '$12M', y5: '$135M' },
+                  { metric: 'Gross Margin', y1: '80%', y2: '82%', y3: '85%', y5: '85%' },
+                  { metric: 'Net Margin', y1: '33%', y2: '38%', y3: '50%', y5: '56%' },
+                ].map((row, i) => (
+                  <tr key={i} className="border-b border-slate-800">
+                    <td className="py-4 px-4 text-white font-semibold">{row.metric}</td>
+                    <td className="py-4 px-4 text-slate-300">{row.y1}</td>
+                    <td className="py-4 px-4 text-slate-300">{row.y2}</td>
+                    <td className="py-4 px-4 text-cyan-400 font-semibold">{row.y3}</td>
+                    <td className="py-4 px-4 text-green-400 font-bold">{row.y5}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* Investor Request Form */}
+      <section id="investor-form" className="py-16 bg-slate-800">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+          <h2 className="text-3xl font-black text-white text-center mb-4">Request Information</h2>
+          <p className="text-slate-400 text-center mb-8">Select what you'd like to receive and we'll send it immediately.</p>
+          
+          {investorSubmitted && autoReplyContent ? (
+            <div className="bg-slate-900 rounded-2xl p-8 border border-cyan-500/30">
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">✅</div>
+                <h3 className="text-2xl font-bold text-white">Information Sent!</h3>
+                <p className="text-slate-400 mt-2">Check your email for: {autoReplyContent.subject}</p>
+              </div>
+              <div className="bg-slate-800 rounded-xl p-6 mt-6">
+                <h4 className="text-cyan-400 font-bold mb-3">Preview:</h4>
+                <pre className="text-slate-300 text-sm whitespace-pre-wrap font-sans">{autoReplyContent.content}</pre>
+              </div>
+              <button 
+                onClick={() => { setInvestorSubmitted(false); setAutoReplyContent(null); }}
+                className="mt-6 w-full py-3 bg-slate-700 rounded-xl text-white font-semibold hover:bg-slate-600 transition-all"
+              >
+                Request More Information
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleInvestorSubmit} className="space-y-6">
+              {/* Inquiry Type Selection */}
+              <div>
+                <label className="block text-slate-400 text-sm mb-3">What would you like to receive?</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {investorInquiryTypes.map((type) => (
+                    <button
+                      key={type.id}
+                      type="button"
+                      onClick={() => setInvestorForm({...investorForm, inquiryType: type.id})}
+                      className={`p-4 rounded-xl border-2 transition-all text-left ${
+                        investorForm.inquiryType === type.id
+                          ? 'border-cyan-500 bg-cyan-500/10'
+                          : 'border-slate-700 hover:border-slate-600'
+                      }`}
+                    >
+                      <span className="text-2xl">{type.icon}</span>
+                      <div className={`text-sm font-medium mt-2 ${
+                        investorForm.inquiryType === type.id ? 'text-cyan-400' : 'text-slate-300'
+                      }`}>
+                        {type.label}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-400 text-sm mb-2">Your Name *</label>
+                  <input
+                    type="text"
+                    value={investorForm.name}
+                    onChange={(e) => setInvestorForm({...investorForm, name: e.target.value})}
+                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-cyan-500 focus:outline-none"
+                    placeholder="John Smith"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-400 text-sm mb-2">Email *</label>
+                  <input
+                    type="email"
+                    value={investorForm.email}
+                    onChange={(e) => setInvestorForm({...investorForm, email: e.target.value})}
+                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-cyan-500 focus:outline-none"
+                    placeholder="john@vc.com"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-400 text-sm mb-2">Firm / Company</label>
+                <input
+                  type="text"
+                  value={investorForm.firm}
+                  onChange={(e) => setInvestorForm({...investorForm, firm: e.target.value})}
+                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-cyan-500 focus:outline-none"
+                  placeholder="Sequoia Capital"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 text-sm mb-2">Additional Questions</label>
+                <textarea
+                  value={investorForm.message}
+                  onChange={(e) => setInvestorForm({...investorForm, message: e.target.value})}
+                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-cyan-500 focus:outline-none h-24 resize-none"
+                  placeholder="Any specific questions or areas of interest?"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!investorForm.inquiryType || !investorForm.name || !investorForm.email}
+                className="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl text-white font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Send Me the Information →
+              </button>
+
+              <p className="text-center text-slate-500 text-sm">
+                Response time: Immediate auto-reply + personal follow-up within 24 hours
+              </p>
+            </form>
+          )}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-16 bg-gradient-to-r from-cyan-900/50 to-purple-900/50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-3xl font-black text-white mb-4">Ready to Protect Billions?</h2>
+          <p className="text-slate-300 mb-8">Join us in building the future of personal digital security.</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => window.open('tel:0457374662')}
+              className="px-8 py-4 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-100 transition-all"
+            >
+              📞 Call Now: 0457374662
+            </button>
+            <button
+              onClick={onLaunchApp}
+              className="px-8 py-4 border-2 border-white/50 rounded-xl font-bold text-white hover:bg-white/10 transition-all"
+            >
+              Try the Demo
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+
   const ContactPage = () => (
     <div className="pt-20">
       <section className="py-20 bg-slate-900 min-h-screen">
@@ -586,13 +1092,16 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
                 </div>
               </div>
 
-              <div className="mt-12 p-6 bg-cyan-900/20 rounded-xl border border-cyan-500/30">
-                <h3 className="text-lg font-bold text-cyan-400 mb-2">For Investors</h3>
+              <button
+                onClick={() => setCurrentPage('investors')}
+                className="mt-12 w-full p-6 bg-gradient-to-r from-cyan-900/40 to-purple-900/40 rounded-xl border border-cyan-500/30 hover:border-cyan-500/50 transition-all text-left"
+              >
+                <h3 className="text-lg font-bold text-cyan-400 mb-2">🚀 For Investors</h3>
                 <p className="text-slate-300 text-sm">
-                  Interested in our seed round? We'd love to show you a demo of Trap Mode in action. 
-                  Get in touch and let's talk.
+                  Interested in our seed round? Get instant access to pitch deck, financials, and schedule a demo.
                 </p>
-              </div>
+                <span className="text-cyan-400 text-sm font-semibold mt-2 inline-block">View Investor Page →</span>
+              </button>
             </div>
 
             {/* Contact Form */}
@@ -602,7 +1111,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
                 <div className="bg-green-500/20 border border-green-500/50 rounded-xl p-8 text-center">
                   <div className="text-4xl mb-4">✅</div>
                   <div className="text-green-400 font-bold text-xl">Message Sent!</div>
-                  <p className="text-slate-400 mt-2">We'll get back to you soon.</p>
+                  <p className="text-slate-400 mt-2">We'll get back to you within 24 hours.</p>
                 </div>
               ) : (
                 <form onSubmit={handleContactSubmit} className="space-y-4">
@@ -660,6 +1169,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
       case 'pricing': return <PricingPage />;
       case 'about': return <AboutPage />;
       case 'contact': return <ContactPage />;
+      case 'investors': return <InvestorsPage />;
       default: return <HomePage />;
     }
   };
