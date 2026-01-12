@@ -839,7 +839,7 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
   // Phone apps - each one demos an Aegis feature when tapped!
   const apps = [
     { name: 'Messages', icon: '💬', color: 'bg-green-500', badge: 3, action: 'messages', aegisFeature: 'Spam blocked' },
-    { name: 'Phone', icon: '📞', color: 'bg-green-600', action: 'phone', aegisFeature: 'Scam detected' },
+    { name: 'Phone', icon: '📞', color: 'bg-green-600', action: 'phone_app', aegisFeature: '🔐 Vault' },
     { name: 'Photos', icon: '🖼️', color: 'bg-gradient-to-br from-pink-500 to-yellow-500', action: 'photos', aegisFeature: '2 hidden' },
     { name: 'Banking', icon: '🏦', color: 'bg-emerald-600', action: 'finance', aegisFeature: 'Secure', isAegis: true },
     { name: 'Health', icon: '💊', color: 'bg-rose-500', action: 'health', aegisFeature: '2 reminders', isAegis: true },
@@ -848,7 +848,7 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
     { name: 'Lost Phone', icon: '📍', color: 'bg-gradient-to-br from-yellow-500 to-orange-500', action: 'lost_phone', aegisFeature: 'Ready', isAegis: true },
     { name: 'Calendar', icon: '📅', color: 'bg-white text-red-500', action: 'calendar', aegisFeature: 'Optimized' },
     { name: 'Mail', icon: '✉️', color: 'bg-blue-400', badge: 5, action: 'mail', aegisFeature: '7 filtered' },
-    { name: 'Calculator', icon: '🔢', color: 'bg-gray-700', action: 'calculator', aegisFeature: '🔐 Vault' },
+    { name: 'Notes', icon: '📝', color: 'bg-yellow-400', action: 'notes', aegisFeature: 'Encrypted' },
     { name: 'Aegis', icon: '🛡️', color: 'bg-gradient-to-br from-cyan-500 to-blue-600', action: 'chat', isAegis: true, aegisFeature: 'Chat' },
   ];
 
