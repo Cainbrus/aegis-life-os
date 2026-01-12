@@ -605,6 +605,9 @@ const AegisTrapSystem = () => {
   const [showEmergencySetup, setShowEmergencySetup] = useState(false);
   const [showLostPhoneSetup, setShowLostPhoneSetup] = useState(false);
   
+  // PHONE DIALER - Secret dial-to-unlock vault
+  const [showPhoneDialer, setShowPhoneDialer] = useState(false);
+  
   // PROTECTION & DEMO FEATURES
   const [showProtectionSummary, setShowProtectionSummary] = useState(false);
   const [protectionData, setProtectionData] = useState(null);
