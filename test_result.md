@@ -388,7 +388,7 @@ frontend:
     implemented: true
     working: false
     file: "PhoneDialer.js, AegisInvisibleMode.js, App.js"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
     needs_retesting: true
     status_history:
