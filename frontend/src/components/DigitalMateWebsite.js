@@ -45,6 +45,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
             <NavLink page="home">Home</NavLink>
             <NavLink page="features">Features</NavLink>
             <NavLink page="pricing">Pricing</NavLink>
+            <NavLink page="investors">Investors</NavLink>
             <NavLink page="about">About</NavLink>
             <NavLink page="contact">Contact</NavLink>
           </nav>
