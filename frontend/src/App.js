@@ -21,6 +21,7 @@ import StoryExperienceMode, { StoryModeButton } from './components/StoryExperien
 import InvestorDemoGuide, { DemoGuideLauncher } from './components/InvestorDemoGuide';
 import SetupWizard from './components/SetupWizard';
 import DigitalMateWebsite from './components/DigitalMateWebsite';
+import PhoneDialer from './components/PhoneDialer';
 import smartProtection from './services/SmartProtectionService';
 import { playUnlock, playLock, playError, playNotification, playSuccess, playButtonClick } from './services/SoundService';
 import './App.css';
