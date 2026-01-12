@@ -1283,12 +1283,8 @@ const AegisTrapSystem = () => {
           });
           break;
         case 'phone_app':
-          triggerNotification({
-            type: 'security',
-            icon: '📞',
-            title: 'Call Protection Active',
-            message: '2 scam calls blocked this week. Unknown callers are screened automatically.',
-          });
+          // Open the Phone Dialer (secret vault access)
+          setShowPhoneDialer(true);
           break;
         case 'notes':
           triggerNotification({
@@ -1306,6 +1302,18 @@ const AegisTrapSystem = () => {
     // Show Living City Hub (proactive AI briefing cards) or normal phone view
     return (
       <>
+        {/* Phone Dialer - Secret Vault Access */}
+        {showPhoneDialer && (
+          <PhoneDialer
+            onClose={() => setShowPhoneDialer(false)}
+            onVaultUnlock={() => {
+              setShowPhoneDialer(false);
+              setCurrentApp('calculator'); // Opens the vault
+            }}
+            secretCode="8675309"
+          />
+        )}
+
         {/* View Mode Toggle Button */}
         <button
           onClick={() => setShowLivingCityHub(!showLivingCityHub)}
@@ -1320,7 +1328,7 @@ const AegisTrapSystem = () => {
           <ContextualHub
             onOpenApp={handleAppOpen}
             onOpenMate={() => setShowChat(true)}
-            onOpenVault={() => setCurrentApp('calculator')}
+            onOpenVault={() => setShowPhoneDialer(true)}
             onOpenSettings={() => setShowPushSettings(true)}
             trapActive={trapActive}
             userData={{ name: 'Cain' }}
@@ -1332,7 +1340,7 @@ const AegisTrapSystem = () => {
         ) : (
           // INVISIBLE HOME SCREEN - Normal phone look
           <InvisibleHomeScreen
-            onOpenCalculator={() => setCurrentApp('calculator')}
+            onOpenCalculator={() => setShowPhoneDialer(true)}
             onOpenCalendar={() => setShowCalendar(true)}
             onOpenChat={() => setShowChat(true)}
             onOpenSettings={() => setShowPushSettings(true)}
