@@ -249,11 +249,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Interactive Screens (Financial, Family, Health Dashboards)"
-    - "Sound Effects Integration"
-    - "Enhanced Visual Polish"
-  stuck_tasks: []
-  test_all: true
+    - "Dial-to-Unlock Vault Feature (Phone Dialer Secret Access)"
+  stuck_tasks:
+    - "Dial-to-Unlock Vault Feature (Phone Dialer Secret Access)"
+  test_all: false
   test_priority: "high_first"
 
 frontend:
