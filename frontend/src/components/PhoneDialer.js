@@ -174,7 +174,11 @@ const PhoneDialer = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-slate-900 z-50 flex flex-col" onClick={(e) => e.stopPropagation()}>
+    <div 
+      className="fixed inset-0 bg-slate-900 z-[100] flex flex-col" 
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
         <button onClick={onClose} className="text-cyan-400 font-semibold">
