@@ -321,6 +321,12 @@ const ContextualHub = ({
   const [contextMode, setContextMode] = useState('morning');
   const [activeTab, setActiveTab] = useState('home');
   const feedRef = useRef(null);
+  
+  // Preview modals state
+  const [showConflictPreview, setShowConflictPreview] = useState(false);
+  const [showWellnessPreview, setShowWellnessPreview] = useState(false);
+  const [showPrivacyPreview, setShowPrivacyPreview] = useState(false);
+  const [showSecurityPreview, setShowSecurityPreview] = useState(false);
 
   // Update time every minute
   useEffect(() => {
