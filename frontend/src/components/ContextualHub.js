@@ -6,6 +6,13 @@ import {
   SecurityStatusBar,
   WorkerAIIndicator
 } from './LivingCityComponents';
+import { 
+  IntruderPhotoPreview,
+  ConflictPreview,
+  WellnessPreview,
+  PrivacyPreview,
+  SecurityPreview
+} from './InteractivePreviews';
 import { playButtonClick, playNotification, playSuccess } from '../services/SoundService';
 
 // =============================================
