@@ -543,11 +543,22 @@ const ContextualHub = ({
         onOpenApp?.('family');
         break;
       case 'view_security':
-        onOpenApp?.('security');
+        // Open security preview instead of just notification
+        setShowSecurityPreview(true);
         break;
       case 'resolve_conflict':
-        // Could open a conflict resolution modal
-        playNotification('info');
+        // Open conflict resolution preview
+        setShowConflictPreview(true);
+        break;
+      case 'snooze_wellness':
+      case 'view_wellness':
+        // Open wellness preview
+        setShowWellnessPreview(true);
+        break;
+      case 'setup_rule':
+      case 'view_privacy':
+        // Open privacy preview
+        setShowPrivacyPreview(true);
         break;
       default:
         break;
