@@ -626,6 +626,13 @@ const AegisTrapSystem = () => {
   const [showStoryMode, setShowStoryMode] = useState(false);
   const [showInvestorGuide, setShowInvestorGuide] = useState(false);
   const [showWebsite, setShowWebsite] = useState(false);
+  
+  // Interactive Preview States - for "View" buttons to show actual content
+  const [showIntruderPreview, setShowIntruderPreview] = useState(false);
+  const [showConflictPreview, setShowConflictPreview] = useState(false);
+  const [showWellnessPreview, setShowWellnessPreview] = useState(false);
+  const [showPrivacyPreview, setShowPrivacyPreview] = useState(false);
+  const [showSecurityPreview, setShowSecurityPreview] = useState(false);
 
   // Determine if trap mode is active
   const trapActive = authStatus?.security_state === "STATE_PHONE_UNLOCKED" && authStatus?.trap_mode;
