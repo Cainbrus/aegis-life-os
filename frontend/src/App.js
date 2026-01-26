@@ -792,7 +792,29 @@ const AegisTrapSystem = () => {
         }, 3000);
         break;
       case 'view_photo':
-        setShowIntruderPhotos(true);
+      case 'View Photo':
+        // Show the enhanced intruder photo preview
+        setShowIntruderPreview(true);
+        break;
+      case 'view_security':
+      case 'View Details':
+        // Show security dashboard preview
+        setShowSecurityPreview(true);
+        break;
+      case 'resolve_conflict':
+      case 'View Resolution Options':
+        // Show conflict resolution preview
+        setShowConflictPreview(true);
+        break;
+      case 'view_wellness':
+      case 'Snooze Notifications':
+        // Show wellness preview
+        setShowWellnessPreview(true);
+        break;
+      case 'setup_rule':
+      case 'Set Up Rule':
+        // Show privacy preview
+        setShowPrivacyPreview(true);
         break;
       case 'Show Breakdown':
         setShowFinanceDashboard(true);
