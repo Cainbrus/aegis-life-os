@@ -1427,7 +1427,7 @@ const AegisTrapSystem = () => {
               placeholder: true
             }]}
             onDismiss={() => setShowIntruderAlert(false)}
-            onViewAll={() => setShowIntruderPhotos(true)}
+            onViewAll={() => setShowIntruderPreview(true)}
           />
         )}
         
