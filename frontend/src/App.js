@@ -735,13 +735,6 @@ const AegisTrapSystem = () => {
     // Handle special actions that open screens
     switch(actionId) {
       case 'view':
-      case 'View Summary':
-      case 'view_summary':
-        if (currentNotification?.title?.includes('Meeting') || currentNotification?.title?.includes('Summary')) {
-          setShowMeetingSummary(true);
-        }
-        break;
-      case 'view':
         // Check what type of "view" action based on notification context
         if (currentNotification?.title?.includes('Intruder') || currentNotification?.title?.includes('Photo Captured')) {
           setShowIntruderPreview(true);
@@ -750,6 +743,10 @@ const AegisTrapSystem = () => {
         } else if (currentNotification?.type === 'security') {
           setShowSecurityPreview(true);
         }
+        break;
+      case 'View Summary':
+      case 'view_summary':
+        setShowMeetingSummary(true);
         break;
       case 'tasks':
       case 'See Tasks':
