@@ -1186,6 +1186,37 @@ const AegisTrapSystem = () => {
   // Access Aegis via Calculator secret code
   // =============================================
   if (showInvisibleMode && isAuthenticated) {
+    // Interactive Preview Modals - Always rendered so they show when triggered
+    const PreviewModals = () => (
+      <>
+        <IntruderPhotoPreview 
+          isOpen={showIntruderPreview} 
+          onClose={() => setShowIntruderPreview(false)} 
+        />
+        <ConflictPreview 
+          isOpen={showConflictPreview} 
+          onClose={() => setShowConflictPreview(false)} 
+        />
+        <WellnessPreview 
+          isOpen={showWellnessPreview} 
+          onClose={() => setShowWellnessPreview(false)} 
+        />
+        <PrivacyPreview 
+          isOpen={showPrivacyPreview} 
+          onClose={() => setShowPrivacyPreview(false)} 
+        />
+        <SecurityPreview 
+          isOpen={showSecurityPreview} 
+          onClose={() => setShowSecurityPreview(false)} 
+        />
+      </>
+    );
+
+    // Check if any preview is open - if so, render it with the current screen
+    if (showIntruderPreview || showConflictPreview || showWellnessPreview || showPrivacyPreview || showSecurityPreview) {
+      return <PreviewModals />;
+    }
+
     // Show Smart Email Inbox
     if (showEmailInbox) {
       return <SmartEmailInbox onClose={() => setShowEmailInbox(false)} />;
