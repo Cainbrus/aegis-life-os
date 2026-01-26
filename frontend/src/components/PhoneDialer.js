@@ -99,14 +99,14 @@ const PhoneDialer = ({
     { name: 'Dentist', number: '08 9123 4567', time: '2 days ago', type: 'outgoing' },
   ];
 
-  // Vault unlock transition
+  // Invisible Vault unlock transition
   if (showVaultTransition) {
     return (
-      <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black z-[100] flex items-center justify-center">
         <div className="text-center animate-pulse">
-          <div className="text-6xl mb-4">🔓</div>
-          <div className="text-cyan-400 text-2xl font-bold">ACCESS GRANTED</div>
-          <div className="text-slate-400 mt-2">Opening Secure Vault...</div>
+          <div className="text-6xl mb-4">👻</div>
+          <div className="text-cyan-400 text-2xl font-bold">INVISIBLE VAULT</div>
+          <div className="text-slate-400 mt-2">Access Granted...</div>
           <div className="mt-4 w-48 h-1 bg-slate-800 rounded-full overflow-hidden mx-auto">
             <div className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 animate-[loading_1.5s_ease-in-out]" 
                  style={{ animation: 'loading 1.5s ease-out forwards' }} />
