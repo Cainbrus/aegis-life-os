@@ -66,7 +66,7 @@ It started with a simple frustration. Cain Brunjes looked at his smartphone - th
 Then came the breakthrough: "What happens when it spots an intruder?" Instead of just blocking them (which alerts them that something's protected), Digital Mate plays a trick. It deploys **Decoy Mode** - a fake, empty version of your phone. The snooper gets in, sees nothing sensitive, and gives up. Meanwhile, the phone is silently capturing their photo and logging everything they do.
 
 **The Hidden Vault:**
-"What about our most private files?" The 'secure folders' other apps have are just another icon on the screen - obvious targets. Digital Mate created the **Phantom Folder** - an invisible vault that doesn't exist until you dial a secret number on your phone. It's a filing cabinet no one knows you own.
+"What about our most private files?" The 'secure folders' other apps have are just another icon on the screen - obvious targets. Digital Mate created the **Invisible Vault** - a secret storage space that doesn't exist until you dial a special number on your phone. There's no app icon, no folder, nothing to find. You just open your regular Phone app, dial your secret code, and press call. The vault appears. It's a filing cabinet that no one knows you own because it's completely invisible.
 
 **The Bigger Vision:**
 The intelligence designed for security was too powerful to just be a guard. "Why build a world-class security team and have them just stand at the door? They could be running the whole building." This realization birthed **AEGIS** - the full Life OS vision that will eventually run on every device worldwide.
