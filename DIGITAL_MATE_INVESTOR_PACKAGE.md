@@ -163,7 +163,7 @@ The intelligence designed for security was too powerful to just be a guard. "Why
 
 **Features:**
 - ✅ Trap Mode with photo capture
-- ✅ Dial-to-Unlock Vault  
+- ✅ Invisible Vault (dial secret code on phone)
 - ✅ Duress pattern
 - ✅ Basic behavioral analysis
 - ✅ Evidence logging
