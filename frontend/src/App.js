@@ -1442,19 +1442,41 @@ const AegisTrapSystem = () => {
             }}
             onViewDetails={(type) => {
               if (type === 'intruder') {
-                setShowIntruderPhotos(true);
+                setShowIntruderPreview(true);
               }
             }}
           />
         )}
         
-        {/* Intruder Photos Viewer */}
+        {/* Intruder Photos Viewer - Enhanced Preview */}
         {showIntruderPhotos && (
           <IntruderPhotosViewer
             photos={intruderCaptures}
             onClose={() => setShowIntruderPhotos(false)}
           />
         )}
+        
+        {/* Interactive Preview Modals - Show actual content when "View" is clicked */}
+        <IntruderPhotoPreview 
+          isOpen={showIntruderPreview} 
+          onClose={() => setShowIntruderPreview(false)} 
+        />
+        <ConflictPreview 
+          isOpen={showConflictPreview} 
+          onClose={() => setShowConflictPreview(false)} 
+        />
+        <WellnessPreview 
+          isOpen={showWellnessPreview} 
+          onClose={() => setShowWellnessPreview(false)} 
+        />
+        <PrivacyPreview 
+          isOpen={showPrivacyPreview} 
+          onClose={() => setShowPrivacyPreview(false)} 
+        />
+        <SecurityPreview 
+          isOpen={showSecurityPreview} 
+          onClose={() => setShowSecurityPreview(false)} 
+        />
       </>
     );
   }
