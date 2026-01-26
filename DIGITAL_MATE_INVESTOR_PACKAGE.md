@@ -84,7 +84,7 @@ The intelligence designed for security was too powerful to just be a guard. "Why
 |---------|--------|--------------|
 | Intruder Detection | Lock them out | Let them in to FAKE data |
 | Evidence Gathering | None | Photo, location, activity log |
-| Hidden Storage | Visible "secure folder" | Invisible vault via phone dialer |
+| Hidden Storage | Visible "secure folder" | Invisible Vault - dial secret code on phone |
 | Duress Protection | None | Special pattern shows fake data |
 | Behavioral Analysis | Basic | Continuous learning profile |
 | Proactive Intelligence | None | AI that anticipates needs |
@@ -92,8 +92,8 @@ The intelligence designed for security was too powerful to just be a guard. "Why
 ### Proprietary Technology:
 1. **Trap Mode™** - Patent pending deception-based security
 2. **Behavioral Guard™** - Continuous biometric profiling
-3. **HPI Architecture** - Hierarchical Proactive Intelligence
-4. **Phantom Storage** - Invisible vault system
+3. **Invisible Vault™** - Secret storage via phone dialer
+4. **HPI Architecture** - Hierarchical Proactive Intelligence
 
 ---
 
