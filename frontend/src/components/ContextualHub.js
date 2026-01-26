@@ -697,6 +697,24 @@ const ContextualHub = ({
           onTabChange={handleTabChange}
         />
       </div>
+      
+      {/* Interactive Preview Modals */}
+      <ConflictPreview 
+        isOpen={showConflictPreview} 
+        onClose={() => setShowConflictPreview(false)} 
+      />
+      <WellnessPreview 
+        isOpen={showWellnessPreview} 
+        onClose={() => setShowWellnessPreview(false)} 
+      />
+      <PrivacyPreview 
+        isOpen={showPrivacyPreview} 
+        onClose={() => setShowPrivacyPreview(false)} 
+      />
+      <SecurityPreview 
+        isOpen={showSecurityPreview} 
+        onClose={() => setShowSecurityPreview(false)} 
+      />
     </LivingCityBackground>
   );
 };
