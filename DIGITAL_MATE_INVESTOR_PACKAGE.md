@@ -32,7 +32,7 @@ Every smartphone user faces the same problem: **their entire life is one passwor
 ### Phase 1: "The Bodyguard" (NOW - MVP)
 A security app that protects your phone with revolutionary features no one else has:
 - **Trap Mode™** - Decoy data + intruder photo capture
-- **Dial-to-Unlock Vault** - Hidden storage accessed via phone dialer
+- **Invisible Vault™** - Hidden storage accessed by dialing a secret number on your phone
 - **Behavioral Guard™** - Learns how YOU use your phone, detects imposters
 - **Duress Pattern** - Special unlock code that shows fake data when forced
 
