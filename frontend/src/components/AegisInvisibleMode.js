@@ -839,7 +839,7 @@ export const InvisibleHomeScreen = ({ onOpenCalculator, onOpenCalendar, onOpenAp
   // Phone apps - each one demos an Aegis feature when tapped!
   const apps = [
     { name: 'Messages', icon: '💬', color: 'bg-green-500', badge: 3, action: 'messages', aegisFeature: 'Spam blocked' },
-    { name: 'Phone', icon: '📞', color: 'bg-green-600', action: 'phone_app', aegisFeature: '🔐 Vault' },
+    { name: 'Phone', icon: '📞', color: 'bg-green-600', action: 'phone_app', aegisFeature: 'Invisible Vault' },
     { name: 'Photos', icon: '🖼️', color: 'bg-gradient-to-br from-pink-500 to-yellow-500', action: 'photos', aegisFeature: '2 hidden' },
     { name: 'Banking', icon: '🏦', color: 'bg-emerald-600', action: 'finance', aegisFeature: 'Secure', isAegis: true },
     { name: 'Health', icon: '💊', color: 'bg-rose-500', action: 'health', aegisFeature: '2 reminders', isAegis: true },
