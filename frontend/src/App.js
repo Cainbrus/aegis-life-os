@@ -22,6 +22,13 @@ import InvestorDemoGuide, { DemoGuideLauncher } from './components/InvestorDemoG
 import SetupWizard from './components/SetupWizard';
 import DigitalMateWebsite from './components/DigitalMateWebsite';
 import PhoneDialer from './components/PhoneDialer';
+import { 
+  IntruderPhotoPreview, 
+  ConflictPreview, 
+  WellnessPreview, 
+  PrivacyPreview, 
+  SecurityPreview 
+} from './components/InteractivePreviews';
 import smartProtection from './services/SmartProtectionService';
 import { playUnlock, playLock, playError, playNotification, playSuccess, playButtonClick } from './services/SoundService';
 import './App.css';
