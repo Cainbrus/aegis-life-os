@@ -328,7 +328,7 @@ const PhoneDialer = ({
 
       {/* Hint for demo - subtle */}
       <div className="absolute bottom-2 left-0 right-0 text-center">
-        <p className="text-slate-700 text-[10px]">Demo: Try dialing a special number...</p>
+        <p className="text-slate-700 text-[10px]">Invisible Vault: Dial your secret code...</p>
       </div>
     </div>
   );
