@@ -741,6 +741,16 @@ const AegisTrapSystem = () => {
           setShowMeetingSummary(true);
         }
         break;
+      case 'view':
+        // Check what type of "view" action based on notification context
+        if (currentNotification?.title?.includes('Intruder') || currentNotification?.title?.includes('Photo Captured')) {
+          setShowIntruderPreview(true);
+        } else if (currentNotification?.title?.includes('Meeting') || currentNotification?.title?.includes('Summary')) {
+          setShowMeetingSummary(true);
+        } else if (currentNotification?.type === 'security') {
+          setShowSecurityPreview(true);
+        }
+        break;
       case 'tasks':
       case 'See Tasks':
         setShowMeetingSummary(true);
