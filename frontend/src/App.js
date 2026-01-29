@@ -634,6 +634,17 @@ const AegisTrapSystem = () => {
   const [showWellnessPreview, setShowWellnessPreview] = useState(false);
   const [showPrivacyPreview, setShowPrivacyPreview] = useState(false);
   const [showSecurityPreview, setShowSecurityPreview] = useState(false);
+  
+  // DEMO MODE TOGGLE - Switch between investor demo and simple user app
+  const [isDemoMode, setIsDemoMode] = useState(() => {
+    const saved = localStorage.getItem('digitalmate_demo_mode');
+    return saved === null ? true : saved === 'true'; // Default to demo mode
+  });
+  
+  // Save demo mode preference
+  useEffect(() => {
+    localStorage.setItem('digitalmate_demo_mode', isDemoMode.toString());
+  }, [isDemoMode]);
 
   // Determine if trap mode is active
   const trapActive = authStatus?.security_state === "STATE_PHONE_UNLOCKED" && authStatus?.trap_mode;
