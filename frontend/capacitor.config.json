@@ -1,0 +1,8 @@
+{
+  "appId": "com.digitalmate.app",
+  "appName": "Digital Mate",
+  "webDir": "build",
+  "server": {
+    "androidScheme": "https"
+  }
+}
