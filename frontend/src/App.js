@@ -1385,6 +1385,50 @@ const AegisTrapSystem = () => {
       }
     };
 
+    // USER MODE - Simple, clean security app (for real users)
+    if (!isDemoMode) {
+      return (
+        <>
+          {/* Phone Dialer - Invisible Vault Access */}
+          {showPhoneDialer && (
+            <PhoneDialer
+              onClose={() => setShowPhoneDialer(false)}
+              onVaultUnlock={() => {
+                setShowPhoneDialer(false);
+                setCurrentApp('calculator');
+              }}
+              secretCode="8675309"
+            />
+          )}
+          
+          {/* Interactive Previews */}
+          <IntruderPhotoPreview 
+            isOpen={showIntruderPreview} 
+            onClose={() => setShowIntruderPreview(false)} 
+          />
+          
+          {/* User Mode Home Screen */}
+          <UserModeHome
+            onOpenPhone={() => setShowPhoneDialer(true)}
+            onOpenSettings={() => setShowPushSettings(true)}
+            onOpenVault={() => setShowPhoneDialer(true)}
+            protectionStats={{ threatsBlocked: 47, intrudersDetected: trapActive ? 1 : 0 }}
+            trapActive={trapActive}
+            onViewIntruderEvidence={() => setShowIntruderPreview(true)}
+          />
+          
+          {/* Demo Mode Toggle - Bottom corner */}
+          <button
+            onClick={() => setIsDemoMode(true)}
+            className="fixed bottom-4 right-4 z-50 px-3 py-2 bg-slate-800/80 backdrop-blur-lg text-slate-400 text-xs rounded-lg border border-slate-700 hover:text-white transition-all"
+          >
+            🎬 Demo Mode
+          </button>
+        </>
+      );
+    }
+
+    // DEMO MODE - Full investor experience
     // Show Living City Hub (proactive AI briefing cards) or normal phone view
     return (
       <>
@@ -1400,14 +1444,26 @@ const AegisTrapSystem = () => {
           />
         )}
 
-        {/* View Mode Toggle Button */}
-        <button
-          onClick={() => setShowLivingCityHub(!showLivingCityHub)}
-          className="fixed top-4 left-4 z-50 px-3 py-2 bg-slate-800/80 backdrop-blur-lg text-white text-xs font-bold rounded-lg shadow-lg hover:bg-slate-700/80 transition-all border border-slate-700 flex items-center space-x-2"
-        >
-          <span>{showLivingCityHub ? '📱' : '🏙️'}</span>
-          <span>{showLivingCityHub ? 'Phone View' : 'Hub View'}</span>
-        </button>
+        {/* Mode Toggle Buttons */}
+        <div className="fixed top-4 left-4 z-50 flex space-x-2">
+          {/* View Mode Toggle */}
+          <button
+            onClick={() => setShowLivingCityHub(!showLivingCityHub)}
+            className="px-3 py-2 bg-slate-800/80 backdrop-blur-lg text-white text-xs font-bold rounded-lg shadow-lg hover:bg-slate-700/80 transition-all border border-slate-700 flex items-center space-x-2"
+          >
+            <span>{showLivingCityHub ? '📱' : '🏙️'}</span>
+            <span>{showLivingCityHub ? 'Phone View' : 'Hub View'}</span>
+          </button>
+          
+          {/* User Mode Toggle */}
+          <button
+            onClick={() => setIsDemoMode(false)}
+            className="px-3 py-2 bg-cyan-900/50 backdrop-blur-lg text-cyan-400 text-xs font-bold rounded-lg shadow-lg hover:bg-cyan-800/50 transition-all border border-cyan-700 flex items-center space-x-2"
+          >
+            <span>👤</span>
+            <span>User Mode</span>
+          </button>
+        </div>
 
         {showLivingCityHub ? (
           // LIVING CITY HUB - Proactive AI briefing cards
