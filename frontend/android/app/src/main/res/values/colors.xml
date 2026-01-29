@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Digital Mate Brand Colors -->
+    <color name="colorPrimary">#06b6d4</color>
+    <color name="colorPrimaryDark">#0f172a</color>
+    <color name="colorAccent">#8b5cf6</color>
+    
+    <!-- Background colors -->
+    <color name="splash_background">#0f172a</color>
+    <color name="app_background">#1e293b</color>
+    
+    <!-- Text colors -->
+    <color name="text_primary">#ffffff</color>
+    <color name="text_secondary">#94a3b8</color>
+</resources>
