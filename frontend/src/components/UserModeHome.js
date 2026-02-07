@@ -54,7 +54,12 @@ const UserModeHome = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-8 pt-2">
         <div>
-          <h1 className="text-2xl font-black text-white">Digital Mate</h1>
+          <h1 
+            onClick={handleSecretTap}
+            className="text-2xl font-black text-white cursor-default select-none"
+          >
+            Digital Mate
+          </h1>
           <p className="text-slate-400 text-sm">Your Phone's Bodyguard</p>
         </div>
         <div className="text-right">
@@ -67,6 +72,13 @@ const UserModeHome = ({
           </button>
         </div>
       </div>
+
+      {/* Secret Developer Mode Hint */}
+      {showSecretHint && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 bg-slate-700/90 rounded-lg text-sm text-slate-300 animate-pulse">
+          {7 - secretTapCount} more taps to unlock developer mode...
+        </div>
+      )}
 
       {/* Protection Status Card */}
       <div className={`rounded-3xl p-6 mb-6 ${
