@@ -21,7 +21,7 @@ export const AppModeProvider = ({ children }) => {
   // Check localStorage for saved mode
   const [isDemoMode, setIsDemoMode] = useState(() => {
     const saved = localStorage.getItem('digitalmate_demo_mode');
-    return saved === null ? true : saved === 'true'; // Default to demo mode for now
+    return saved === null ? false : saved === 'true'; // Default to User Mode for public release
   });
 
   // App branding
