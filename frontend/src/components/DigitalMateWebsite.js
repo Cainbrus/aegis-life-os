@@ -394,45 +394,57 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
             Simple <span className="text-cyan-400">Pricing</span>
           </h1>
           <p className="text-slate-400 text-center mb-16 max-w-2xl mx-auto">
-            Premium features at a fair price. Cancel anytime.
+            Premium protection at a fair price. Cancel anytime.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Free */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Basic */}
             <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
-              <div className="text-slate-400 font-semibold mb-2">FREE</div>
-              <div className="text-4xl font-black text-white mb-4">$0<span className="text-lg text-slate-500">/mo</span></div>
-              <p className="text-slate-400 mb-6">Get started with basic protection</p>
+              <div className="text-slate-400 font-semibold mb-2">BASIC</div>
+              <div className="text-4xl font-black text-white mb-4">$4.99<span className="text-lg text-slate-500">/mo</span></div>
+              <p className="text-slate-400 mb-6">Essential protection for everyday use</p>
               <ul className="space-y-3 mb-8">
-                {['Basic pattern lock', 'Single emergency contact', 'GPS tracking', 'Remote lock'].map((item, i) => (
+                {[
+                  'Pattern lock protection',
+                  'Invisible Vault',
+                  'Intruder photo capture',
+                  'GPS tracking',
+                  'Remote lock',
+                  '3 Emergency contacts',
+                  'Basic activity log',
+                ].map((item, i) => (
                   <li key={i} className="flex items-center text-slate-300">
                     <span className="text-green-400 mr-2">✓</span> {item}
                   </li>
                 ))}
               </ul>
-              <button className="w-full py-3 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-700 transition-all">
-                Get Started
+              <button 
+                onClick={onLaunchApp}
+                className="w-full py-3 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500/10 transition-all font-semibold"
+              >
+                Start 7-Day Free Trial
               </button>
             </div>
 
-            {/* Premium */}
+            {/* Pro */}
             <div className="bg-gradient-to-b from-cyan-900/50 to-slate-800/50 rounded-2xl p-8 border-2 border-cyan-500 relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-cyan-500 rounded-full text-sm font-bold text-white">
-                MOST POPULAR
+                BEST VALUE
               </div>
-              <div className="text-cyan-400 font-semibold mb-2">PREMIUM</div>
+              <div className="text-cyan-400 font-semibold mb-2">PRO</div>
               <div className="text-4xl font-black text-white mb-4">$9.99<span className="text-lg text-slate-500">/mo</span></div>
-              <p className="text-slate-400 mb-6">Full protection for individuals</p>
+              <p className="text-slate-400 mb-6">Complete protection suite</p>
               <ul className="space-y-3 mb-8">
                 {[
-                  'Everything in Free',
-                  'TRAP MODE',
-                  'Intruder photos',
+                  'Everything in Basic',
+                  'TRAP MODE™',
                   'Duress pattern',
-                  'Calculator vault',
-                  'Unlimited contacts',
-                  'All AI features',
+                  'Behavioral Guard™',
                   'Remote wipe',
+                  'Unlimited contacts',
+                  'Full AI features',
+                  'Priority support',
+                  'Family location sharing',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center text-slate-300">
                     <span className="text-cyan-400 mr-2">✓</span> {item}
@@ -443,31 +455,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
                 onClick={onLaunchApp}
                 className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg text-white font-bold hover:opacity-90 transition-all"
               >
-                Start Free Trial
-              </button>
-            </div>
-
-            {/* Family */}
-            <div className="bg-slate-800/50 rounded-2xl p-8 border border-purple-500/30">
-              <div className="text-purple-400 font-semibold mb-2">FAMILY</div>
-              <div className="text-4xl font-black text-white mb-4">$14.99<span className="text-lg text-slate-500">/mo</span></div>
-              <p className="text-slate-400 mb-6">Protect the whole family</p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Everything in Premium',
-                  'Up to 6 family members',
-                  'Family location sharing',
-                  'Geofencing alerts',
-                  'Family SOS',
-                  'Check-in requests',
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center text-slate-300">
-                    <span className="text-purple-400 mr-2">✓</span> {item}
-                  </li>
-                ))}
-              </ul>
-              <button className="w-full py-3 border border-purple-500 rounded-lg text-purple-400 hover:bg-purple-500/10 transition-all">
-                Get Family Plan
+                Start 7-Day Free Trial
               </button>
             </div>
           </div>
@@ -483,6 +471,13 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
             >
               Contact Sales
             </button>
+          </div>
+
+          {/* Money Back Guarantee */}
+          <div className="mt-8 text-center">
+            <p className="text-slate-500 text-sm">
+              🔒 7-day free trial on all plans • No credit card required to start • Cancel anytime
+            </p>
           </div>
         </div>
       </section>
