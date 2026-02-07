@@ -92,9 +92,11 @@ Build "Digital Mate" (formerly Aegis) - a Hierarchical Proactive Intelligence (H
 ## Roadmap
 
 ### P1 - Next (Upcoming)
-- [ ] Hide Demo Mode toggle from public User Mode UI
+- [x] Hide Demo Mode toggle from public User Mode UI ✅ (Dec 2025)
 - [ ] Build and test final APK locally
 - [ ] Submit to Google Play Store
+
+**Secret Demo Mode Access:** Tap "Digital Mate" title 7 times in User Mode to unlock Demo Mode
 
 ### P2 - Soon
 - [ ] Hidden Message/Email Organizer
