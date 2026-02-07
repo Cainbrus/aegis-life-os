@@ -1159,6 +1159,198 @@ Founder & CEO, Digital Mate
     </div>
   );
 
+  // PRIVACY POLICY PAGE
+  const PrivacyPolicyPage = () => (
+    <div className="pt-20">
+      <section className="py-20 bg-slate-900 min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <h1 className="text-4xl sm:text-5xl font-black text-center mb-4 text-white">
+            Privacy <span className="text-cyan-400">Policy</span>
+          </h1>
+          <p className="text-slate-400 text-center mb-12">
+            Last updated: December 2025
+          </p>
+
+          <div className="space-y-8 text-slate-300">
+            {/* Introduction */}
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">1. Introduction</h2>
+              <p>
+                Digital Mate ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our mobile security application.
+              </p>
+            </div>
+
+            {/* Data Collection */}
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">2. Information We Collect</h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-cyan-400 font-semibold mb-2">Security Data (Stored Locally)</h3>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>Intruder photos captured during unauthorized access attempts</li>
+                    <li>Location data when Trap Mode is activated</li>
+                    <li>Activity logs of unauthorized access attempts</li>
+                    <li>Pattern lock and security configurations</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-cyan-400 font-semibold mb-2">Account Information</h3>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>Email address (for subscription management)</li>
+                    <li>Payment information (processed securely via Stripe)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* How We Use Data */}
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">3. How We Use Your Information</h2>
+              <ul className="list-disc list-inside space-y-2">
+                <li>To provide security features (Trap Mode, Intruder Detection, Invisible Vault)</li>
+                <li>To generate evidence for potential police reports</li>
+                <li>To process subscription payments</li>
+                <li>To send emergency alerts to your designated contacts</li>
+                <li>To improve our security algorithms</li>
+              </ul>
+            </div>
+
+            {/* Data Storage */}
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">4. Data Storage & Security</h2>
+              <p className="mb-4">
+                <span className="text-green-400 font-semibold">Your security data stays on YOUR device.</span> We do not upload your intruder photos, location data, or activity logs to external servers unless you explicitly choose to share them.
+              </p>
+              <ul className="list-disc list-inside space-y-2">
+                <li>All sensitive data is encrypted using AES-256 encryption</li>
+                <li>The Invisible Vault uses additional encryption layers</li>
+                <li>Payment processing is handled by Stripe (PCI-DSS compliant)</li>
+              </ul>
+            </div>
+
+            {/* Third Party */}
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">5. Third-Party Services</h2>
+              <ul className="list-disc list-inside space-y-2">
+                <li><span className="text-white font-semibold">Stripe:</span> Payment processing</li>
+                <li><span className="text-white font-semibold">Google Play Services:</span> App distribution and updates</li>
+              </ul>
+              <p className="mt-4 text-sm">
+                We do not sell your personal information to third parties.
+              </p>
+            </div>
+
+            {/* User Rights */}
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">6. Your Rights</h2>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Access your personal data stored by Digital Mate</li>
+                <li>Delete your account and all associated data</li>
+                <li>Export your security evidence</li>
+                <li>Opt-out of non-essential data collection</li>
+                <li>Request information about data processing</li>
+              </ul>
+            </div>
+
+            {/* Children */}
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">7. Children's Privacy</h2>
+              <p>
+                Digital Mate is not intended for children under 13. We do not knowingly collect personal information from children under 13. If you believe we have collected information from a child, please contact us immediately.
+              </p>
+            </div>
+
+            {/* Contact */}
+            <div className="bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-2xl p-6 border border-cyan-500/30">
+              <h2 className="text-xl font-bold text-white mb-4">8. Contact Us</h2>
+              <p className="mb-4">
+                If you have questions about this Privacy Policy or our data practices:
+              </p>
+              <div className="space-y-2">
+                <p><span className="text-cyan-400">Email:</span> privacy@digitalmate.app</p>
+                <p><span className="text-cyan-400">Phone:</span> 0457374662</p>
+                <p><span className="text-cyan-400">Location:</span> Australia</p>
+              </div>
+            </div>
+
+            {/* Changes */}
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">9. Changes to This Policy</h2>
+              <p>
+                We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+
+  // TERMS OF SERVICE PAGE
+  const TermsPage = () => (
+    <div className="pt-20">
+      <section className="py-20 bg-slate-900 min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <h1 className="text-4xl sm:text-5xl font-black text-center mb-4 text-white">
+            Terms of <span className="text-cyan-400">Service</span>
+          </h1>
+          <p className="text-slate-400 text-center mb-12">
+            Last updated: December 2025
+          </p>
+
+          <div className="space-y-8 text-slate-300">
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">1. Acceptance of Terms</h2>
+              <p>
+                By downloading, installing, or using Digital Mate, you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the application.
+              </p>
+            </div>
+
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">2. Service Description</h2>
+              <p>
+                Digital Mate is a mobile security application that provides features including but not limited to: pattern lock protection, Trap Mode™, Invisible Vault, intruder detection, and emergency alerts.
+              </p>
+            </div>
+
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">3. Subscription & Billing</h2>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Subscriptions are billed monthly</li>
+                <li>Basic: $4.99/month | Pro: $9.99/month</li>
+                <li>Cancel anytime through your app store account</li>
+                <li>Refunds subject to app store policies</li>
+              </ul>
+            </div>
+
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">4. Acceptable Use</h2>
+              <p className="mb-4">You agree NOT to use Digital Mate to:</p>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Violate any laws or regulations</li>
+                <li>Infringe on others' privacy rights illegally</li>
+                <li>Stalk, harass, or harm others</li>
+                <li>Conduct unauthorized surveillance</li>
+              </ul>
+            </div>
+
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-xl font-bold text-white mb-4">5. Limitation of Liability</h2>
+              <p>
+                Digital Mate is provided "as is" without warranties. We are not liable for any damages arising from your use of the application. Security features are designed to deter and document, not guarantee prevention of all unauthorized access.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-2xl p-6 border border-cyan-500/30">
+              <h2 className="text-xl font-bold text-white mb-4">6. Contact</h2>
+              <p>For questions about these Terms: <span className="text-cyan-400">legal@digitalmate.app</span></p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+
   // Render current page
   const renderPage = () => {
     switch(currentPage) {
@@ -1167,6 +1359,8 @@ Founder & CEO, Digital Mate
       case 'about': return <AboutPage />;
       case 'contact': return <ContactPage />;
       case 'investors': return <InvestorsPage />;
+      case 'privacy': return <PrivacyPolicyPage />;
+      case 'terms': return <TermsPage />;
       default: return <HomePage />;
     }
   };
