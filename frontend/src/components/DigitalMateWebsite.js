@@ -385,6 +385,44 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
     </div>
   );
 
+  // Subscription checkout handler
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [checkoutError, setCheckoutError] = useState(null);
+
+  const handleSubscribe = async (packageId) => {
+    setIsProcessing(true);
+    setCheckoutError(null);
+    
+    try {
+      const API = process.env.REACT_APP_BACKEND_URL || '';
+      const originUrl = window.location.origin;
+      
+      const response = await fetch(`${API}/api/subscriptions/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          package_id: packageId,
+          origin_url: originUrl
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+      
+      const data = await response.json();
+      
+      // Redirect to Stripe Checkout
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      setCheckoutError('Unable to process. Please try again.');
+      setIsProcessing(false);
+    }
+  };
+
   // PRICING PAGE
   const PricingPage = () => (
     <div className="pt-20">
@@ -396,6 +434,12 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
           <p className="text-slate-400 text-center mb-16 max-w-2xl mx-auto">
             Premium protection at a fair price. Cancel anytime.
           </p>
+
+          {checkoutError && (
+            <div className="max-w-md mx-auto mb-8 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 text-center">
+              {checkoutError}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Basic */}
@@ -419,10 +463,11 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
                 ))}
               </ul>
               <button 
-                onClick={onLaunchApp}
-                className="w-full py-3 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500/10 transition-all font-semibold"
+                onClick={() => handleSubscribe('basic_monthly')}
+                disabled={isProcessing}
+                className="w-full py-3 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500/10 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Start 7-Day Free Trial
+                {isProcessing ? 'Processing...' : 'Subscribe to Basic'}
               </button>
             </div>
 
@@ -452,10 +497,11 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
                 ))}
               </ul>
               <button 
-                onClick={onLaunchApp}
-                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg text-white font-bold hover:opacity-90 transition-all"
+                onClick={() => handleSubscribe('pro_monthly')}
+                disabled={isProcessing}
+                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg text-white font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Start 7-Day Free Trial
+                {isProcessing ? 'Processing...' : 'Subscribe to Pro'}
               </button>
             </div>
           </div>
@@ -476,7 +522,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
           {/* Money Back Guarantee */}
           <div className="mt-8 text-center">
             <p className="text-slate-500 text-sm">
-              🔒 7-day free trial on all plans • No credit card required to start • Cancel anytime
+              🔒 Secure payment via Stripe • Cancel anytime • 30-day money back guarantee
             </p>
           </div>
         </div>
