@@ -125,19 +125,19 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
             <ul className="space-y-2 text-slate-400 text-sm">
               <li><button onClick={() => setCurrentPage('about')} className="hover:text-cyan-400">About Us</button></li>
               <li><button onClick={() => setCurrentPage('contact')} className="hover:text-cyan-400">Contact</button></li>
+              <li><button onClick={() => setCurrentPage('investors')} className="hover:text-cyan-400">Investors</button></li>
             </ul>
           </div>
           <div>
-            <h4 className="text-white font-bold mb-4">Contact</h4>
+            <h4 className="text-white font-bold mb-4">Legal</h4>
             <ul className="space-y-2 text-slate-400 text-sm">
-              <li>Cain Brunjes</li>
-              <li>0457374662</li>
-              <li>Australia</li>
+              <li><button onClick={() => setCurrentPage('privacy')} className="hover:text-cyan-400">Privacy Policy</button></li>
+              <li><button onClick={() => setCurrentPage('terms')} className="hover:text-cyan-400">Terms of Service</button></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-500 text-sm">
-          © 2024 Digital Mate. All rights reserved. | AEGIS™ is patent pending.
+          © 2025 Digital Mate. All rights reserved. | AEGIS™ is patent pending.
         </div>
       </div>
     </footer>
