@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { playButtonClick, playSuccess } from '../services/SoundService';
 
 // =============================================
 // USER MODE HOME SCREEN
 // Clean, simple security app for real users
 // Focus: Trap Mode, Invisible Vault, Protection Status
+// Secret: Tap title 7 times to unlock Demo Mode
 // =============================================
 
 const UserModeHome = ({ 
@@ -13,9 +14,32 @@ const UserModeHome = ({
   onOpenVault,
   protectionStats = { threatsBlocked: 0, intrudersDetected: 0 },
   trapActive = false,
-  onViewIntruderEvidence
+  onViewIntruderEvidence,
+  onSecretDemoActivate
 }) => {
   const [currentTime] = useState(new Date());
+  const [secretTapCount, setSecretTapCount] = useState(0);
+  const [showSecretHint, setShowSecretHint] = useState(false);
+
+  // Secret gesture: Tap title 7 times to unlock Demo Mode
+  const handleSecretTap = useCallback(() => {
+    const newCount = secretTapCount + 1;
+    setSecretTapCount(newCount);
+    
+    if (newCount >= 5 && newCount < 7) {
+      setShowSecretHint(true);
+      setTimeout(() => setShowSecretHint(false), 2000);
+    }
+    
+    if (newCount >= 7) {
+      playSuccess();
+      onSecretDemoActivate?.();
+      setSecretTapCount(0);
+    }
+    
+    // Reset after 3 seconds of no taps
+    setTimeout(() => setSecretTapCount(0), 3000);
+  }, [secretTapCount, onSecretDemoActivate]);
 
   const formatTime = (date) => {
     return date.toLocaleTimeString('en-US', { 
