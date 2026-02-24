@@ -1129,6 +1129,34 @@ const AegisTrapSystem = () => {
     );
   }
 
+  // Handle Subscription Success page
+  if (window.location.pathname === '/subscription/success') {
+    return (
+      <SubscriptionSuccess 
+        onContinue={() => {
+          window.history.replaceState({}, '', '/');
+          window.location.reload();
+        }} 
+      />
+    );
+  }
+
+  // Handle Subscription Cancel page
+  if (window.location.pathname === '/subscription/cancel') {
+    return (
+      <SubscriptionCancel 
+        onRetry={() => {
+          window.history.replaceState({}, '', '/');
+          setShowWebsite(true);
+        }}
+        onContinue={() => {
+          window.history.replaceState({}, '', '/');
+          window.location.reload();
+        }} 
+      />
+    );
+  }
+
   // Show Digital Mate Website
   if (showWebsite) {
     return <DigitalMateWebsite onLaunchApp={() => setShowWebsite(false)} />;
