@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import AegisLogo, { AegisLogoCompact } from './AegisLogo';
+import { EmailCollectionModal } from './SubscriptionPages';
 
 const DigitalMateWebsite = ({ onLaunchApp }) => {
   const [currentPage, setCurrentPage] = useState('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [formSubmitted, setFormSubmitted] = useState(false);
+  
+  // Email collection modal state
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(null);
 
   const handleContactSubmit = (e) => {
     e.preventDefault();
