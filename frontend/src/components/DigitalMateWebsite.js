@@ -1438,6 +1438,15 @@ Founder & CEO, Digital Mate
       <Header />
       {renderPage()}
       <Footer />
+      
+      {/* Email Collection Modal */}
+      <EmailCollectionModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        onSubmit={handleSubscribeWithEmail}
+        packageName={selectedPackage ? packageDetails[selectedPackage]?.name : ''}
+        price={selectedPackage ? packageDetails[selectedPackage]?.price : ''}
+      />
     </div>
   );
 };
