@@ -394,9 +394,25 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutError, setCheckoutError] = useState(null);
 
-  const handleSubscribe = async (packageId) => {
+  // Package details for modal
+  const packageDetails = {
+    basic_monthly: { name: 'Basic', price: '4.99' },
+    pro_monthly: { name: 'Pro', price: '9.99' }
+  };
+
+  // Open email modal before checkout
+  const handleSubscribeClick = (packageId) => {
+    setSelectedPackage(packageId);
+    setShowEmailModal(true);
+  };
+
+  // Process checkout with email
+  const handleSubscribeWithEmail = async (email) => {
+    if (!selectedPackage) return;
+    
     setIsProcessing(true);
     setCheckoutError(null);
+    setShowEmailModal(false);
     
     try {
       const API = process.env.REACT_APP_BACKEND_URL || '';
@@ -406,8 +422,9 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          package_id: packageId,
-          origin_url: originUrl
+          package_id: selectedPackage,
+          origin_url: originUrl,
+          user_email: email
         })
       });
       
