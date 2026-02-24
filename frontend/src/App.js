@@ -23,6 +23,7 @@ import SetupWizard from './components/SetupWizard';
 import DigitalMateWebsite from './components/DigitalMateWebsite';
 import PhoneDialer from './components/PhoneDialer';
 import UserModeHome from './components/UserModeHome';
+import { SubscriptionSuccess, SubscriptionCancel } from './components/SubscriptionPages';
 import { 
   IntruderPhotoPreview, 
   ConflictPreview, 
