@@ -485,7 +485,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
                 ))}
               </ul>
               <button 
-                onClick={() => handleSubscribe('basic_monthly')}
+                onClick={() => handleSubscribeClick('basic_monthly')}
                 disabled={isProcessing}
                 className="w-full py-3 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500/10 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -519,7 +519,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
                 ))}
               </ul>
               <button 
-                onClick={() => handleSubscribe('pro_monthly')}
+                onClick={() => handleSubscribeClick('pro_monthly')}
                 disabled={isProcessing}
                 className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg text-white font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
