@@ -233,6 +233,51 @@ class TelemetryService {
     try { return (await axios.get(`${API}/security/alerts?device_id=${this.deviceId}`)).data; }
     catch (e) { return null; }
   }
+
+  // ---- Setup (owner-defined codes; no defaults) ----
+  async setupStatus() {
+    try { return (await axios.get(`${API}/security/setup/status?device_id=${this.deviceId}`)).data; }
+    catch (e) { return null; }
+  }
+
+  async submitSetup({ recovery_code, vault_code, trusted_numbers }) {
+    const res = await axios.post(`${API}/security/setup`, {
+      device_id: this.deviceId, recovery_code, vault_code, trusted_numbers,
+    });
+    return res.data;
+  }
+
+  async verifyVault(code) {
+    try {
+      return (await axios.post(`${API}/security/verify-vault`, { device_id: this.deviceId, code })).data?.verified;
+    } catch (e) { return false; }
+  }
+
+  // ---- Privacy & Security Scan ----
+  async _permState(name) {
+    try {
+      if (name === 'notifications' && 'Notification' in window) return Notification.permission === 'granted' ? 'granted' : 'denied';
+      if (navigator.permissions?.query) {
+        const r = await navigator.permissions.query({ name });
+        return r.state; // granted | denied | prompt
+      }
+    } catch (e) { /* unsupported */ }
+    return null;
+  }
+
+  async privacyScan() {
+    const [camera, microphone, geolocation] = await Promise.all([
+      this._permState('camera'), this._permState('microphone'), this._permState('geolocation'),
+    ]);
+    const notifications = await this._permState('notifications');
+    const signals = {
+      camera, microphone, geolocation, notifications,
+      secure_context: window.isSecureContext === true,
+      online: navigator.onLine,
+    };
+    const res = await axios.post(`${API}/security/privacy-scan`, { device_id: this.deviceId, signals });
+    return res.data;
+  }
 }
 
 const telemetry = new TelemetryService();

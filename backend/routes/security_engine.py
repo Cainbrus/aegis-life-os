@@ -11,6 +11,7 @@ from behavioural telemetry the app collects while the verified owner uses the ph
 import os
 import math
 import uuid
+import bcrypt
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 
@@ -24,6 +25,29 @@ _client = AsyncIOMotorClient(mongo_url)
 db = _client[os.environ['DB_NAME']]
 
 router = APIRouter(prefix="/api/security", tags=["security"])
+
+
+# --- Secret hashing (user-defined codes; never stored in plaintext) ---
+def _hash_secret(s: str) -> str:
+    return bcrypt.hashpw(s.encode("utf-8")[:72], bcrypt.gensalt()).decode("utf-8")
+
+
+def _verify_secret(plain: str, hashed: Optional[str]) -> bool:
+    if not plain or not hashed:
+        return False
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8")[:72], hashed.encode("utf-8"))
+    except (ValueError, TypeError):
+        return False
+
+
+async def _get_config(device_id: str) -> Optional[dict]:
+    return await db.device_config.find_one({"device_id": device_id}, {"_id": 0})
+
+
+async def _verify_recovery(device_id: str, code: Optional[str]) -> bool:
+    cfg = await _get_config(device_id)
+    return bool(cfg and cfg.get("configured") and _verify_secret(code, cfg.get("recovery_hash")))
 
 # Numeric behavioural features the recognition engine understands.
 FEATURE_KEYS = [
@@ -43,8 +67,8 @@ FEATURE_KEYS = [
 
 MIN_SAMPLES_TO_TRAIN = 8          # samples needed before a baseline is usable
 OWNER_TRUST_THRESHOLD = 0.60      # below this -> likely intruder
-# Owner emergency / recovery secret (verify before destructive actions).
-OWNER_SECRET = os.environ.get("OWNER_RECOVERY_CODE", "15987")
+# No default codes exist. Each owner defines their own recovery & vault codes
+# during first-run Setup; they are stored hashed in db.device_config.
 
 
 # ============================ Models ============================
@@ -70,6 +94,18 @@ class ChangeIn(BaseModel):
     kind: str                        # 'sim' | 'network'
     detail: str = ""
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class SetupIn(BaseModel):
+    device_id: str
+    recovery_code: str               # owner-defined; authorizes destructive actions
+    vault_code: str                  # owner-defined; opens the invisible vault
+    trusted_numbers: List[str] = Field(default_factory=list)
+
+
+class CodeIn(BaseModel):
+    device_id: str
+    code: str
 
 
 class EventIn(BaseModel):
@@ -237,6 +273,56 @@ async def _train_baseline(device_id: str):
         upsert=True,
     )
     return baseline
+
+
+# ============================ Setup / Configuration ============================
+@router.get("/setup/status")
+async def setup_status(device_id: str):
+    cfg = await _get_config(device_id)
+    return {
+        "configured": bool(cfg and cfg.get("configured")),
+        "vault_set": bool(cfg and cfg.get("vault_hash")),
+        "trusted_numbers": (cfg or {}).get("trusted_numbers", []),
+    }
+
+
+@router.post("/setup")
+async def setup(req: SetupIn):
+    if len(req.recovery_code) < 4:
+        raise HTTPException(status_code=400, detail="Recovery code must be at least 4 characters")
+    if not req.vault_code.isdigit() or len(req.vault_code) < 4:
+        raise HTTPException(status_code=400, detail="Vault code must be at least 4 digits")
+    numbers = [n.strip() for n in req.trusted_numbers if n and n.strip()]
+    if not numbers:
+        raise HTTPException(status_code=400, detail="At least one trusted number is required")
+
+    await db.device_config.update_one(
+        {"device_id": req.device_id},
+        {"$set": {
+            "device_id": req.device_id,
+            "configured": True,
+            "recovery_hash": _hash_secret(req.recovery_code),
+            "vault_hash": _hash_secret(req.vault_code),
+            "trusted_numbers": numbers,
+            "updated_at": _now(),
+        }},
+        upsert=True,
+    )
+    await _log_event(req.device_id, "recovery", "info", "Security setup completed",
+                     "Owner configured recovery code, vault code and trusted numbers.")
+    return {"ok": True, "configured": True}
+
+
+@router.post("/verify-recovery")
+async def verify_recovery_code(req: CodeIn):
+    return {"verified": await _verify_recovery(req.device_id, req.code)}
+
+
+@router.post("/verify-vault")
+async def verify_vault_code(req: CodeIn):
+    cfg = await _get_config(req.device_id)
+    ok = bool(cfg and _verify_secret(req.code, cfg.get("vault_hash")))
+    return {"verified": ok}
 
 
 # ============================ Owner Recognition ============================
@@ -548,7 +634,7 @@ async def trap_activate(req: RecoveryAction):
 
 @router.post("/trap/deactivate")
 async def trap_deactivate(req: RecoveryAction):
-    if req.owner_code != OWNER_SECRET:
+    if not await _verify_recovery(req.device_id, req.owner_code):
         raise HTTPException(status_code=403, detail="Owner verification required")
     await db.device_state.update_one(
         {"device_id": req.device_id},
@@ -620,7 +706,7 @@ async def recovery_lock(req: RecoveryAction):
 
 @router.post("/recovery/unlock")
 async def recovery_unlock(req: RecoveryAction):
-    if req.owner_code != OWNER_SECRET:
+    if not await _verify_recovery(req.device_id, req.owner_code):
         raise HTTPException(status_code=403, detail="Owner verification required")
     await db.device_state.update_one(
         {"device_id": req.device_id},
@@ -636,7 +722,7 @@ async def recovery_unlock(req: RecoveryAction):
 @router.post("/recovery/wipe")
 async def recovery_wipe(req: RecoveryAction):
     """Safe, owner-verified, confirmed remote wipe of app data/vault."""
-    if req.owner_code != OWNER_SECRET:
+    if not await _verify_recovery(req.device_id, req.owner_code):
         raise HTTPException(status_code=403, detail="Owner verification required")
     if not req.confirm:
         raise HTTPException(status_code=400, detail="Confirmation required to wipe")
@@ -657,6 +743,171 @@ async def recovery_wipe(req: RecoveryAction):
 # ============================ Emergency Owner Command ============================
 @router.post("/emergency/verify")
 async def emergency_verify(req: RecoveryAction):
-    """Verify a hidden owner secret before exposing destructive emergency actions."""
-    ok = req.owner_code == OWNER_SECRET
-    return {"verified": ok}
+    """Verify the owner's recovery code before exposing destructive emergency actions."""
+    return {"verified": await _verify_recovery(req.device_id, req.owner_code)}
+
+
+# ============================ Privacy & Security Scan ============================
+class ScanIn(BaseModel):
+    device_id: str
+    signals: Dict[str, Any] = Field(default_factory=dict)
+
+
+# Android Settings deep-link actions for the one-click shortcuts.
+_S_APPS = "android.settings.MANAGE_APPLICATIONS_SETTINGS"
+_S_OVERLAY = "android.settings.action.MANAGE_OVERLAY_PERMISSION"
+_S_ACC = "android.settings.ACCESSIBILITY_SETTINGS"
+_S_ADMIN = "android.settings.DEVICE_ADMIN_SETTINGS"
+_S_VPN = "android.settings.VPN_SETTINGS"
+_S_DEV = "android.settings.APPLICATION_DEVELOPMENT_SETTINGS"
+_S_APPDETAIL = "android.settings.APPLICATION_DETAILS_SETTINGS"
+
+# Checks that require the native Android app to inspect OTHER apps / system state.
+# A sandboxed web/Capacitor app cannot read these, so they are honestly marked pending.
+_NATIVE_CHECKS = [
+    ("sms_apps", "App permissions", "Apps with SMS access",
+     "Apps that can read or send texts could intercept 2FA codes and private messages.",
+     "Review apps with SMS access and revoke any you don't recognise.", _S_APPS),
+    ("mic_apps", "App permissions", "Apps with microphone access",
+     "An app with mic access could record audio in the background.",
+     "Review mic access and revoke unused apps.", _S_APPS),
+    ("camera_apps", "App permissions", "Apps with camera access",
+     "An app with camera access could capture photos/video silently.",
+     "Review camera access and revoke unused apps.", _S_APPS),
+    ("calllog_apps", "App permissions", "Apps with call-log access",
+     "Call-log access reveals who you contact and when.",
+     "Revoke call-log access for non-dialer apps.", _S_APPS),
+    ("contacts_apps", "App permissions", "Apps with contacts access",
+     "Contacts access exposes your relationships and can be used for phishing.",
+     "Revoke contacts access for apps that don't need it.", _S_APPS),
+    ("location_apps", "App permissions", "Apps with location access",
+     "Location access can track your movements.",
+     "Set location to 'while using' or revoke for unused apps.", _S_APPS),
+    ("overlay_apps", "App permissions", "Apps that can draw over other apps",
+     "Overlay permission can be abused for tap-jacking / fake screens.",
+     "Disable 'display over other apps' for untrusted apps.", _S_OVERLAY),
+    ("accessibility", "System", "Accessibility services enabled",
+     "Accessibility services can read screen content and simulate taps - a common malware vector.",
+     "Disable accessibility for apps you didn't intentionally enable.", _S_ACC),
+    ("device_admin", "System", "Device administrator apps",
+     "Device admin apps can lock or wipe your phone and resist uninstall.",
+     "Remove device-admin rights from unknown apps.", _S_ADMIN),
+    ("vpn", "Network", "Unknown VPNs / proxies",
+     "A rogue VPN can route and inspect all your traffic.",
+     "Remove VPN profiles you didn't set up.", _S_VPN),
+    ("developer_mode", "System", "Developer mode",
+     "Developer options enable lower-level access that can weaken security.",
+     "Turn off Developer options if you don't need them.", _S_DEV),
+    ("usb_debugging", "System", "USB debugging",
+     "USB debugging lets a connected computer control the device.",
+     "Disable USB debugging when not actively developing.", _S_DEV),
+    ("new_google", "Accounts", "New Google account activity",
+     "A new account added to the device may indicate unauthorised access.",
+     "Review accounts on the device and remove unknown ones.", _S_APPS),
+    ("recent_perms", "App permissions", "Recently granted sensitive permissions",
+     "Permissions granted recently without your knowledge may indicate tampering.",
+     "Review the permission manager for recent changes.", _S_APPS),
+]
+
+
+@router.post("/privacy-scan")
+async def privacy_scan(req: ScanIn):
+    """Privacy & security advisor. Honest about what a sandboxed app can vs cannot see."""
+    checks = []
+    sig = req.signals or {}
+
+    # 1) This app's own granted permissions (genuinely observable now).
+    for key, label, need in [
+        ("camera", "Digital Mate camera access", "intruder photo capture"),
+        ("microphone", "Digital Mate microphone access", "voice features"),
+        ("geolocation", "Digital Mate location access", "device recovery & location habits"),
+        ("notifications", "Digital Mate notifications", "intrusion alerts"),
+    ]:
+        state = sig.get(key)  # 'granted' | 'denied' | 'prompt' | None
+        if state == "granted":
+            status, detected = "safe", f"Granted - used for {need}."
+        else:
+            status, detected = "review", f"Not granted - {need} will not work until you allow it."
+        checks.append({
+            "id": f"self_{key}", "category": "Digital Mate's own access", "label": label,
+            "status": status, "detected": detected,
+            "risk": "This is Digital Mate's own permission, not another app's.",
+            "action": "Manage in App info > Permissions." if status != "safe" else "No action needed.",
+            "settings": _S_APPDETAIL, "source": "app",
+        })
+
+    secure = sig.get("secure_context")
+    checks.append({
+        "id": "secure_context", "category": "Network", "label": "Secure connection",
+        "status": "safe" if secure else "review",
+        "detected": "App is served over HTTPS." if secure else "Connection is not secure.",
+        "risk": "Insecure connections can be intercepted.",
+        "action": "No action needed." if secure else "Use the official app over HTTPS.",
+        "settings": None, "source": "app",
+    })
+
+    # 2) Derived from logged events: SIM changes & network changes.
+    sim_events = await db.security_events.count_documents(
+        {"device_id": req.device_id, "type": "device_change", "title": {"$regex": "SIM"}})
+    checks.append({
+        "id": "sim_change", "category": "Device", "label": "SIM card changes",
+        "status": "high_risk" if sim_events else "safe",
+        "detected": f"{sim_events} SIM change(s) recorded." if sim_events else "No SIM changes recorded.",
+        "risk": "A changed SIM on a lost device is a strong sign of theft.",
+        "action": "If you didn't change the SIM, activate Lost Phone mode now.",
+        "settings": None, "source": "log",
+    })
+    net_events = await db.security_events.count_documents(
+        {"device_id": req.device_id, "type": "device_change", "title": {"$regex": "Network"}})
+    checks.append({
+        "id": "network_change", "category": "Network", "label": "Network changes",
+        "status": "review" if net_events > 3 else "safe",
+        "detected": f"{net_events} network change(s) recorded.",
+        "risk": "Frequent unexpected network changes can indicate suspicious activity.",
+        "action": "Review recent network changes in the Evidence Center.",
+        "settings": _S_VPN, "source": "log",
+    })
+
+    seen = await db.device_state.find_one({"device_id": req.device_id}, {"_id": 0, "first_seen": 1})
+    is_new = not (seen and seen.get("first_seen"))
+    if is_new:
+        await db.device_state.update_one({"device_id": req.device_id},
+                                         {"$set": {"first_seen": _now(), "device_id": req.device_id}}, upsert=True)
+    checks.append({
+        "id": "new_device", "category": "Accounts", "label": "New device login",
+        "status": "review" if is_new else "safe",
+        "detected": "This appears to be a newly registered device." if is_new else "Known device.",
+        "risk": "A new device login you didn't perform may indicate account compromise.",
+        "action": "If this isn't your device setup, change your account passwords.",
+        "settings": None, "source": "log",
+    })
+
+    # 3) Native-only checks (honestly pending).
+    for cid, cat, label, risk, action, settings in _NATIVE_CHECKS:
+        checks.append({
+            "id": cid, "category": cat, "label": label,
+            "status": "native_pending",
+            "detected": "Requires the native Digital Mate app to inspect other apps and system settings.",
+            "risk": risk, "action": action, "settings": settings, "source": "native",
+        })
+
+    observable = [c for c in checks if c["status"] != "native_pending"]
+    if any(c["status"] == "high_risk" for c in observable):
+        overall = "high_risk"
+    elif any(c["status"] == "review" for c in observable):
+        overall = "review"
+    else:
+        overall = "safe"
+
+    counts = {
+        "safe": sum(1 for c in checks if c["status"] == "safe"),
+        "review": sum(1 for c in checks if c["status"] == "review"),
+        "high_risk": sum(1 for c in checks if c["status"] == "high_risk"),
+        "native_pending": sum(1 for c in checks if c["status"] == "native_pending"),
+    }
+    await db.device_state.update_one(
+        {"device_id": req.device_id},
+        {"$set": {"last_scan_at": _now(), "last_scan_overall": overall, "device_id": req.device_id}},
+        upsert=True,
+    )
+    return {"overall": overall, "counts": counts, "checks": checks, "scanned_at": _now()}

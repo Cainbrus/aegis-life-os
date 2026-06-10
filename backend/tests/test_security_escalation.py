@@ -32,6 +32,11 @@ def session():
 @pytest.fixture(scope="module")
 def trained_device(session):
     did = f"TEST_esc_{uuid.uuid4().hex[:10]}"
+    # Configure device first (no default codes anymore)
+    session.post(f"{API}/setup", json={
+        "device_id": did, "recovery_code": OWNER_CODE,
+        "vault_code": "3344", "trusted_numbers": ["+15551234567"],
+    }, timeout=10)
     # train baseline
     for i in range(8):
         offset = (i - 3.5) * 0.5

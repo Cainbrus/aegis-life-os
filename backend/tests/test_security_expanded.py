@@ -250,6 +250,11 @@ class TestRegressionGuards:
 
     def test_wipe_requires_confirm(self, session):
         did = f"TEST_reg2_{uuid.uuid4().hex[:8]}"
+        # configure first so the recovery code is recognised
+        session.post(f"{API}/setup", json={
+            "device_id": did, "recovery_code": OWNER_CODE,
+            "vault_code": "3344", "trusted_numbers": ["+15551234567"],
+        }, timeout=10)
         r = session.post(f"{API}/recovery/wipe", json={
             "device_id": did, "owner_code": OWNER_CODE, "confirm": False,
         }, timeout=10)

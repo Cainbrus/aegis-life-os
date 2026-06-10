@@ -9,7 +9,7 @@ import { playButtonClick, playSuccess, playError } from '../services/SoundServic
 const PhoneDialer = ({ 
   onClose, 
   onVaultUnlock, 
-  secretCode = '8675309',
+  verifyCode,
   recentCalls = []
 }) => {
   const [dialedNumber, setDialedNumber] = useState('');
@@ -42,11 +42,13 @@ const PhoneDialer = ({
   };
 
   // Handle call button
-  const handleCall = () => {
+  const handleCall = async () => {
     if (dialedNumber.length === 0) return;
-    
-    // Check if secret code
-    if (dialedNumber === secretCode || dialedNumber === `*#${secretCode}#`) {
+
+    // Verify against the owner's OWN vault code (checked on the backend; no hardcoded default)
+    const code = dialedNumber.replace(/[*#]/g, '');
+    const isVault = verifyCode ? await verifyCode(code) : false;
+    if (isVault) {
       // SECRET VAULT UNLOCK!
       playSuccess();
       setShowVaultTransition(true);

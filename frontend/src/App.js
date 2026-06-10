@@ -7,6 +7,8 @@ import SecurityDashboard from './components/SecurityDashboard';
 import OwnerRecognition from './components/OwnerRecognition';
 import EvidenceCenter from './components/EvidenceCenter';
 import RecoveryCenter from './components/RecoveryCenter';
+import PrivacyScan from './components/PrivacyScan';
+import SetupWizard from './components/SetupWizard';
 import AegisChat from './components/AegisChat';
 import CalculatorVault from './components/CalculatorVault';
 import PhoneDialer from './components/PhoneDialer';
@@ -32,6 +34,7 @@ function App() {
   const [showDialer, setShowDialer] = useState(false);
   const [showVault, setShowVault] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [configured, setConfigured] = useState(null); // null=checking, true, false
 
   // Navigate + tell the recognition engine which screen is in use (app-usage habit)
   const go = (t) => { setTab(t); telemetry.setScreen(t); };
@@ -62,6 +65,12 @@ function App() {
       setTimeout(() => splash.remove(), 500);
     }
   }, []);
+
+  // Check first-run setup status when entering the app
+  useEffect(() => {
+    if (screen !== 'app') return;
+    telemetry.setupStatus().then((s) => setConfigured(!!(s && s.configured)));
+  }, [screen]);
 
   // Start behavioural telemetry once inside the app
   useEffect(() => {
@@ -126,12 +135,25 @@ function App() {
     );
   }
 
+  // --- First-run setup gate (no default codes exist) ---
+  if (configured === false) {
+    return (
+      <>
+        <Toaster position="top-center" theme="dark" />
+        <SetupWizard onDone={() => setConfigured(true)} />
+      </>
+    );
+  }
+  if (configured === null) {
+    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500" data-testid="app-loading">Loading…</div>;
+  }
+
   // --- Vault flow ---
   if (showVault) {
     return <CalculatorVault onClose={() => setShowVault(false)} onVaultAccess={() => {}} />;
   }
   if (showDialer) {
-    return <PhoneDialer onClose={() => setShowDialer(false)} onVaultUnlock={() => { setShowDialer(false); setShowVault(true); }} secretCode="8675309" />;
+    return <PhoneDialer onClose={() => setShowDialer(false)} onVaultUnlock={() => { setShowDialer(false); setShowVault(true); }} verifyCode={(code) => telemetry.verifyVault(code)} />;
   }
 
   // --- Main security app ---
@@ -149,6 +171,7 @@ function App() {
         />
       )}
       {tab === 'owner' && <ScreenWrap onBack={() => go('home')}><OwnerRecognition /></ScreenWrap>}
+      {tab === 'privacy' && <ScreenWrap onBack={() => go('home')}><PrivacyScan /></ScreenWrap>}
       {tab === 'recovery' && <RecoveryCenter />}
       {tab === 'evidence' && <EvidenceCenter />}
       {tab === 'mate' && (
@@ -161,7 +184,7 @@ function App() {
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 flex justify-around py-2 z-[10000]" data-testid="bottom-nav">
         {NAV.map((n) => {
           const Icon = n.icon;
-          const active = tab === n.id || (tab === 'owner' && n.id === 'home');
+          const active = tab === n.id || ((tab === 'owner' || tab === 'privacy') && n.id === 'home');
           return (
             <button key={n.id} onClick={() => go(n.id)} data-testid={`nav-${n.id}`}
               className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${active ? 'text-cyan-400' : 'text-slate-500'}`}>

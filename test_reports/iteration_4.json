@@ -1,0 +1,46 @@
+{
+  "summary": "Iteration 4 — Batch 4 (no-defaults + Privacy & Security Scan) end-to-end testing. Backend: created new test_security_setup_privacy.py (25 tests) covering /setup/status, /setup validation (empty trusted -> 400, vault non-numeric/short -> 400, recovery <4 -> 400, valid -> ok), /verify-recovery & /verify-vault, destructive endpoints (unlock/wipe/trap-deactivate/emergency-verify) gated on per-device recovery code, OLD default '15987' blocked everywhere (403), wipe requires confirm=true (400) AND code (403), recovery_hash & vault_hash stored as bcrypt at rest (start with $2, plaintext NOT in db.device_config), /privacy-scan returns ~22 checks with required fields detected/risk/action/settings, microphone-denied -> review, no 'wiretap'/'lawful interception' wording in any check, SIM /device-change -> sim_change=high_risk + overall=high_risk. Also patched the three pre-existing suites (test_security_engine, test_security_escalation, test_security_expanded) to first call /setup since OWNER_CODE '15987' is no longer a hardcoded default. Full backend suite is now 60/60 green. Frontend (mobile 390x844, fresh dm_device_id): Setup Wizard appears, mismatched codes block progress (still on step 0), step-through with test7421/3344/+15551234567 reaches the Security Dashboard. tile-privacy opens privacy-scan-screen; run-scan-btn produces scan-overall with copy '3 safe / 5 review / 0 high risk / 14 need native app' and 22 scan-check-* items; expanding a check reveals an open-settings-* button; native_pending items show 'Needs native app' and the disclaimer mentions not detecting wiretaps/lawful interception. Bottom nav (home/recovery/evidence/mate) and Recovery Center (remote-lock-btn / remote-wipe-btn) load fine. tile-vault opens the Phone Dialer disguise; dialing 3344 + Call POSTs /api/security/verify-vault and transitions to the Calculator (vault) disguise; wrong code remains on the dialer. No hardcoded 8675309 path remains.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Invisible Vault (post-verify Calculator screen)", "issues": ["The screen reached after a successful vault dial does not expose a data-testid='invisible-vault' wrapper. Functional behaviour is correct (verify-vault POST succeeds and the disguise transitions), but adding the testid would make the flow easier to assert deterministically in automation."]},
+      {"screen": "Phone Dialer (tile-vault)", "issues": ["Digit buttons (1-9, *, 0, #) and the Call button have no data-testid attributes, so automation has to find them by innerText. Adding data-testid='dial-{digit}' and data-testid='dial-call' would harden tests."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_security_setup_privacy.py",
+    "/app/backend/tests/test_security_engine.py",
+    "/app/backend/tests/test_security_escalation.py",
+    "/app/backend/tests/test_security_expanded.py",
+    "/app/test_reports/pytest/all_results.xml",
+    "/app/test_reports/pytest/setup_privacy_results.xml"
+  ],
+  "action_items": [
+    "Optional: add data-testid='dial-0'..'dial-9' and 'dial-call' to PhoneDialer.js for automation parity with setup-* / scan-* testids.",
+    "Optional: add data-testid='invisible-vault' on the calculator-disguised vault root for easier post-verify assertions."
+  ],
+  "critical_code_review_comments": [
+    "security_engine.py — _hash_secret/_verify_secret correctly use bcrypt.hashpw/checkpw with utf-8 encoding and the standard 72-byte cap; _verify_recovery short-circuits if cfg missing/not configured, so unauthenticated calls cleanly return False (and thus 403 from the unlock/wipe/trap/emergency handlers). Verified at-rest hash format $2... and plaintext absence in db.device_config in TestBcryptAtRest.",
+    "POST /setup validation order is: recovery >=4 chars, vault all-digits AND >=4, then non-empty trusted_numbers (trim+filter); all three return 400 with the documented messages.",
+    "All destructive endpoints (recovery/unlock, recovery/wipe, trap/deactivate) now call _verify_recovery instead of comparing to a constant — confirmed by the 25 new tests and the legacy '15987' rejection test.",
+    "/privacy-scan: 4 self-permission checks + secure_context + sim_change + network_change + new_device + 14 native_pending = exactly 22 checks. Native catalog (_NATIVE_CHECKS) covers all the spec ids (sms/mic/camera/calllog/contacts/location/overlay/accessibility/device_admin/vpn/developer_mode/usb_debugging/new_google/recent_perms) and never references wiretaps/lawful interception in label/detected/risk/action.",
+    "sim_change derives from a regex over device_change events with title matching /SIM/ — verified that a single POST /device-change kind=sim flips status to high_risk AND overall to high_risk on the next scan.",
+    "Frontend SetupWizard correctly blocks navigation when recovery_code != recovery_code2 (verified by staying on setup-recovery field after clicking setup-next-0 with mismatched values).",
+    "PhoneDialer.js — verifyCode prop is wired: pressing Call POSTs to /api/security/verify-vault (captured in network log) and the disguise transitions on verified=true. No 8675309 hardcode."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_security_setup_privacy.py (NEW, 25 tests)",
+    "/app/backend/tests/test_security_engine.py (device_id fixture now calls /setup before yield)",
+    "/app/backend/tests/test_security_escalation.py (trained_device fixture now calls /setup before training)",
+    "/app/backend/tests/test_security_expanded.py (TestRegressionGuards.test_wipe_requires_confirm now configures the device first)"
+  ],
+  "success_rate": {"backend": "100% (60/60 across 4 test files)", "frontend": "100% on the spec'd flows (setup wizard incl. mismatch block, dashboard, privacy scan with 22 checks + disclaimer + open-settings, bottom-nav, recovery center load, vault dial -> verify-vault POST + transition)"},
+  "test_credentials": "device_id: client-generated localStorage key 'dm_device_id'. After /setup: recovery_code='test7421', vault_code='3344', trusted_numbers=['+15551234567']. Old default '15987' must NOT work (verified to 403 on /recovery/wipe and 403/verified=false on the other destructive routes).",
+  "seed_data_creation": "All new tests create per-run TEST_setup_/TEST_val_/TEST_verify_/TEST_destr_/TEST_hash_/TEST_scan_/TEST_sim_/TEST_fresh_/TEST_nodefault_/TEST_ok_ device_ids and clean up their security_events via DELETE /events. Frontend test pre-seeded device dm-vault-test-* through curl /setup so the Setup Wizard wasn't required; the wizard itself was also exercised separately by clearing localStorage before navigation.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run full suite with: REACT_APP_BACKEND_URL=$(grep REACT_APP_BACKEND_URL /app/frontend/.env | cut -d= -f2-) python -m pytest /app/backend/tests/ -v --junitxml=/app/test_reports/pytest/all_results.xml (60/60 expected). The bcrypt-at-rest test in test_security_setup_privacy.py needs MONGO_URL + DB_NAME exported (it strips quotes); the helper uses sync pymongo, no event-loop issues. For the FE Setup Wizard, add an addInitScript that removes 'dm_device_id' BEFORE goto, otherwise the dashboard renders instead. tile-vault opens a PhoneDialer (no data-testids on digit/Call buttons — locate by innerText prefix matching the digit) and on successful verify-vault transitions to a Calculator that IS the disguised vault (does not yet carry a data-testid='invisible-vault' wrapper — flagged as a minor design issue, not a functional bug). Headless browsers still block getUserMedia + geolocation, so the privacy scan reports self_camera/self_microphone/self_geolocation as 'review' (5 review total) — this is expected.",
+  "rca of the issue": "N/A — no functional bugs found in this batch. The two minor design issues (missing data-testid on PhoneDialer digit/Call buttons and on the post-verify vault wrapper) are testability nits, not regressions, and were noted as optional action items."
+}

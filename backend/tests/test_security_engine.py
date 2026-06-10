@@ -36,6 +36,13 @@ INTRUDER_FEATURES = {
 @pytest.fixture(scope="module")
 def device_id():
     did = f"TEST_dev_{uuid.uuid4().hex[:10]}"
+    # Configure device with owner-defined codes (no defaults exist anymore)
+    requests.post(f"{API}/setup", json={
+        "device_id": did,
+        "recovery_code": OWNER_CODE,
+        "vault_code": "3344",
+        "trusted_numbers": ["+15551234567"],
+    }, timeout=10)
     yield did
     # cleanup
     try:

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Shield, Fingerprint, Compass, FileClock, Bot, Ghost, ChevronRight, Settings, Siren } from 'lucide-react';
+import { Shield, Fingerprint, Compass, FileClock, Bot, Ghost, ChevronRight, Settings, Siren, ScanLine } from 'lucide-react';
 import telemetry from '../services/TelemetryService';
 
 const SecurityDashboard = ({ onNavigate, onOpenVault, onOpenSettings, onSecretDemo, onPanic }) => {
@@ -78,6 +78,7 @@ const SecurityDashboard = ({ onNavigate, onOpenVault, onOpenSettings, onSecretDe
         <Tile icon={Fingerprint} title="Owner Recognition" subtitle={trained ? 'Model trained' : `${status?.samples_needed ?? 8} samples to go`} color="from-cyan-500 to-blue-500" onClick={() => onNavigate('owner')} testid="tile-owner" />
         <Tile icon={Ghost} title="Invisible Vault" subtitle="Dial your secret code to open" color="from-purple-500 to-fuchsia-500" onClick={onOpenVault} testid="tile-vault" />
         <Tile icon={Compass} title="Device Recovery" subtitle="Locate, lock or wipe" color="from-emerald-500 to-teal-500" onClick={() => onNavigate('recovery')} testid="tile-recovery" />
+        <Tile icon={ScanLine} title="Privacy &amp; Security Scan" subtitle="Check what can access your phone" color="from-sky-500 to-cyan-500" onClick={() => onNavigate('privacy')} testid="tile-privacy" />
         <Tile icon={FileClock} title="Evidence Center" subtitle="Photos, locations &amp; events" color="from-amber-500 to-orange-500" onClick={() => onNavigate('evidence')} testid="tile-evidence" />
         <Tile icon={Bot} title="AI Digital Mate" subtitle="Your security assistant" color="from-indigo-500 to-violet-500" onClick={() => onNavigate('mate')} testid="tile-mate" />
       </div>
