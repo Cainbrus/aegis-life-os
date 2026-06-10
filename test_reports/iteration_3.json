@@ -1,0 +1,41 @@
+{
+  "summary": "Iteration 3: validated expanded owner-recognition (12 raw features + location_habit + app_usage), INVISIBLE Trap Mode (TrapDecoy.js removed, normal UI keeps running), POST /api/security/device-change for network/SIM, and std-floor robustness fix. Added /app/backend/tests/test_security_expanded.py with 11 new tests — ALL 11 pass. Full backend suite is 35/35 green (test_security_engine.py 17 + test_security_escalation.py 7 + test_security_expanded.py 11). Frontend (mobile 390x844) regression confirmed: no decoy element/text present, bottom-nav usable, Owner Recognition trains in a single tap (status -> Trained, trust gauge 92%), signal-breakdown renders 13 expanded labels including 'App usage habit' (location_habit omitted because headless geolocation is blocked — expected, owner-side scoring with lat/lng is fully covered by backend tests).",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Global / bottom-nav on mobile", "issues": ["Pre-existing: Emergent badge overlaps bottom-nav on 390x844; mitigated in tests by hiding #emergent-badge. Not a functional regression."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_security_expanded.py",
+    "/app/backend/tests/test_security_engine.py",
+    "/app/backend/tests/test_security_escalation.py",
+    "/app/test_reports/pytest/expanded_results.xml",
+    "/app/test_reports/pytest/all_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "FEATURE_KEYS now correctly contains all 12 behavioural features (typing_speed/dwell/flight/variance, touch_duration/pressure, tap_interval, swipe_velocity/length, motion_avg, hour_of_day, day_of_week). _clean_features() iterates over FEATURE_KEYS, so unknown keys are safely ignored.",
+    "_train_baseline std-floor `max(sqrt(var), 0.10*|mean|, 0.5)` correctly prevents hyper-sensitivity when an owner samples identical features 8 times. Verified by TestStdFloorRobustness.",
+    "_location_familiarity uses Gaussian over haversine distance with 0.6km scale (neighborhood tolerance) — sensible. _app_usage_familiarity floors unfamiliar screens to 0.15 and scales known screens by frequency — clean.",
+    "ingest_telemetry learns owner locations (last 100 with $slice -100) and screen_counts ($inc per screen) only when label='owner'. Update operator construction (separating $set/$push/$inc) is correct so MongoDB won't conflict-update the same field.",
+    "/score now folds location_habit + app_usage into the trust average ONLY when signals are computable (lat/lng + profile.locations present, screen + profile.screen_counts present). Returns them in `signals` dict — frontend OwnerRecognition labels them via SIGNAL_LABELS.",
+    "Trap escalation L2 detail says 'Silently capturing intruder photo and tracking location. App continues normally.' — confirms INVISIBLE behaviour (no decoy language). L3 logs + creates owner alert + sets locked=true + lost_mode=true. Good.",
+    "POST /device-change creates a device_change/warning event for both kinds; kind='sim' additionally creates an owner alert with 'SIM card changed' title — strong theft signal, correct.",
+    "Frontend App.js correctly removed TrapDecoy import/render; guard loop is SILENT (capturePhoto at L2 once, sendAlert at L3 once, no UI takeover). go(tab) calls telemetry.setScreen(t) so app-usage-habit learning fires while navigating.",
+    "OwnerRecognition.SIGNAL_LABELS has all expanded keys including location_habit + app_usage; UI renders them in signal-breakdown when score().signals contains them.",
+    "Wipe/unlock/trap-deactivate still owner_code-guarded (403). Wipe requires confirm=true (400). No regression."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_security_expanded.py"
+  ],
+  "success_rate": {"backend": "100% (35/35 across 3 test files; 11/11 on the new expanded suite)", "frontend": "100% (no-decoy + bottom-nav + owner-recognition train/score with expanded signals all verified)"},
+  "test_credentials": "Owner recovery code: 15987; Vault dial code: 8675309; device_id auto-generated in localStorage 'dm_device_id'.",
+  "seed_data_creation": "Test file creates per-run TEST_exp_/TEST_zero_/TEST_silent_/TEST_net_/TEST_sim_/TEST_reg*_ device_ids with /baseline/reset + DELETE /events cleanup. No persistent data.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All three batches now have suites: test_security_engine.py (core), test_security_escalation.py (escalation/panic/evidence-photo), test_security_expanded.py (expanded features + location/app-usage habits + invisible trap detail + device-change SIM/network + std-floor robustness). Run with REACT_APP_BACKEND_URL set, e.g. `REACT_APP_BACKEND_URL=https://digital-mate-mvp.preview.emergentagent.com python -m pytest backend/tests/ -v`. For FE: mobile 390x844, click 'Try the Demo', hide #emergent-badge, Owner Recognition card is data-testid='tile-owner' on the dashboard. Headless browser blocks geolocation + getUserMedia, so location_habit signal won't appear in the FE breakdown and capturePhoto logs a 'Camera capture blocked' event — both are expected; always cover those via backend curl/pytest with explicit lat/lng.",
+  "rca of the issue": "N/A — no functional bugs. The previously reported std=0 hyper-sensitivity bug is fully fixed: std is floored to max(sqrt(var), 0.10*|mean|, 0.5), and the new TestStdFloorRobustness test confirms 8 identical training samples still produce a HIGH owner score (>=0.6) on near-identical input."
+}

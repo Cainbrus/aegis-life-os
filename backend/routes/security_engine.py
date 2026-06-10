@@ -27,12 +27,18 @@ router = APIRouter(prefix="/api/security", tags=["security"])
 
 # Numeric behavioural features the recognition engine understands.
 FEATURE_KEYS = [
-    "typing_speed",       # avg ms between key presses
+    "typing_speed",       # avg ms between key presses (rhythm)
+    "typing_dwell",       # avg ms a key is held down (keydown->keyup)
+    "typing_flight",      # avg ms between releasing one key and pressing the next
     "typing_variance",    # std dev of key intervals
     "touch_duration",     # avg ms a touch is held
+    "touch_pressure",     # avg pointer pressure (0-1)
+    "tap_interval",       # avg ms between consecutive taps
     "swipe_velocity",     # avg px/ms of swipes
+    "swipe_length",       # avg swipe distance in px
     "motion_avg",         # avg accelerometer magnitude
     "hour_of_day",        # 0-23 when device is used
+    "day_of_week",        # 0-6 usage day pattern
 ]
 
 MIN_SAMPLES_TO_TRAIN = 8          # samples needed before a baseline is usable
@@ -46,6 +52,9 @@ class TelemetrySample(BaseModel):
     device_id: str
     features: Dict[str, float] = Field(default_factory=dict)
     label: str = "owner"  # owner telemetry trains the baseline
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    screen: Optional[str] = None     # in-app screen for app-usage habit learning
 
 
 class ScoreRequest(BaseModel):
@@ -53,6 +62,14 @@ class ScoreRequest(BaseModel):
     features: Dict[str, float] = Field(default_factory=dict)
     lat: Optional[float] = None
     lng: Optional[float] = None
+    screen: Optional[str] = None
+
+
+class ChangeIn(BaseModel):
+    device_id: str
+    kind: str                        # 'sim' | 'network'
+    detail: str = ""
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class EventIn(BaseModel):
@@ -149,6 +166,40 @@ def _gaussian_similarity(x: float, mean: float, std: float) -> float:
     return math.exp(-0.5 * z * z)
 
 
+def _haversine_km(lat1, lng1, lat2, lng2):
+    R = 6371.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dl = math.radians(lng2 - lng1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * R * math.asin(math.sqrt(a))
+
+
+def _location_familiarity(profile: dict, lat, lng) -> Optional[float]:
+    """How close current location is to a place the owner is normally in (0-1)."""
+    locs = (profile or {}).get("locations") or []
+    if lat is None or lng is None or not locs:
+        return None
+    scale = 0.6  # km; ~neighbourhood tolerance
+    best = 0.0
+    for l in locs:
+        d = _haversine_km(lat, lng, l["lat"], l["lng"])
+        best = max(best, math.exp(-0.5 * (d / scale) ** 2))
+    return round(best, 3)
+
+
+def _app_usage_familiarity(profile: dict, screen: Optional[str]) -> Optional[float]:
+    """How typical it is for the owner to use the current screen (0-1)."""
+    counts = (profile or {}).get("screen_counts") or {}
+    if not screen or not counts:
+        return None
+    total = sum(counts.values()) or 1
+    mx = max(counts.values()) or 1
+    c = counts.get(screen, 0)
+    # familiar screens score high; rarely/never-used screens score low
+    return round(min(1.0, 0.15 + 0.85 * (c / mx)) if c > 0 else 0.15, 3)
+
+
 async def _get_profile(device_id: str) -> Optional[dict]:
     return await db.owner_profiles.find_one({"device_id": device_id}, {"_id": 0})
 
@@ -169,7 +220,10 @@ async def _train_baseline(device_id: str):
             continue
         mean = sum(vals) / len(vals)
         var = sum((v - mean) ** 2 for v in vals) / len(vals)
-        baseline[key] = {"mean": mean, "std": math.sqrt(var)}
+        # Floor std to ~10% of |mean| so a near-constant feature stays tolerant
+        # to natural variation instead of becoming hyper-sensitive (std~0).
+        std = max(math.sqrt(var), 0.10 * abs(mean), 0.5)
+        baseline[key] = {"mean": mean, "std": std}
 
     await db.owner_profiles.update_one(
         {"device_id": device_id},
@@ -204,6 +258,23 @@ async def ingest_telemetry(sample: TelemetrySample):
     count = await db.behavior_samples.count_documents(
         {"device_id": sample.device_id, "label": "owner"}
     )
+
+    # Learn owner location & app-usage habits from owner telemetry.
+    if sample.label == "owner":
+        updates = {}
+        push = {}
+        if sample.lat is not None and sample.lng is not None:
+            push["locations"] = {"$each": [{"lat": sample.lat, "lng": sample.lng}], "$slice": -100}
+        if sample.screen:
+            updates[f"screen_counts.{sample.screen}"] = 1
+        if push or updates:
+            op = {"$set": {"device_id": sample.device_id}}
+            if push:
+                op["$push"] = push
+            if updates:
+                op["$inc"] = updates
+            await db.owner_profiles.update_one({"device_id": sample.device_id}, op, upsert=True)
+
     trained = False
     if sample.label == "owner" and count >= MIN_SAMPLES_TO_TRAIN:
         baseline = await _train_baseline(sample.device_id)
@@ -245,16 +316,29 @@ async def score_session(req: ScoreRequest):
             sims.append(sim)
             contributions[key] = round(sim, 3)
 
+    # Location habit signal
+    loc_fam = _location_familiarity(profile, req.lat, req.lng)
+    if loc_fam is not None:
+        sims.append(loc_fam)
+        contributions["location_habit"] = loc_fam
+
+    # App-usage habit signal
+    app_fam = _app_usage_familiarity(profile, req.screen)
+    if app_fam is not None:
+        sims.append(app_fam)
+        contributions["app_usage"] = app_fam
+
     if not sims:
         return {"trust_score": 1.0, "is_owner": True, "trap_active": False, "status": "no_signal"}
 
     trust = sum(sims) / len(sims)
     is_owner = trust >= OWNER_TRUST_THRESHOLD
 
-    # --- Trap escalation levels ---
+    # --- Trap escalation levels (SILENT / invisible) ---
     # L1: unknown behaviour -> start logging
-    # L2: multiple failed checks -> capture photo + track location + show decoy
+    # L2: repeated failed checks -> silent photo + location tracking
     # L3: confirmed theft -> notify owner + recovery mode (lock + lost mode)
+    # The intruder is never shown any warning or decoy; the app keeps operating normally.
     state = await db.device_state.find_one({"device_id": req.device_id}, {"_id": 0}) or {}
     streak = int(state.get("low_trust_streak", 0))
     prev_level = int(state.get("trap_level", 0))
@@ -299,7 +383,7 @@ async def score_session(req: ScoreRequest):
             await _log_event(
                 req.device_id, "access_attempt", "critical",
                 "Level 2 - Multiple failed recognition checks",
-                "Capturing intruder photo and starting location tracking. Decoy environment shown.",
+                "Silently capturing intruder photo and tracking location. App continues normally.",
                 metadata={"trust_score": round(trust, 3), "level": 2}, lat=req.lat, lng=req.lng,
             )
         elif level == 3:
@@ -383,6 +467,18 @@ async def list_events(device_id: str, limit: int = 100):
 async def clear_events(device_id: str):
     res = await db.security_events.delete_many({"device_id": device_id})
     return {"ok": True, "deleted": res.deleted_count}
+
+
+@router.post("/device-change")
+async def device_change(c: ChangeIn):
+    """Record a SIM or network change as evidence (SIM detection needs the native phase)."""
+    title = "SIM change detected" if c.kind == "sim" else "Network change detected"
+    evt = await _log_event(c.device_id, "device_change", "warning", title, c.detail, metadata=c.metadata)
+    # A SIM swap on a lost device is a strong theft signal -> alert owner.
+    if c.kind == "sim":
+        await _create_alert(c.device_id, "SIM card changed",
+                            "The SIM in your device changed - a common sign of theft. Open Digital Mate to track it.")
+    return evt
 
 
 @router.post("/evidence/photo")

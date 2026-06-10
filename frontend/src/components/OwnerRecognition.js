@@ -7,11 +7,19 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const SIGNAL_LABELS = {
   typing_speed: 'Typing rhythm',
+  typing_dwell: 'Key hold time',
+  typing_flight: 'Key transition',
   typing_variance: 'Typing consistency',
-  touch_duration: 'Touch dynamics',
-  swipe_velocity: 'Swipe motion',
+  touch_duration: 'Touch duration',
+  touch_pressure: 'Touch pressure',
+  tap_interval: 'Tap cadence',
+  swipe_velocity: 'Swipe speed',
+  swipe_length: 'Swipe length',
   motion_avg: 'Device motion',
-  hour_of_day: 'Usage time',
+  hour_of_day: 'Time of day',
+  day_of_week: 'Day pattern',
+  location_habit: 'Location habit',
+  app_usage: 'App usage habit',
 };
 
 const OwnerRecognition = () => {

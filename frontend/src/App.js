@@ -7,7 +7,6 @@ import SecurityDashboard from './components/SecurityDashboard';
 import OwnerRecognition from './components/OwnerRecognition';
 import EvidenceCenter from './components/EvidenceCenter';
 import RecoveryCenter from './components/RecoveryCenter';
-import TrapDecoy from './components/TrapDecoy';
 import AegisChat from './components/AegisChat';
 import CalculatorVault from './components/CalculatorVault';
 import PhoneDialer from './components/PhoneDialer';
@@ -18,7 +17,6 @@ import { requestNotificationPermission, sendAlert } from './services/PushNotific
 import './App.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-const OWNER_CODE_HINT = '15987';
 
 const NAV = [
   { id: 'home', label: 'Home', icon: Shield },
@@ -33,12 +31,12 @@ function App() {
   const [tab, setTab] = useState('home');
   const [showDialer, setShowDialer] = useState(false);
   const [showVault, setShowVault] = useState(false);
-  const [trapActive, setTrapActive] = useState(false);
-  const [ownerVerify, setOwnerVerify] = useState(false);
-  const [verifyCode, setVerifyCode] = useState('');
   const [showSettings, setShowSettings] = useState(false);
 
-  // refs for trap escalation handling
+  // Navigate + tell the recognition engine which screen is in use (app-usage habit)
+  const go = (t) => { setTab(t); telemetry.setScreen(t); };
+
+  // refs for silent trap escalation handling
   const capturedRef = useRef(false);
   const notifiedRef = useRef(false);
   const trackRef = useRef(null);
@@ -75,16 +73,16 @@ function App() {
     const guard = setInterval(async () => {
       const r = await telemetry.score();
       if (!r) return;
-      setTrapActive(r.trap_active);
       const level = r.trap_level || 0;
 
-      // Level 2: capture intruder photo + start location tracking (once per episode)
+      // SILENT escalation — the user sees no change; everything happens in the background.
+      // Level 2: silently capture intruder photo + start location tracking (once per episode)
       if (level >= 2 && !capturedRef.current) {
         capturedRef.current = true;
         telemetry.capturePhoto(level);
         startTracking();
       }
-      // Level 3: notify owner + ensure recovery tracking
+      // Level 3: notify owner (their own/other device) + ensure recovery tracking
       if (level >= 3 && !notifiedRef.current) {
         notifiedRef.current = true;
         sendAlert('Possible theft detected. Recovery mode activated and device locked.', 'security');
@@ -106,17 +104,8 @@ function App() {
     telemetry.capturePhoto(3);
     startTracking();
     sendAlert('Lost Phone mode activated. Live tracking and remote lock are on.', 'emergency');
-    setTab('recovery');
+    go('recovery');
     toast.success('Panic activated — device locked & tracking started');
-  };
-
-  const exitTrap = async () => {
-    if (verifyCode !== OWNER_CODE_HINT) { toast.error('Owner verification failed'); return; }
-    try {
-      await axios.post(`${API}/security/trap/deactivate`, { device_id: telemetry.deviceId, owner_code: verifyCode });
-      setTrapActive(false); setOwnerVerify(false); setVerifyCode('');
-      toast.success('Welcome back. Trap Mode cleared.');
-    } catch (e) { toast.error('Could not deactivate'); }
   };
 
   // --- Stripe subscription pages ---
@@ -137,19 +126,6 @@ function App() {
     );
   }
 
-  // --- Trap Mode decoy (full screen) ---
-  if (trapActive) {
-    return (
-      <>
-        <Toaster position="top-center" theme="dark" />
-        <TrapDecoy onOwnerExit={() => setOwnerVerify(true)} />
-        {ownerVerify && (
-          <OwnerVerifyModal code={verifyCode} setCode={setVerifyCode} onConfirm={exitTrap} onClose={() => { setOwnerVerify(false); setVerifyCode(''); }} />
-        )}
-      </>
-    );
-  }
-
   // --- Vault flow ---
   if (showVault) {
     return <CalculatorVault onClose={() => setShowVault(false)} onVaultAccess={() => {}} />;
@@ -165,19 +141,19 @@ function App() {
 
       {tab === 'home' && (
         <SecurityDashboard
-          onNavigate={setTab}
+          onNavigate={go}
           onOpenVault={() => setShowDialer(true)}
           onOpenSettings={() => setShowSettings(true)}
           onPanic={handlePanic}
           onSecretDemo={() => toast.info('Developer mode is disabled in this build')}
         />
       )}
-      {tab === 'owner' && <ScreenWrap onBack={() => setTab('home')}><OwnerRecognition /></ScreenWrap>}
+      {tab === 'owner' && <ScreenWrap onBack={() => go('home')}><OwnerRecognition /></ScreenWrap>}
       {tab === 'recovery' && <RecoveryCenter />}
       {tab === 'evidence' && <EvidenceCenter />}
       {tab === 'mate' && (
         <div className="min-h-screen" data-testid="mate-screen">
-          <AegisChat onClose={() => setTab('home')} userName="Owner" />
+          <AegisChat onClose={() => go('home')} userName="Owner" />
         </div>
       )}
 
@@ -187,7 +163,7 @@ function App() {
           const Icon = n.icon;
           const active = tab === n.id || (tab === 'owner' && n.id === 'home');
           return (
-            <button key={n.id} onClick={() => setTab(n.id)} data-testid={`nav-${n.id}`}
+            <button key={n.id} onClick={() => go(n.id)} data-testid={`nav-${n.id}`}
               className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${active ? 'text-cyan-400' : 'text-slate-500'}`}>
               <Icon size={22} />
               <span className="text-[10px] font-medium">{n.label}</span>
@@ -207,20 +183,6 @@ const ScreenWrap = ({ children, onBack }) => (
   <div className="min-h-screen bg-slate-950 pb-24">
     <button onClick={onBack} className="absolute top-4 right-4 z-10 text-slate-400 hover:text-white p-2" data-testid="screen-back-btn"><X size={22} /></button>
     {children}
-  </div>
-);
-
-const OwnerVerifyModal = ({ code, setCode, onConfirm, onClose }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" data-testid="owner-verify-modal">
-    <div className="w-full max-w-sm rounded-2xl bg-slate-800 border border-slate-700 p-5">
-      <h3 className="text-white font-bold mb-1">Owner verification</h3>
-      <p className="text-slate-400 text-sm mb-3">Enter your owner code to exit Trap Mode.</p>
-      <input type="password" inputMode="numeric" value={code} onChange={(e) => setCode(e.target.value)}
-        placeholder="Owner code" data-testid="owner-verify-input"
-        className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white text-center tracking-widest focus:border-cyan-500 outline-none" />
-      <button onClick={onConfirm} data-testid="owner-verify-confirm" className="w-full mt-4 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold">Verify &amp; exit</button>
-      <button onClick={onClose} className="w-full mt-2 py-2 text-slate-400 text-sm">Cancel</button>
-    </div>
   </div>
 );
 

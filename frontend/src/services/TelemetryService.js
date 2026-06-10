@@ -23,51 +23,92 @@ function getDeviceId() {
 class TelemetryService {
   constructor() {
     this.deviceId = getDeviceId();
-    this.keyTimes = [];
+    this.keyTimes = [];        // keydown timestamps (rhythm)
+    this.dwellTimes = [];      // keyup - keydown (hold time)
+    this.flightTimes = [];     // keydown - previous keyup
+    this.keyDownAt = {};       // per-key keydown time
+    this.lastKeyUp = 0;
     this.touchStart = 0;
     this.touchDurations = [];
     this.swipeVels = [];
+    this.swipeLens = [];
+    this.tapTimes = [];        // pointerdown timestamps (tap cadence)
+    this.tapIntervals = [];
+    this.pressures = [];       // pointer pressure
     this.motionMags = [];
     this.touchMoveRef = null;
+    this.currentScreen = 'home';
+    this.lastNetwork = null;
     this.started = false;
+  }
+
+  setScreen(screen) { if (screen) this.currentScreen = screen; }
+
+  _netSignature() {
+    const c = navigator.connection || {};
+    return [navigator.onLine ? 'on' : 'off', c.effectiveType || '?', c.type || '?'].join('|');
   }
 
   start() {
     if (this.started) return;
     this.started = true;
+    this.lastNetwork = this._netSignature();
 
-    this._onKey = () => { this.keyTimes.push(performance.now()); if (this.keyTimes.length > 50) this.keyTimes.shift(); };
-    this._onTouchStart = (e) => { this.touchStart = performance.now(); this.touchMoveRef = e.touches?.[0] || null; };
-    this._onTouchEnd = (e) => {
-      if (this.touchStart) {
-        this.touchDurations.push(performance.now() - this.touchStart);
-        if (this.touchDurations.length > 30) this.touchDurations.shift();
-      }
-      const end = e.changedTouches?.[0];
+    this._onKey = (e) => {
+      const t = performance.now();
+      this.keyTimes.push(t); if (this.keyTimes.length > 50) this.keyTimes.shift();
+      this.keyDownAt[e.key || 'k'] = t;
+      if (this.lastKeyUp) { this.flightTimes.push(t - this.lastKeyUp); if (this.flightTimes.length > 40) this.flightTimes.shift(); }
+    };
+    this._onKeyUp = (e) => {
+      const t = performance.now();
+      const down = this.keyDownAt[e.key || 'k'];
+      if (down) { this.dwellTimes.push(t - down); if (this.dwellTimes.length > 40) this.dwellTimes.shift(); }
+      this.lastKeyUp = t;
+    };
+    this._onDown = (e) => {
+      const t = performance.now();
+      this.touchStart = t;
+      this.touchMoveRef = e.touches?.[0] || { clientX: e.clientX, clientY: e.clientY };
+      if (this.tapTimes.length) { this.tapIntervals.push(t - this.tapTimes[this.tapTimes.length - 1]); if (this.tapIntervals.length > 30) this.tapIntervals.shift(); }
+      this.tapTimes.push(t); if (this.tapTimes.length > 30) this.tapTimes.shift();
+      if (typeof e.pressure === 'number' && e.pressure > 0) { this.pressures.push(e.pressure); if (this.pressures.length > 30) this.pressures.shift(); }
+    };
+    this._onUp = (e) => {
+      if (this.touchStart) { this.touchDurations.push(performance.now() - this.touchStart); if (this.touchDurations.length > 30) this.touchDurations.shift(); }
+      const end = e.changedTouches?.[0] || { clientX: e.clientX, clientY: e.clientY };
       if (this.touchMoveRef && end) {
         const dx = end.clientX - this.touchMoveRef.clientX;
         const dy = end.clientY - this.touchMoveRef.clientY;
         const dist = Math.sqrt(dx * dx + dy * dy);
         const dt = Math.max(1, performance.now() - this.touchStart);
-        if (dist > 8) { this.swipeVels.push(dist / dt); if (this.swipeVels.length > 30) this.swipeVels.shift(); }
+        if (dist > 8) {
+          this.swipeVels.push(dist / dt); if (this.swipeVels.length > 30) this.swipeVels.shift();
+          this.swipeLens.push(dist); if (this.swipeLens.length > 30) this.swipeLens.shift();
+        }
       }
       this.touchStart = 0;
     };
     this._onMotion = (e) => {
       const a = e.accelerationIncludingGravity || e.acceleration;
-      if (a) {
-        const m = Math.sqrt((a.x || 0) ** 2 + (a.y || 0) ** 2 + (a.z || 0) ** 2);
-        this.motionMags.push(m);
-        if (this.motionMags.length > 50) this.motionMags.shift();
+      if (a) { this.motionMags.push(Math.sqrt((a.x || 0) ** 2 + (a.y || 0) ** 2 + (a.z || 0) ** 2)); if (this.motionMags.length > 50) this.motionMags.shift(); }
+    };
+    this._onNet = () => {
+      const sig = this._netSignature();
+      if (this.lastNetwork && sig !== this.lastNetwork) {
+        this.reportNetworkChange(this.lastNetwork, sig);
       }
+      this.lastNetwork = sig;
     };
 
     window.addEventListener('keydown', this._onKey);
-    window.addEventListener('touchstart', this._onTouchStart, { passive: true });
-    window.addEventListener('touchend', this._onTouchEnd, { passive: true });
-    // mouse fallback for desktop testing
-    window.addEventListener('mousedown', this._onTouchStart);
-    window.addEventListener('mouseup', this._onTouchEnd);
+    window.addEventListener('keyup', this._onKeyUp);
+    // Pointer events give pressure; fall back to touch/mouse
+    window.addEventListener('pointerdown', this._onDown, { passive: true });
+    window.addEventListener('pointerup', this._onUp, { passive: true });
+    window.addEventListener('online', this._onNet);
+    window.addEventListener('offline', this._onNet);
+    if (navigator.connection) navigator.connection.addEventListener?.('change', this._onNet);
     if (window.DeviceMotionEvent) window.addEventListener('devicemotion', this._onMotion);
   }
 
@@ -83,11 +124,17 @@ class TelemetryService {
     for (let i = 1; i < this.keyTimes.length; i++) intervals.push(this.keyTimes[i] - this.keyTimes[i - 1]);
     return {
       typing_speed: Math.round(this._mean(intervals)) || 180,
+      typing_dwell: Math.round(this._mean(this.dwellTimes)) || 90,
+      typing_flight: Math.round(this._mean(this.flightTimes)) || 70,
       typing_variance: Math.round(this._std(intervals)) || 30,
       touch_duration: Math.round(this._mean(this.touchDurations)) || 95,
-      swipe_velocity: Number(this._mean(this.swipeVels).toFixed(2)) || 2,
-      motion_avg: Number(this._mean(this.motionMags).toFixed(2)) || 10,
+      touch_pressure: Number((this._mean(this.pressures) || 0.5).toFixed(2)),
+      tap_interval: Math.round(this._mean(this.tapIntervals)) || 400,
+      swipe_velocity: Number((this._mean(this.swipeVels) || 2).toFixed(2)),
+      swipe_length: Math.round(this._mean(this.swipeLens)) || 200,
+      motion_avg: Number((this._mean(this.motionMags) || 10).toFixed(2)),
       hour_of_day: new Date().getHours(),
+      day_of_week: new Date().getDay(),
     };
   }
 
@@ -104,10 +151,21 @@ class TelemetryService {
 
   async sendTelemetry(label = 'owner') {
     try {
+      const loc = await this.getLocation();
       const res = await axios.post(`${API}/security/telemetry`, {
         device_id: this.deviceId, label, features: this.buildFeatures(),
+        screen: this.currentScreen, lat: loc?.lat, lng: loc?.lng,
       });
       return res.data;
+    } catch (e) { return null; }
+  }
+
+  async reportNetworkChange(from, to) {
+    try {
+      return (await axios.post(`${API}/security/device-change`, {
+        device_id: this.deviceId, kind: 'network',
+        detail: `Network changed: ${from} -> ${to}`, metadata: { from, to },
+      })).data;
     } catch (e) { return null; }
   }
 
@@ -116,7 +174,7 @@ class TelemetryService {
       const loc = await this.getLocation();
       const res = await axios.post(`${API}/security/score`, {
         device_id: this.deviceId, features: this.buildFeatures(),
-        lat: loc?.lat, lng: loc?.lng,
+        screen: this.currentScreen, lat: loc?.lat, lng: loc?.lng,
       });
       return res.data;
     } catch (e) { return null; }
