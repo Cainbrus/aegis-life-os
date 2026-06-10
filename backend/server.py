@@ -3690,6 +3690,10 @@ app.add_middleware(
 # Include API routes
 app.include_router(api_router)
 
+# Security Engine (owner recognition, trap, evidence, recovery)
+from routes.security_engine import router as security_router
+app.include_router(security_router)
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
