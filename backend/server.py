@@ -891,6 +891,19 @@ l3_trap_agent = L3TrapAwareAgent("enhanced_trap_system")
 # ENHANCED API ENDPOINTS
 # ===============================
 
+@api_router.get("/download/apk")
+async def download_apk():
+    from fastapi.responses import FileResponse
+    apk_path = "/app/DigitalMate-debug.apk"
+    if not os.path.exists(apk_path):
+        raise HTTPException(status_code=404, detail="APK not found")
+    return FileResponse(
+        apk_path,
+        media_type="application/vnd.android.package-archive",
+        filename="DigitalMate-debug.apk",
+    )
+
+
 @api_router.get("/")
 async def root():
     return {
