@@ -28,10 +28,10 @@ const OwnerRecognition = () => {
 
   const trainSamples = async () => {
     setBusy(true);
-    // Capture a short burst of owner samples from current behaviour.
-    for (let i = 0; i < 3; i++) {
+    // Capture enough owner samples in one action to build the baseline.
+    for (let i = 0; i < 8; i++) {
       await telemetry.sendTelemetry('owner');
-      await new Promise((r) => setTimeout(r, 250));
+      await new Promise((r) => setTimeout(r, 150));
     }
     await refresh();
     setBusy(false);

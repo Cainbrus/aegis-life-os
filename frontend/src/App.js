@@ -136,7 +136,7 @@ function App() {
       )}
 
       {/* Bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 flex justify-around py-2 z-40" data-testid="bottom-nav">
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 flex justify-around py-2 z-[10000]" data-testid="bottom-nav">
         {NAV.map((n) => {
           const Icon = n.icon;
           const active = tab === n.id || (tab === 'owner' && n.id === 'home');

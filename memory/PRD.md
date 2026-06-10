@@ -1,134 +1,115 @@
-# Digital Mate - Product Requirements Document
+# Digital Mate — Product Requirements Document
 
 ## Original Problem Statement
-Build "Digital Mate" (formerly Aegis) - a Hierarchical Proactive Intelligence (HPI) based "Life OS" application focused on proactive smartphone security.
+Digital Mate is a **stealth security & recovery app** (not a general "Life OS"). Core purpose:
+**security, owner recognition, and device recovery.** One excellent security app — not ten average apps in one.
 
-### Core Value Proposition
-"Your phone's bodyguard" - We don't just lock attackers out. We let them IN to fake data while capturing their photo and location.
+Stack: React + FastAPI + MongoDB, wrapped with Capacitor for Android.
 
-## User Personas
-1. **Privacy-Conscious Individual** - Wants to protect personal data from snooping partners, coworkers, or thieves
-2. **Domestic Violence Survivor** - Needs evidence collection and duress features for dangerous situations
-3. **Business Professional** - Requires secure storage for sensitive corporate data
-4. **Parent** - Wants to keep certain content private from children accessing their phone
+## Product Pivot (Dec 2025)
+Removed all general-purpose "Life OS" / demo features. Refocused entirely on security & recovery.
 
-## Implemented Features (Stage 1 MVP)
+### Removed entirely
+Finance, Health, Family Tracker, Workforce Monitor, Living City, Story Mode, Smart Email demo,
+Investor Demo Guide, Interactive Previews, Contextual Hub, Hub Screens, Learning Mode,
+Invisible (fake-phone) Mode, Voice Interface, old Landing Page, Setup Wizard, Onboarding,
+UserModeHome, AppModeContext (Demo/User dual-mode system).
 
-### ✅ Core Security Features
-- **Pattern Lock System** - Multiple pattern types (Owner, Duress, Wrong)
-- **Trap Mode™** - Shows fake data to intruders while gathering evidence
-- **Intruder Photo Capture** - Silent camera capture on wrong pattern attempts
-- **Invisible Vault** - Hidden vault accessed by dialing 8675309 in Phone app
-- **Duress Pattern** - Special pattern (2-5-8) shows fake data + silent alert
-- **Behavioral Guard™** - Detects unusual usage patterns
+## Core MVP Features
 
-### ✅ Dual App Modes
-- **Demo Mode** - Full-featured investor showcase
-- **User Mode** - Simplified public release version
-- Managed via `AppModeContext.js`
+### Priority 1 (implemented)
+- **Owner Recognition Engine** — real behavioural model (deterministic per-feature Gaussian
+  similarity vs a learned baseline). Signals: typing rhythm, typing consistency, touch duration,
+  swipe velocity, device motion, time-of-day. NOT random. Auto-trains after 8 owner samples.
+- **Trap Mode** — when trust score < 60% (unrecognized user), an in-app decoy "safe phone" is shown,
+  sensitive data hidden, every interaction recorded, owner alerted. Exit requires owner code.
+- **Intruder Detection & Evidence Logging** — low-trust sessions log a critical event; all suspicious
+  activity, access attempts, device changes and locations recorded to a timeline.
+- **Device Recovery** — locate (real GPS → map), remote lock (Lost Mode), location history.
 
-### ✅ Interactive Demo
-- Fully interactive previews with modals
-- "View Photo" buttons show actual mock content
-- Complete investor walkthrough available
+### Priority 2 (implemented)
+- **Remote Lock / Unlock** — owner-code verified.
+- **Remote Wipe** — owner-code + explicit 2-step confirmation (safe against accidental wipes).
+- **Emergency Owner Command** — hidden owner secret verification (`/security/emergency/verify`).
+- **Lost Phone Tracking** — `/security/recovery/locate` + `/location` history.
 
-### ✅ Digital Mate Website
-- Multi-page marketing site (Home, Features, Pricing, Investors, About, Contact)
-- Investor page with pitch materials and auto-reply system
-- Pricing: Basic ($4.99/mo), Pro ($9.99/mo)
+### Priority 3 (partial)
+- **AI Digital Mate Assistant** — chat assistant (GPT-4o via Emergent LLM) — functional.
+- Email organization / Notes & Tasks / Calendar — NOT yet built (backlog).
 
-### ✅ Android App Conversion
-- Capacitor setup complete
-- Native Android project at `/app/frontend/android/`
-- Build guide at `/app/ANDROID_BUILD_GUIDE.md`
-
-### ✅ Investor Package
-- `/app/DIGITAL_MATE_INVESTOR_PACKAGE.md` - Vision & pitch
-- `/app/DIGITAL_MATE_FINANCIAL_MODEL.md` - Financial projections
-- `/app/HOW_TO_MAKE_MONEY.md` - Monetization strategy
-
-## Pricing Model (Updated Dec 2025)
-| Tier | Price | Features |
-|------|-------|----------|
-| Basic | $4.99/mo | Pattern lock, Invisible Vault, Intruder photos, GPS, Remote lock, 3 contacts |
-| Pro | $9.99/mo | Everything in Basic + Trap Mode™, Duress pattern, Behavioral Guard™, Remote wipe, Unlimited contacts, AI features, Priority support |
-| Enterprise | Custom | Business/fleet pricing |
-
-## Tech Stack
-- **Frontend**: React, Tailwind CSS, Shadcn/UI
-- **Backend**: FastAPI (Python)
-- **Database**: MongoDB
-- **Mobile**: Capacitor (Android wrapper)
-- **AI**: Emergent LLM Key integration
-
-## Key Credentials
-- **Owner Pattern**: 1-5-9-8-7 (full access)
-- **Duress Pattern**: 2-5-8 (fake data + silent alert)
-- **Invisible Vault Code**: 8675309 (dial in Phone app)
-
-## Code Architecture
+## Architecture
 ```
 /app/
-├── backend/server.py
+├── backend/
+│   ├── server.py                    # core (auth, vault, AI chat, stripe) + includes security_router
+│   └── routes/
+│       └── security_engine.py       # NEW: /api/security/* owner-recognition, trap, evidence, recovery
 ├── frontend/
-│   ├── android/                  # Capacitor Android project
-│   ├── src/
-│   │   ├── App.js               # Main app + mode management
-│   │   ├── components/
-│   │   │   ├── AegisInvisibleMode.js
-│   │   │   ├── ContextualHub.js
-│   │   │   ├── DigitalMateWebsite.js
-│   │   │   ├── InteractivePreviews.js
-│   │   │   ├── PhoneDialer.js
-│   │   │   └── UserModeHome.js
-│   │   └── contexts/AppModeContext.js
-│   └── capacitor.config.json
-├── ANDROID_BUILD_GUIDE.md
-├── DIGITAL_MATE_INVESTOR_PACKAGE.md
-├── DIGITAL_MATE_FINANCIAL_MODEL.md
-└── HOW_TO_MAKE_MONEY.md
+│   ├── android/                     # Capacitor project (web assets synced into assets/public)
+│   └── src/
+│       ├── App.js                   # lean shell: website ↔ app, bottom nav, trap detection, vault
+│       ├── services/TelemetryService.js   # NEW: behavioural signal collector + device_id
+│       └── components/
+│           ├── SecurityDashboard.js  # NEW: home hub
+│           ├── OwnerRecognition.js   # NEW: trust gauge, training, signal breakdown
+│           ├── RecoveryCenter.js     # NEW: locate/lock/unlock/wipe
+│           ├── EvidenceCenter.js     # NEW: timeline
+│           ├── TrapDecoy.js          # NEW: in-app decoy
+│           ├── AegisChat.js          # AI Mate (kept)
+│           ├── CalculatorVault.js / PhoneDialer.js  # Invisible Vault (kept)
+│           └── DigitalMateWebsite.js / SubscriptionPages.js  # marketing + Stripe (kept)
 ```
 
+## Security Engine API (`/api/security/*`)
+- `POST /telemetry` — collect behavioural sample (label "owner" trains baseline ≥8 samples)
+- `POST /score` — deterministic trust score; auto-activates trap + logs event if < 0.60
+- `GET /status?device_id` — trained, sample_count, trust, trap, locked, intruders, threats
+- `POST /baseline/reset`
+- `GET/POST/DELETE /events` — evidence timeline
+- `GET /trap/status`, `POST /trap/activate|deactivate|log-action`
+- `POST /recovery/lock|unlock|wipe|locate`, `GET /recovery/location`
+- `POST /emergency/verify`
+
+## Credentials
+- Owner recovery code: `15987` (env `OWNER_RECOVERY_CODE`) — unlock, trap deactivate, wipe confirm
+- Invisible Vault dial code: `8675309`
+- device_id: client-generated, localStorage `dm_device_id`. No login (single-owner model).
+
+## Platform Reality (important)
+A Capacitor app runs in the Android sandbox. It CANNOT truly replace/lock the whole phone OS,
+fake the entire device, or wipe other apps' data. Those need a native Device Admin / launcher app
+(future Kotlin phase). Current build delivers the real, achievable version: in-app owner recognition,
+in-app decoy Trap Mode, app/vault remote lock & wipe, and real GPS recovery.
+
+## Testing Status (Dec 2025)
+- Backend: 17/17 pytest pass (`/app/backend/tests/test_security_engine.py`).
+- Frontend: 100% of required security flows verified (testing agent, iteration_1).
+- APK: rebuilt (debug) with new security bundle; served at `/api/download/apk`.
+
+## Android Build (in-container)
+Container is ARM64; Google build-tools are x86_64 → `aapt2` routed through `qemu-x86_64`
+via `android.aapt2FromMavenOverride`. Toolchain (JDK17 + Android SDK + qemu) must be reinstalled
+after any pod reset since it lives outside `/app`.
+
 ## Roadmap
+### P0/P1 — Done
+- [x] Delete all Life OS / demo features
+- [x] Owner Recognition engine (real model)
+- [x] Trap Mode (recognition-driven decoy)
+- [x] Evidence Center
+- [x] Device Recovery (locate/lock/unlock/wipe, safe confirm)
+- [x] Rebuild focused APK
 
-### P1 - Next (Upcoming)
-- [x] Hide Demo Mode toggle from public User Mode UI ✅ (Dec 2025)
-- [x] Stripe payment integration ✅ (Dec 2025) - TEST MODE
-- [x] Privacy Policy & Terms of Service pages ✅ (Dec 2025)
-- [x] Default to User Mode ✅ (Dec 2025)
-- [x] Email collection before checkout ✅ (Dec 2025)
-- [x] Subscription success/cancel pages ✅ (Dec 2025)
-- [ ] Build and test final APK locally
-- [ ] Switch Stripe to production key
-- [ ] Submit to Google Play Store
+### P2 — Next
+- [ ] Email organization, Notes & Tasks, Calendar in AI Mate
+- [ ] Intruder front-camera capture wired to trap activation (capture is built, needs auto-trigger)
+- [ ] Background telemetry scoring while app is open (push notifications on intrusion)
 
-**Payment Flow:**
-1. Subscribe button → Email modal → Stripe Checkout
-2. Success → `/subscription/success` (polls status, shows confirmation)
-3. Cancel → `/subscription/cancel` (retry or continue free)
+### P3 — Future / Native
+- [ ] Native Device Admin / launcher app for true device-level lock/wipe & full-OS decoy
+- [ ] Switch Stripe to production key; Play Store submission
+- [ ] iOS via Capacitor
 
-**Secret Demo Mode Access:** Tap "Digital Mate" title 7 times in User Mode to unlock Demo Mode
-
-**Stripe API Endpoints:**
-- POST `/api/subscriptions/checkout` - Create checkout session
-- GET `/api/subscriptions/status/{session_id}` - Check payment status
-- POST `/api/webhook/stripe` - Webhook handler
-- GET `/api/subscriptions/packages` - Get available packages
-
-### P2 - Soon
-- [ ] Hidden Message/Email Organizer
-- [ ] Voice Commands (OpenAI Whisper integration)
-
-### P3 - Future
-- [ ] Build remaining wireframed screens from Aegis vision
-- [ ] iOS version via Capacitor
-- [ ] Push notification system
-- [ ] Annual subscription options
-
-## Known Issues
-- Testing agent has intermittent frontend loading issues (use screenshot tool as workaround)
-
-## Project Status
-- **Phase**: Stage 1 MVP (Pre-launch)
-- **Build Status**: Ready for Android compilation
-- **Last Updated**: December 2025
+## Status
+- Phase: Stage 1 MVP (security-focused) — working & tested
+- Last Updated: December 2025
