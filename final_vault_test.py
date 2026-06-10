@@ -8,7 +8,7 @@ import json
 import time
 from datetime import datetime
 
-base_url = "https://aegis-os.preview.emergentagent.com"
+base_url = "https://digital-mate-mvp.preview.emergentagent.com"
 api_url = f"{base_url}/api"
 
 def wait_for_lockout_clear():

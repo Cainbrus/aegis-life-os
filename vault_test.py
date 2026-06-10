@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 
 class VaultTester:
-    def __init__(self, base_url="https://aegis-os.preview.emergentagent.com"):
+    def __init__(self, base_url="https://digital-mate-mvp.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0

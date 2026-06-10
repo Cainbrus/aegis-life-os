@@ -96,9 +96,16 @@ Build "Digital Mate" (formerly Aegis) - a Hierarchical Proactive Intelligence (H
 - [x] Stripe payment integration ✅ (Dec 2025) - TEST MODE
 - [x] Privacy Policy & Terms of Service pages ✅ (Dec 2025)
 - [x] Default to User Mode ✅ (Dec 2025)
+- [x] Email collection before checkout ✅ (Dec 2025)
+- [x] Subscription success/cancel pages ✅ (Dec 2025)
 - [ ] Build and test final APK locally
 - [ ] Switch Stripe to production key
 - [ ] Submit to Google Play Store
+
+**Payment Flow:**
+1. Subscribe button → Email modal → Stripe Checkout
+2. Success → `/subscription/success` (polls status, shows confirmation)
+3. Cancel → `/subscription/cancel` (retry or continue free)
 
 **Secret Demo Mode Access:** Tap "Digital Mate" title 7 times in User Mode to unlock Demo Mode
 
