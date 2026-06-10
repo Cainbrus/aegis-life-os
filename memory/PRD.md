@@ -94,21 +94,31 @@ after any pod reset since it lives outside `/app`.
 ## Roadmap
 ### P0/P1 — Done
 - [x] Delete all Life OS / demo features
-- [x] Owner Recognition engine (real model)
+- [x] Owner Recognition engine (real model) + one-click baseline training
 - [x] Trap Mode (recognition-driven decoy)
-- [x] Evidence Center
+- [x] Evidence Center (photos + locations + events, lightbox, LEVEL badges)
 - [x] Device Recovery (locate/lock/unlock/wipe, safe confirm)
-- [x] Rebuild focused APK
+- [x] **Trap Trigger Levels** — L1 log / L2 photo+GPS+decoy / L3 notify+recovery-lock
+- [x] **Front-camera intruder capture** on trap (L2/L3) -> stored as evidence
+- [x] **GPS location logging every 2 min during trap**
+- [x] **Push/local notification to owner** on intrusion (browser Notification API + service worker)
+- [x] **Panic / Lost Phone button** (lock + track + capture + alert, 2-step confirm)
+- [x] Rebuild focused APK (debug)
 
-### P2 — Next
-- [ ] Email organization, Notes & Tasks, Calendar in AI Mate
-- [ ] Intruder front-camera capture wired to trap activation (capture is built, needs auto-trigger)
-- [ ] Background telemetry scoring while app is open (push notifications on intrusion)
+### P2 — Next (security only — no productivity features per owner)
+- [ ] Cross-device owner alerts (FCM/email companion) — currently in-app/local notification
+- [ ] On-device background scoring when app is closed (needs native service)
+- [ ] SIM-change / new-device detection events
 
-### P3 — Future / Native
-- [ ] Native Device Admin / launcher app for true device-level lock/wipe & full-OS decoy
-- [ ] Switch Stripe to production key; Play Store submission
-- [ ] iOS via Capacitor
+### P3 — Native Android (Kotlin) phase — see /app/NATIVE_ANDROID_ROADMAP.md
+- [ ] Device Admin (real device lock/wipe)
+- [ ] Launcher replacement (full-OS decoy)
+- [ ] Background recovery foreground service (location + command polling)
+- [ ] Native sensor-based owner recognition
+- [ ] Switch Stripe to production key; Play Store submission (with Device Admin disclosures)
+
+> Note: explicitly NOT building Email, Calendar, Notes or productivity features.
+> Focus stays 100% on security, recovery and owner recognition.
 
 ## Status
 - Phase: Stage 1 MVP (security-focused) — working & tested
