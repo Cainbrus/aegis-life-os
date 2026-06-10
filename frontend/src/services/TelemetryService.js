@@ -133,6 +133,48 @@ class TelemetryService {
     try { return (await axios.post(`${API}/security/recovery/locate`, { device_id: this.deviceId, ...loc })).data; }
     catch (e) { return null; }
   }
+
+  // Silently capture a front-camera photo and store it as evidence.
+  async capturePhoto(level = 2) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 480 } } });
+      const video = document.createElement('video');
+      video.srcObject = stream; video.setAttribute('playsinline', 'true'); video.muted = true;
+      await video.play();
+      await new Promise((r) => setTimeout(r, 400));
+      const vw = video.videoWidth || 480, vh = video.videoHeight || 360;
+      const w = Math.min(vw, 480), scale = w / vw;
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = Math.round(vh * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      stream.getTracks().forEach((t) => t.stop());
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+      const loc = await this.getLocation();
+      await axios.post(`${API}/security/evidence/photo`, { device_id: this.deviceId, photo: dataUrl, level, lat: loc?.lat, lng: loc?.lng });
+      return dataUrl;
+    } catch (e) {
+      try {
+        await axios.post(`${API}/security/events`, {
+          device_id: this.deviceId, type: 'intruder_photo', severity: 'critical',
+          title: 'Camera capture blocked', detail: 'Front camera was unavailable during intrusion.',
+          metadata: { level },
+        });
+      } catch (_) { /* ignore */ }
+      return null;
+    }
+  }
+
+  async panic() {
+    const loc = await this.getLocation();
+    try { return (await axios.post(`${API}/security/panic`, { device_id: this.deviceId, lat: loc?.lat, lng: loc?.lng })).data; }
+    catch (e) { return null; }
+  }
+
+  async alerts() {
+    try { return (await axios.get(`${API}/security/alerts?device_id=${this.deviceId}`)).data; }
+    catch (e) { return null; }
+  }
 }
 
 const telemetry = new TelemetryService();

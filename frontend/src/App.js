@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Toaster, toast } from 'sonner';
 import { Shield, Compass, FileClock, Bot, X } from 'lucide-react';
@@ -14,6 +14,7 @@ import PhoneDialer from './components/PhoneDialer';
 import DigitalMateWebsite from './components/DigitalMateWebsite';
 import { SubscriptionSuccess, SubscriptionCancel } from './components/SubscriptionPages';
 import telemetry from './services/TelemetryService';
+import { requestNotificationPermission, sendAlert } from './services/PushNotificationService';
 import './App.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -37,6 +38,20 @@ function App() {
   const [verifyCode, setVerifyCode] = useState('');
   const [showSettings, setShowSettings] = useState(false);
 
+  // refs for trap escalation handling
+  const capturedRef = useRef(false);
+  const notifiedRef = useRef(false);
+  const trackRef = useRef(null);
+
+  const startTracking = () => {
+    if (trackRef.current) return;
+    telemetry.reportLocation();
+    trackRef.current = setInterval(() => telemetry.reportLocation(), 120000); // every 2 min
+  };
+  const stopTracking = () => {
+    if (trackRef.current) { clearInterval(trackRef.current); trackRef.current = null; }
+  };
+
   // Subscription redirect routing (Stripe)
   const path = window.location.pathname;
   const params = new URLSearchParams(window.location.search);
@@ -54,16 +69,46 @@ function App() {
   useEffect(() => {
     if (screen !== 'app') return;
     telemetry.start();
+    requestNotificationPermission();
 
     const learn = setInterval(() => { telemetry.sendTelemetry('owner'); }, 12000);
     const guard = setInterval(async () => {
       const r = await telemetry.score();
-      if (r) setTrapActive(r.trap_active);
+      if (!r) return;
+      setTrapActive(r.trap_active);
+      const level = r.trap_level || 0;
+
+      // Level 2: capture intruder photo + start location tracking (once per episode)
+      if (level >= 2 && !capturedRef.current) {
+        capturedRef.current = true;
+        telemetry.capturePhoto(level);
+        startTracking();
+      }
+      // Level 3: notify owner + ensure recovery tracking
+      if (level >= 3 && !notifiedRef.current) {
+        notifiedRef.current = true;
+        sendAlert('Possible theft detected. Recovery mode activated and device locked.', 'security');
+      }
+      // Owner recognized again: reset escalation
+      if (level === 0) {
+        capturedRef.current = false;
+        notifiedRef.current = false;
+        stopTracking();
+      }
     }, 18000);
-    // initial sample + score
+
     telemetry.sendTelemetry('owner');
-    return () => { clearInterval(learn); clearInterval(guard); };
+    return () => { clearInterval(learn); clearInterval(guard); stopTracking(); };
   }, [screen]);
+
+  const handlePanic = async () => {
+    await telemetry.panic();
+    telemetry.capturePhoto(3);
+    startTracking();
+    sendAlert('Lost Phone mode activated. Live tracking and remote lock are on.', 'emergency');
+    setTab('recovery');
+    toast.success('Panic activated — device locked & tracking started');
+  };
 
   const exitTrap = async () => {
     if (verifyCode !== OWNER_CODE_HINT) { toast.error('Owner verification failed'); return; }
@@ -123,6 +168,7 @@ function App() {
           onNavigate={setTab}
           onOpenVault={() => setShowDialer(true)}
           onOpenSettings={() => setShowSettings(true)}
+          onPanic={handlePanic}
           onSecretDemo={() => toast.info('Developer mode is disabled in this build')}
         />
       )}

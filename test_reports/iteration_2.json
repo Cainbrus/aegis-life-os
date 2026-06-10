@@ -1,0 +1,42 @@
+{
+  "summary": "Tested the new escalation/panic/evidence/photo feature batch on top of the Digital Mate security MVP. Backend: 24/24 pytest tests pass — 7 brand new tests cover trap escalation L1->L2->L3 (with L3 auto-lock + lost_mode + owner_alert + critical access_attempt events), owner-score resets streak, POST /api/security/evidence/photo + GET /api/security/events round-trip with metadata.photo preserved, POST /api/security/panic (locks device + lost_mode true + trap_active false + last_location stored + owner alert created), GET /api/security/alerts shape (alerts/count/unread). Also updated the previous iteration_1 scoring tests to match the new escalation semantics (L1 first hit is warning + trap_active=false, L2 second hit goes critical + trap_active=true) — both pass now. Frontend (mobile 390x844, via 'Try the Demo →'): panic-btn opens panic-confirm-modal, panic-confirm-btn triggers /panic (backend confirmed locked=true, lost_mode=true, trap_level=3, alert created), navigates to Recovery tab, and dashboard then shows 'Lost Phone mode active'. Evidence Center renders seeded intruder photos as data-testid='evidence-photo' thumbnails, click opens evidence-lightbox, LEVEL badges display on escalation events. Owner Recognition: ONE click of 'Capture my behaviour' now trains the model (sample_count 9, trained=true after a single click, as required).",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Global / bottom-nav on mobile", "issues": ["The Emergent badge still overlaps the fixed bottom-nav on 390x844 (had to JS-hide it during tests). Pre-existing issue from iteration_1, not a regression."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_security_engine.py",
+    "/app/backend/tests/test_security_escalation.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/test_reports/pytest/escalation_results.xml"
+  ],
+  "action_items": [
+    "(Optional UX) Ensure bottom-nav z-index sits above the Emergent badge on mobile so users are never blocked tapping nav items — still pending from iteration_1.",
+    "(Optional polish) The headless test browser blocks getUserMedia, so capturePhoto inserts a 'Camera capture blocked' event with no metadata.photo — works as designed but worth documenting in user-facing docs."
+  ],
+  "critical_code_review_comments": [
+    "security_engine.py /score escalation is correct and deterministic: streak tracked in device_state, L3 sets locked=true + lost_mode=true + creates owner_alert. Only logs an event when escalating to a HIGHER level (no spam). Good.",
+    "/panic correctly sets trap_active=false at L3 (the device is locked by owner, not in decoy), stores last_location + push to location_history (capped at 50), and creates an alert. Good.",
+    "/evidence/photo stores the data URL inside metadata.photo of an intruder_photo critical event — clean reuse of the events store, surfaced by EvidenceCenter as a thumbnail.",
+    "FEATURE_KEYS, MIN_SAMPLES_TO_TRAIN=8 and OWNER_TRUST_THRESHOLD=0.60 are sensible defaults. OwnerRecognition now sends 8 samples in one click (fixes iteration_1 feedback) — single tap reaches the trained state.",
+    "/recovery/wipe still requires owner_code + confirm=true (403/400 guards intact). /trap/deactivate still requires owner_code (403 guard intact). No regression.",
+    "EvidenceCenter location row uses openstreetmap.org maps link (not google maps) — clickable <a> with href to /?mlat=&mlon=#map=16/.. — works.",
+    "App.js guard loop captures photo at L2 and sendAlert at L3 once per episode (capturedRef/notifiedRef), starts GPS tracking every 120s, resets refs when level back to 0. Clean.",
+    "No mongo _id leakage observed in any response."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_security_engine.py",
+    "/app/backend/tests/test_security_escalation.py"
+  ],
+  "success_rate": {"backend": "100% (24/24)", "frontend": "100% (panic + evidence photo + lightbox + LEVEL badges + one-click training all verified)"},
+  "test_credentials": "Owner recovery code: 15987; Invisible Vault dial code: 8675309; device_id auto-generated in localStorage key 'dm_device_id'.",
+  "seed_data_creation": "Tests create per-run TEST_esc_<uuid>, TEST_photo_<uuid>, TEST_panic_<uuid>, TEST_alerts_<uuid>, TEST_ui_<uuid> device_ids and clean them up via /baseline/reset, DELETE /events, and /recovery/unlock. No persistent seed data remains.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "To test FE photo rendering, seed via POST /api/security/evidence/photo using the SAME device_id the browser uses (set localStorage 'dm_device_id' BEFORE reload). Use mobile viewport 390x844 and click 'Try the Demo →'. Hide #emergent-badge via JS before tapping bottom-nav (data-testid='nav-evidence' / 'nav-recovery' / 'nav-home' / 'nav-mate'). Map links use openstreetmap.org (NOT google.com/maps). getUserMedia + geolocation are blocked headless — capturePhoto logs a placeholder 'Camera capture blocked' event with no photo data; for thumbnail rendering tests, ALWAYS seed via API.",
+  "rca of the issue": "N/A — no functional bugs found. All new escalation, panic, evidence-photo, alerts, and one-click training behaviours work end-to-end."
+}

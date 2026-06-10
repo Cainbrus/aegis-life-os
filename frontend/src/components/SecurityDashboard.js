@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Shield, Fingerprint, Compass, FileClock, Bot, Ghost, ChevronRight, Settings } from 'lucide-react';
+import { Shield, Fingerprint, Compass, FileClock, Bot, Ghost, ChevronRight, Settings, Siren } from 'lucide-react';
 import telemetry from '../services/TelemetryService';
 
-const SecurityDashboard = ({ onNavigate, onOpenVault, onOpenSettings, onSecretDemo }) => {
+const SecurityDashboard = ({ onNavigate, onOpenVault, onOpenSettings, onSecretDemo, onPanic }) => {
   const [status, setStatus] = useState(null);
   const [tap, setTap] = useState(0);
 
@@ -20,6 +20,10 @@ const SecurityDashboard = ({ onNavigate, onOpenVault, onOpenSettings, onSecretDe
   const trapActive = status?.trap_active;
   const trust = Math.round((status?.trust_score ?? 1) * 100);
   const trained = status?.trained;
+  const lostMode = status?.lost_mode;
+  const [confirmPanic, setConfirmPanic] = useState(false);
+
+  const doPanic = () => { setConfirmPanic(false); onPanic?.(); };
 
   const handleTitleTap = () => {
     const n = tap + 1; setTap(n);
@@ -62,14 +66,32 @@ const SecurityDashboard = ({ onNavigate, onOpenVault, onOpenSettings, onSecretDe
         </div>
       </div>
 
+      {/* Panic / Lost Phone */}
+      <button onClick={() => setConfirmPanic(true)} data-testid="panic-btn"
+        className={`w-full mb-5 rounded-2xl p-4 flex items-center justify-center gap-3 font-bold border transition-all ${lostMode ? 'bg-red-600/30 border-red-500/60 text-red-300' : 'bg-gradient-to-r from-red-600 to-rose-600 border-red-500/50 text-white hover:opacity-90'}`}>
+        <Siren size={22} />
+        {lostMode ? 'Lost Phone mode active — tracking' : 'Panic / Lost Phone'}
+      </button>
+
       {/* Feature tiles */}
       <div className="space-y-3">
         <Tile icon={Fingerprint} title="Owner Recognition" subtitle={trained ? 'Model trained' : `${status?.samples_needed ?? 8} samples to go`} color="from-cyan-500 to-blue-500" onClick={() => onNavigate('owner')} testid="tile-owner" />
         <Tile icon={Ghost} title="Invisible Vault" subtitle="Dial your secret code to open" color="from-purple-500 to-fuchsia-500" onClick={onOpenVault} testid="tile-vault" />
         <Tile icon={Compass} title="Device Recovery" subtitle="Locate, lock or wipe" color="from-emerald-500 to-teal-500" onClick={() => onNavigate('recovery')} testid="tile-recovery" />
-        <Tile icon={FileClock} title="Evidence Center" subtitle="Suspicious activity timeline" color="from-amber-500 to-orange-500" onClick={() => onNavigate('evidence')} testid="tile-evidence" />
+        <Tile icon={FileClock} title="Evidence Center" subtitle="Photos, locations &amp; events" color="from-amber-500 to-orange-500" onClick={() => onNavigate('evidence')} testid="tile-evidence" />
         <Tile icon={Bot} title="AI Digital Mate" subtitle="Your security assistant" color="from-indigo-500 to-violet-500" onClick={() => onNavigate('mate')} testid="tile-mate" />
       </div>
+
+      {confirmPanic && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" data-testid="panic-confirm-modal">
+          <div className="w-full max-w-sm rounded-2xl bg-slate-800 border border-red-500/40 p-5">
+            <div className="flex items-center gap-2 text-red-400 mb-2"><Siren size={20} /><h3 className="font-bold text-white">Activate Lost Phone mode?</h3></div>
+            <p className="text-slate-400 text-sm mb-4">This locks the device, starts live location tracking, captures a photo and alerts you.</p>
+            <button onClick={doPanic} data-testid="panic-confirm-btn" className="w-full py-3 rounded-xl bg-red-500 text-white font-bold">Yes, activate now</button>
+            <button onClick={() => setConfirmPanic(false)} className="w-full mt-2 py-2 text-slate-400 text-sm">Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -108,22 +108,29 @@ class TestScoring:
         assert r1["trust_score"] == r2["trust_score"], "Score must be deterministic"
 
     def test_score_intruder_low_trust_and_trap(self, session, device_id):
-        r = session.post(f"{API}/score", json={
+        # Escalation: 1st low-trust => L1 (logging only), 2nd => L2 (trap_active)
+        r1 = session.post(f"{API}/score", json={
             "device_id": device_id, "features": INTRUDER_FEATURES
-        }, timeout=10)
-        assert r.status_code == 200
-        d = r.json()
-        assert d["trust_score"] < 0.6, f"Expected <0.6, got {d['trust_score']}"
-        assert d["is_owner"] is False
-        assert d["trap_active"] is True
+        }, timeout=10).json()
+        assert r1["trust_score"] < 0.6
+        assert r1["is_owner"] is False
+        assert r1["trap_level"] == 1
+        assert r1["trap_active"] is False
+
+        r2 = session.post(f"{API}/score", json={
+            "device_id": device_id, "features": INTRUDER_FEATURES
+        }, timeout=10).json()
+        assert r2["trap_level"] == 2
+        assert r2["trap_active"] is True
 
     def test_intruder_logs_critical_event(self, session, device_id):
         r = session.get(f"{API}/events", params={"device_id": device_id}, timeout=10)
         assert r.status_code == 200
         events = r.json()["events"]
-        critical = [e for e in events if e["severity"] == "critical"]
+        # After L2 we should have a critical access_attempt event
+        critical = [e for e in events if e["severity"] == "critical"
+                    and e["type"] == "access_attempt"]
         assert len(critical) >= 1
-        assert any(e["type"] == "access_attempt" for e in critical)
 
 
 # ------------------ Recovery ------------------

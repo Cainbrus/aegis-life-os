@@ -73,6 +73,15 @@ class TrapAction(BaseModel):
     detail: str = ""
 
 
+class PhotoIn(BaseModel):
+    device_id: str
+    photo: str                    # data URL (front camera jpeg)
+    reason: str = "trap"
+    level: int = 2
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+
+
 class RecoveryAction(BaseModel):
     device_id: str
     owner_code: Optional[str] = None
@@ -116,6 +125,21 @@ async def _log_event(device_id: str, type_: str, severity: str, title: str,
     await db.security_events.insert_one(evt)
     evt.pop("_id", None)
     return evt
+
+
+async def _create_alert(device_id: str, title: str, body: str, level: int = 3):
+    alert = {
+        "id": str(uuid.uuid4()),
+        "device_id": device_id,
+        "title": title,
+        "body": body,
+        "level": level,
+        "read": False,
+        "created_at": _now(),
+    }
+    await db.owner_alerts.insert_one(alert)
+    alert.pop("_id", None)
+    return alert
 
 
 def _gaussian_similarity(x: float, mean: float, std: float) -> float:
@@ -227,39 +251,75 @@ async def score_session(req: ScoreRequest):
     trust = sum(sims) / len(sims)
     is_owner = trust >= OWNER_TRUST_THRESHOLD
 
-    # Persist latest trust + (optional) location.
-    update = {"last_trust_score": round(trust, 3), "last_scored_at": _now()}
+    # --- Trap escalation levels ---
+    # L1: unknown behaviour -> start logging
+    # L2: multiple failed checks -> capture photo + track location + show decoy
+    # L3: confirmed theft -> notify owner + recovery mode (lock + lost mode)
+    state = await db.device_state.find_one({"device_id": req.device_id}, {"_id": 0}) or {}
+    streak = int(state.get("low_trust_streak", 0))
+    prev_level = int(state.get("trap_level", 0))
+
+    if is_owner:
+        streak = 0
+        level = 0
+        trap_active = False
+    else:
+        streak += 1
+        level = 1 if streak == 1 else (2 if streak == 2 else 3)
+        trap_active = level >= 2
+
+    set_state = {
+        "device_id": req.device_id,
+        "low_trust_streak": streak,
+        "trap_level": level,
+        "trap_active": trap_active,
+        "last_trust_score": round(trust, 3),
+        "last_scored_at": _now(),
+    }
     if req.lat is not None and req.lng is not None:
-        update["last_location"] = {"lat": req.lat, "lng": req.lng, "at": _now()}
+        set_state["last_location"] = {"lat": req.lat, "lng": req.lng, "at": _now()}
+    if level >= 3:
+        set_state["locked"] = True
+        set_state["lost_mode"] = True
     await db.device_state.update_one(
-        {"device_id": req.device_id},
-        {"$set": {**update, "device_id": req.device_id}},
-        upsert=True,
+        {"device_id": req.device_id}, {"$set": set_state}, upsert=True
     )
 
-    trap_active = False
-    if not is_owner:
-        # Low trust -> activate trap mode + log intruder evidence.
-        state = await db.device_state.find_one({"device_id": req.device_id}, {"_id": 0}) or {}
-        if not state.get("trap_active"):
-            await db.device_state.update_one(
-                {"device_id": req.device_id},
-                {"$set": {"trap_active": True, "trap_started_at": _now()}},
-                upsert=True,
-            )
+    # Log only on escalation to a higher level
+    if not is_owner and level > prev_level:
+        if level == 1:
             await _log_event(
-                req.device_id, "access_attempt", "critical",
-                "Unrecognized user detected",
-                f"Behavioural trust score {round(trust*100)}% is below the {int(OWNER_TRUST_THRESHOLD*100)}% owner threshold. Trap Mode activated.",
-                metadata={"trust_score": round(trust, 3), "signals": contributions},
+                req.device_id, "access_attempt", "warning",
+                "Level 1 - Unknown behaviour detected",
+                f"Trust {round(trust*100)}% below the {int(OWNER_TRUST_THRESHOLD*100)}% threshold. Logging started.",
+                metadata={"trust_score": round(trust, 3), "level": 1, "signals": contributions},
                 lat=req.lat, lng=req.lng,
             )
-        trap_active = True
+        elif level == 2:
+            await _log_event(
+                req.device_id, "access_attempt", "critical",
+                "Level 2 - Multiple failed recognition checks",
+                "Capturing intruder photo and starting location tracking. Decoy environment shown.",
+                metadata={"trust_score": round(trust, 3), "level": 2}, lat=req.lat, lng=req.lng,
+            )
+        elif level == 3:
+            await _log_event(
+                req.device_id, "access_attempt", "critical",
+                "Level 3 - Confirmed theft",
+                "Owner notified. Recovery mode activated and device locked.",
+                metadata={"trust_score": round(trust, 3), "level": 3}, lat=req.lat, lng=req.lng,
+            )
+            await _create_alert(
+                req.device_id, "Possible theft detected",
+                "Digital Mate locked your device and started recovery tracking. Open the app to locate it.",
+            )
 
     return {
         "trust_score": round(trust, 3),
         "is_owner": is_owner,
+        "trap_level": level,
         "trap_active": trap_active,
+        "streak": streak,
         "status": "active",
         "signals": contributions,
     }
@@ -286,6 +346,7 @@ async def security_status(device_id: str):
         "samples_needed": max(0, MIN_SAMPLES_TO_TRAIN - sample_count),
         "trust_score": state.get("last_trust_score", 1.0),
         "trap_active": bool(state.get("trap_active", False)),
+        "trap_level": int(state.get("trap_level", 0)),
         "locked": bool(state.get("locked", False)),
         "lost_mode": bool(state.get("lost_mode", False)),
         "wiped": bool(state.get("wiped", False)),
@@ -322,6 +383,46 @@ async def list_events(device_id: str, limit: int = 100):
 async def clear_events(device_id: str):
     res = await db.security_events.delete_many({"device_id": device_id})
     return {"ok": True, "deleted": res.deleted_count}
+
+
+@router.post("/evidence/photo")
+async def add_photo(p: PhotoIn):
+    """Store a front-camera intruder photo and log it on the evidence timeline."""
+    return await _log_event(
+        p.device_id, "intruder_photo", "critical",
+        "Intruder photo captured",
+        f"Front camera photo captured at Trap Level {p.level}.",
+        metadata={"photo": p.photo, "level": p.level}, lat=p.lat, lng=p.lng,
+    )
+
+
+@router.get("/alerts")
+async def list_alerts(device_id: str):
+    cur = db.owner_alerts.find({"device_id": device_id}, {"_id": 0}).sort("created_at", -1).limit(50)
+    alerts = await cur.to_list(length=50)
+    return {"alerts": alerts, "count": len(alerts), "unread": sum(1 for a in alerts if not a.get("read"))}
+
+
+@router.post("/panic")
+async def panic(req: RecoveryAction):
+    """Owner-initiated Lost Phone: lock, enable lost mode + recovery tracking, alert owner."""
+    set_state = {
+        "device_id": req.device_id, "locked": True, "lost_mode": True,
+        "trap_level": 3, "trap_active": False, "panic_at": _now(),
+    }
+    await db.device_state.update_one({"device_id": req.device_id}, {"$set": set_state}, upsert=True)
+    if req.lat is not None and req.lng is not None:
+        loc = {"lat": req.lat, "lng": req.lng, "at": _now()}
+        await db.device_state.update_one(
+            {"device_id": req.device_id},
+            {"$set": {"last_location": loc}, "$push": {"location_history": {"$each": [loc], "$slice": -50}}},
+        )
+    await _log_event(req.device_id, "recovery", "critical", "Panic / Lost Phone activated",
+                     "Owner triggered panic: device locked and recovery tracking started.",
+                     lat=req.lat, lng=req.lng)
+    await _create_alert(req.device_id, "Lost Phone mode activated",
+                        "You activated Panic mode. Live tracking and remote lock are on.")
+    return {"ok": True, "locked": True, "trap_level": 3}
 
 
 # ============================ Trap Mode ============================

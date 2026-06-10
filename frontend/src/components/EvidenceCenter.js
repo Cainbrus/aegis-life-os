@@ -23,6 +23,7 @@ const SEV_STYLES = {
 const EvidenceCenter = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lightbox, setLightbox] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -81,16 +82,32 @@ const EvidenceCenter = () => {
                       <span className="text-slate-500 text-xs whitespace-nowrap">{fmt(e.created_at)}</span>
                     </div>
                     {e.detail && <p className="text-slate-400 text-xs mt-1">{e.detail}</p>}
+                    {e.metadata?.level && (
+                      <span className="inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-300">LEVEL {e.metadata.level}</span>
+                    )}
+                    {e.type === 'intruder_photo' && e.metadata?.photo && (
+                      <img src={e.metadata.photo} alt="Intruder" onClick={() => setLightbox(e.metadata.photo)}
+                        data-testid="evidence-photo"
+                        className="mt-2 rounded-lg w-28 h-28 object-cover border border-red-500/40 cursor-pointer" />
+                    )}
                     {e.lat != null && e.lng != null && (
-                      <p className="text-cyan-400/80 text-xs mt-1 flex items-center gap-1">
+                      <a href={`https://www.openstreetmap.org/?mlat=${e.lat}&mlon=${e.lng}#map=16/${e.lat}/${e.lng}`}
+                        target="_blank" rel="noreferrer"
+                        className="text-cyan-400/80 text-xs mt-1 flex items-center gap-1 hover:text-cyan-300 w-fit">
                         <MapPin size={11} /> {e.lat.toFixed(4)}, {e.lng.toFixed(4)}
-                      </p>
+                      </a>
                     )}
                   </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {lightbox && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setLightbox(null)} data-testid="evidence-lightbox">
+          <img src={lightbox} alt="Intruder" className="max-w-full max-h-full rounded-lg" />
         </div>
       )}
     </div>
