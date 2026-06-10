@@ -18,14 +18,17 @@ UserModeHome, AppModeContext (Demo/User dual-mode system).
 ## Core MVP Features
 
 ### Priority 1 (implemented)
-- **Owner Recognition Engine** — real behavioural model (deterministic per-feature Gaussian
-  similarity vs a learned baseline). Signals: typing rhythm, typing consistency, touch duration,
-  swipe velocity, device motion, time-of-day. NOT random. Auto-trains after 8 owner samples.
-- **Trap Mode** — when trust score < 60% (unrecognized user), an in-app decoy "safe phone" is shown,
-  sensitive data hidden, every interaction recorded, owner alerted. Exit requires owner code.
-- **Intruder Detection & Evidence Logging** — low-trust sessions log a critical event; all suspicious
-  activity, access attempts, device changes and locations recorded to a timeline.
-- **Device Recovery** — locate (real GPS → map), remote lock (Lost Mode), location history.
+- **Owner Recognition Engine** — real deterministic model (per-feature Gaussian similarity vs a
+  learned baseline, std floored to ~10% of mean for robustness). **14 signals**: typing rhythm,
+  key dwell time, key flight time, typing consistency, touch duration, touch pressure, tap cadence,
+  swipe velocity, swipe length, device motion, time-of-day, day-of-week, **location habit**
+  (Gaussian over distance to known places), **app-usage habit** (familiar in-app screens).
+  Continuous — recognizes the owner even after the correct PIN. NOT random. Auto-trains after 8 owner samples.
+- **Trap Mode (INVISIBLE)** — no visible decoy/fake-phone; the app keeps operating normally while
+  silently capturing evidence. The intruder is never warned.
+- **Intruder Detection & Evidence Logging** — front-camera capture, access attempts, device/network
+  changes, locations — all recorded to a timeline (with photo thumbnails + map links).
+- **Device Recovery** — locate (real GPS -> map), remote lock (Lost Mode), location history.
 
 ### Priority 2 (implemented)
 - **Remote Lock / Unlock** — owner-code verified.
@@ -66,6 +69,7 @@ UserModeHome, AppModeContext (Demo/User dual-mode system).
 - `GET /status?device_id` — trained, sample_count, trust, trap, locked, intruders, threats
 - `POST /baseline/reset`
 - `GET/POST/DELETE /events` — evidence timeline
+- `POST /device-change` — record network change (any) or SIM change (also alerts owner)
 - `GET /trap/status`, `POST /trap/activate|deactivate|log-action`
 - `POST /recovery/lock|unlock|wipe|locate`, `GET /recovery/location`
 - `POST /emergency/verify`
@@ -98,17 +102,20 @@ after any pod reset since it lives outside `/app`.
 - [x] Trap Mode (recognition-driven decoy)
 - [x] Evidence Center (photos + locations + events, lightbox, LEVEL badges)
 - [x] Device Recovery (locate/lock/unlock/wipe, safe confirm)
-- [x] **Trap Trigger Levels** — L1 log / L2 photo+GPS+decoy / L3 notify+recovery-lock
+- [x] **Trap Trigger Levels** — L1 log / L2 silent photo+GPS / L3 notify+recovery-lock
 - [x] **Front-camera intruder capture** on trap (L2/L3) -> stored as evidence
 - [x] **GPS location logging every 2 min during trap**
 - [x] **Push/local notification to owner** on intrusion (browser Notification API + service worker)
 - [x] **Panic / Lost Phone button** (lock + track + capture + alert, 2-step confirm)
+- [x] **Expanded owner recognition** — 14 signals incl. dwell/flight/pressure/tap/swipe-length, location & app-usage habits; std-floor robustness
+- [x] **Invisible Trap Mode** — removed fake-phone decoy; silent evidence capture only
+- [x] **Network-change recording** + SIM-change endpoint (native fills SIM detection)
 - [x] Rebuild focused APK (debug)
 
 ### P2 — Next (security only — no productivity features per owner)
 - [ ] Cross-device owner alerts (FCM/email companion) — currently in-app/local notification
 - [ ] On-device background scoring when app is closed (needs native service)
-- [ ] SIM-change / new-device detection events
+- [ ] New-device detection events
 
 ### P3 — Native Android (Kotlin) phase — see /app/NATIVE_ANDROID_ROADMAP.md
 - [ ] Device Admin (real device lock/wipe)
