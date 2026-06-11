@@ -405,6 +405,12 @@ async def add_profile(req: ProfileIn):
 async def verify_access_code(req: CodeIn):
     """Unlock the dashboard from the cover app with an owner's access code."""
     name = await _verify_access(req.device_id, req.code)
+    if name is not None:
+        await db.device_state.update_one(
+            {"device_id": req.device_id},
+            {"$set": {"device_id": req.device_id, "last_owner": name, "last_unlocked_at": _now()}},
+            upsert=True,
+        )
     return {"verified": name is not None, "profile": name}
 
 
@@ -618,6 +624,9 @@ async def security_status(device_id: str):
         "lost_mode": bool(state.get("lost_mode", False)),
         "wiped": bool(state.get("wiped", False)),
         "last_location": state.get("last_location"),
+        "last_owner": state.get("last_owner"),
+        "last_unlocked_at": state.get("last_unlocked_at"),
+        "last_scored_at": state.get("last_scored_at"),
         "intruders_detected": intruders,
         "threats_blocked": threats,
     }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Shield, Fingerprint, Compass, FileClock, Bot, Lock, ChevronRight, Settings, Siren, ScanLine } from 'lucide-react';
+import { Fingerprint, Compass, FileClock, Bot, Lock, ChevronRight, Settings, Siren, ScanLine } from 'lucide-react';
 import telemetry from '../services/TelemetryService';
+import LiveMonitor from './LiveMonitor';
 
 const SecurityDashboard = ({ onNavigate, onOpenSettings, onSecretDemo, onPanic, onLock }) => {
   const [status, setStatus] = useState(null);
@@ -17,8 +18,6 @@ const SecurityDashboard = ({ onNavigate, onOpenSettings, onSecretDemo, onPanic, 
     return () => clearInterval(i);
   }, [refresh]);
 
-  const trapActive = status?.trap_active;
-  const trust = Math.round((status?.trust_score ?? 1) * 100);
   const trained = status?.trained;
   const lostMode = status?.lost_mode;
   const [confirmPanic, setConfirmPanic] = useState(false);
@@ -49,27 +48,8 @@ const SecurityDashboard = ({ onNavigate, onOpenSettings, onSecretDemo, onPanic, 
         </div>
       </div>
 
-      {/* Protection status hero */}
-      <div className={`rounded-3xl p-6 mb-5 border ${trapActive ? 'bg-gradient-to-br from-red-950/60 to-orange-950/40 border-red-500/40' : 'bg-gradient-to-br from-emerald-950/50 to-cyan-950/40 border-emerald-500/30'}`} data-testid="protection-hero">
-        <div className="flex items-center gap-3 mb-5">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${trapActive ? 'bg-red-500/20' : 'bg-emerald-500/20'}`}>
-            {trapActive ? <Siren className="text-red-400" size={24} /> : <Shield className="text-emerald-400" size={24} />}
-          </div>
-          <div>
-            <p className={`font-bold text-lg ${trapActive ? 'text-red-400' : 'text-emerald-400'}`}>
-              {trapActive ? 'Trap Mode Active' : 'Protected'}
-            </p>
-            <p className="text-slate-400 text-sm">
-              {trapActive ? 'Decoy shown to unrecognized user' : trained ? 'Owner recognition online' : 'Learning your behaviour'}
-            </p>
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          <Stat label="Trust" value={`${trust}%`} color={trust >= 60 ? 'text-cyan-400' : 'text-red-400'} testid="stat-trust" />
-          <Stat label="Threats" value={status?.threats_blocked ?? 0} color="text-amber-400" testid="stat-threats" />
-          <Stat label="Intruders" value={status?.intruders_detected ?? 0} color="text-red-400" testid="stat-intruders" />
-        </div>
-      </div>
+      {/* Live "Who's using my phone right now?" — the centerpiece */}
+      <LiveMonitor />
 
       {/* Panic / Lost Phone */}
       <button onClick={() => setConfirmPanic(true)} data-testid="panic-btn"
@@ -100,13 +80,6 @@ const SecurityDashboard = ({ onNavigate, onOpenSettings, onSecretDemo, onPanic, 
     </div>
   );
 };
-
-const Stat = ({ label, value, color, testid }) => (
-  <div className="bg-black/30 rounded-xl p-3 text-center" data-testid={testid}>
-    <p className={`text-2xl font-black ${color}`}>{value}</p>
-    <p className="text-slate-500 text-xs mt-0.5">{label}</p>
-  </div>
-);
 
 const Tile = ({ icon: Icon, title, subtitle, color, onClick, testid }) => (
   <button onClick={onClick} data-testid={testid}

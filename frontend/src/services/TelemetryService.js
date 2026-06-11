@@ -39,6 +39,8 @@ class TelemetryService {
     this.touchMoveRef = null;
     this.currentScreen = 'home';
     this.lastNetwork = null;
+    this.lastScore = null;
+    this.lastScoreAt = 0;
     this.started = false;
   }
 
@@ -176,6 +178,8 @@ class TelemetryService {
         device_id: this.deviceId, features: this.buildFeatures(),
         screen: this.currentScreen, lat: loc?.lat, lng: loc?.lng,
       });
+      this.lastScore = res.data;       // cached for the live "who's using my phone" widget
+      this.lastScoreAt = Date.now();
       return res.data;
     } catch (e) { return null; }
   }

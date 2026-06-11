@@ -104,6 +104,7 @@ function App() {
     }, 18000);
 
     telemetry.sendTelemetry('owner');
+    telemetry.score();   // immediate live score so the dashboard isn't blank
     return () => { clearInterval(learn); clearInterval(guard); stopTracking(); };
   }, [screen, unlocked]);
 

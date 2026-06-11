@@ -1,0 +1,34 @@
+{
+  "summary": "Batch 7 (LiveMonitor centerpiece) testing complete. Added /app/backend/tests/test_security_batch7.py (5 new tests) covering verify-access storing last_owner + last_unlocked_at in device_state, and GET /status exposing last_owner / last_unlocked_at / last_scored_at alongside existing fields. Full backend suite 80/80 PASS (75 prior Batches 1-6 + 5 new Batch 7) — no regressions. Frontend (390x844, addInitScript dm_device_id=dm-cover-test BEFORE goto, recovery/unlock with rec999 first): Try the Demo -> calculator cover -> 2,5,8,0,= -> dashboard renders <LiveMonitor/> as hero with data-testid live-monitor, live-trust-value '100%', live-trust-label 'Learning your behaviour…' (sample_count=4, untrained — expected), live-last-owner 'Sam' (proves verify-access -> status flow), live-location 'Not reported' (no geolocation in headless), live-trap 'Inactive — protected'. Old protection-hero and stat-trust tiles confirmed REMOVED. Regression: panic-btn, tile-owner/recovery/privacy/evidence/mate, lock-btn, nav-home all present; lock-btn returns to calculator cover; navigating to Mate and back via bottom nav re-renders LiveMonitor.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "LiveMonitor facts rows", "issues": ["live-last-owner / live-location / live-trap testids are on the row wrapper, so textContent contains both label and value concatenated (e.g. ' Last recognised ownerSam'). Functionally fine, but tests reading the value alone need substring matching; consider a dedicated value <span data-testid=\"live-last-owner-value\"> for cleaner assertions."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_security_batch7.py",
+    "/app/test_reports/pytest/batch7_results.xml",
+    "/app/test_reports/pytest/all_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "LiveMonitor relies on telemetry.lastScore which is only refreshed by App's guard loop (~12s) + once on unlock. The LiveMonitor's own 4s interval only calls status() — it never re-scores. On long-open dashboards the 'Matches you' / 'Doesn't match' breakdown can become stale. Consider calling telemetry.score() inside LiveMonitor's tick (gated to e.g. 10s).",
+    "live-why is hidden when learning OR when sigs.length===0. On a freshly-unlocked headless device (signals not yet returned) the 'why' panel is absent, which is correct but the label 'Learning your behaviour…' visually overlaps with the empty-why state — the user can't tell the difference between 'still learning' and 'trained but no signals yet'. Consider a small subtext under the band label for clarity.",
+    "Trust value falls back to status?.trust_score when score isn't cached. status.trust_score is last_trust_score persisted from the last /score call — for a fresh device it's 1.0 (100%), which renders 'Definitely owner'. After scoring is in learning mode, score returns trust_score:1.0 too. Both states look identical to the user; clarifying copy ('Trust will calibrate once your model is trained') would help.",
+    "verify-access writes last_owner only on success; there is no /sign-out endpoint so last_owner persists indefinitely after lock. Acceptable for a 'last recognised' field, but document it (e.g. 'last_owner = most recent successful unlock').",
+    "GET /security/status returns last_location as the raw dict {lat,lng,at}. LiveMonitor calls loc.lat.toFixed(4) without checking lat is a number — if a future write stores last_location as a string this will throw. Add a numeric guard."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_security_batch7.py (NEW - 5 tests: verify-access stores last_owner, invalid does not, status includes last_scored_at after training+score, status preserves existing fields, cleanup)"
+  ],
+  "success_rate": {"backend": "100% (80/80; +5 new Batch 7)", "frontend": "100% on LiveMonitor flow (live-monitor + 5 sub-testids render; old protection-hero/stat-trust gone; regression tiles+lock+nav OK)"},
+  "test_credentials": "dm-cover-test: access 2580 / recovery rec999 / wipe wipe888 / owner profile 'Sam'. UNLOCK via POST /api/security/recovery/unlock with owner_code=rec999 before UI runs.",
+  "seed_data_creation": "Batch 7 tests use TEST_b7_<uuid> disposable device_ids; one device gets 9 owner telemetry samples to train baseline so /score writes last_scored_at. dm-cover-test was unlocked at start and re-unlocked at end; left in clean state (locked=false, lost_mode=false, last_owner='Sam').",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Always set localStorage.dm_device_id via page.context.add_init_script BEFORE page.goto — mid-session injection is racy. The dashboard's LiveMonitor needs ~4s after unlock for the first tick (App.js calls score() immediately on unlock; LiveMonitor's own 4s interval refreshes status). live-trust-label will read 'Learning your behaviour…' for any device with <8 owner samples (headless test devices don't generate signals organically). last_owner only populates AFTER a successful POST /verify-access (cover unlock does this). To force 'Definitely owner' label you must POST 9+ owner telemetry samples then call /score. RecoveryCenter renders mark-lost-btn vs mark-recovered-btn conditionally based on state.lost_mode — wait at least 1.5s after navigation for status to load before asserting either selector. Use dotenv_values when loading env in pytest (MONGO_URL contains '@' that breaks naive shell export).",
+  "rca of the issue": "No bugs found. Batch 7 fully delivers the headline 'Who's using my phone right now?' feature. Initially flagged test asserted last_scored_at is a string on a device with no baseline — that's correct backend behavior (score endpoint returns early in learning phase without writing state.last_scored_at). Updated test to seed 9 telemetry samples first so /score writes the field; test now passes. The only minor UX nit is that 'Learning your behaviour…' and 'Definitely owner' both render at 100% on a fresh device — distinguishable only by color/label; documented in critical_code_review_comments."
+}
