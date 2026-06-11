@@ -74,13 +74,17 @@ UserModeHome, AppModeContext (Demo/User dual-mode system).
 - `POST /recovery/lock|unlock|wipe|locate`, `GET /recovery/location`
 - `POST /emergency/verify`
 
-## Credentials (NO DEFAULTS)
-- **No hardcoded codes exist.** Each owner sets their own during first-run **Setup**:
-  - Recovery code (authorizes unlock / wipe / trap-deactivate / emergency) — bcrypt-hashed
-  - Vault code (dialed in Phone app to open the Invisible Vault) — bcrypt-hashed
-  - Trusted phone numbers
-- Destructive actions return 403 until the device is configured.
-- device_id: client-generated, localStorage `dm_device_id`. No login (single-owner model).
+## Credentials (NO DEFAULTS — three separate codes)
+- **No hardcoded codes exist.** Each owner sets their own during first-run **Setup** (6 steps):
+  - **Access code** — opens the dashboard from the cover app
+  - **Recovery code** — starts Lost-Phone / Recovery mode
+  - **Wipe code** — last-resort remote wipe only (must differ from the others)
+  - Recovery phrase + optional Panic pattern (silent recovery triggers)
+  - Cover app: Calculator (default) / Clock / Notes
+  - Trusted phone numbers; optional recovery email
+  - All codes/phrase/pattern bcrypt-hashed. Multiple owner profiles supported (each own access code).
+- The app boots into the chosen **cover app**; the dashboard opens only with the Access code.
+- Destructive actions return 403 until configured. device_id: localStorage `dm_device_id`.
 - For testing, configure via `POST /api/security/setup` (see /app/memory/test_credentials.md).
 
 ## Platform Reality (important)
@@ -116,12 +120,17 @@ after any pod reset since it lives outside `/app`.
 - [x] **Network-change recording** + SIM-change endpoint (native fills SIM detection)
 - [x] **First-run Setup — no default codes** (owner-defined recovery/vault codes bcrypt-hashed + trusted numbers); all destructive actions verify per-device
 - [x] **Privacy & Security Scan** advisor — Safe/Review/High-Risk + honest native_pending items; per-app/system checks deferred to native; never claims wiretap/lawful-interception detection
+- [x] **Three separate codes** (Access / Recovery / Wipe) — all owner-defined, bcrypt-hashed, distinct
+- [x] **Stealth cover mode** — app opens as Calculator (default) / Clock / Notes; dashboard opens only with the Access code; Lock button re-hides
+- [x] **Recovery phrase + Panic pattern** silent triggers (`/recovery/trigger`)
+- [x] **Multiple owner profiles** (each with own access code; `/profiles/add`)
+- [x] **Battery % + charging** in evidence; **new-device detection** event
 - [x] Rebuild focused APK (debug)
 
 ### P2 — Next (security only — no productivity features per owner)
-- [ ] Cross-device owner alerts (FCM/email companion) — currently in-app/local notification
-- [ ] On-device background scoring when app is closed (needs native service)
-- [ ] New-device detection events
+- [ ] Email owner alerts via Resend at Level 3 / SIM change / panic (plumbing ready; awaiting user API key)
+- [ ] Cross-device push alerts (FCM)
+- [ ] Per-profile behavioural baselines (currently shared device baseline across owners)
 
 ### P3 — Native Android (Kotlin) phase — see /app/NATIVE_ANDROID_ROADMAP.md
 - [ ] Device Admin (real device lock/wipe)

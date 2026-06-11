@@ -1,36 +1,43 @@
 # Digital Mate — Test Credentials
 
-## IMPORTANT: No default codes exist
-Every owner defines their OWN codes during first-run **Setup**. There is NO hardcoded
-`15987` or `8675309` anymore. Destructive actions fail with 403 until a device is configured.
+## IMPORTANT: No default codes. Three separate owner-defined codes.
+Each owner sets their OWN codes during first-run Setup. There are NO hardcoded codes.
+- **Access code** — opens the dashboard from the cover app
+- **Recovery code** — starts Lost-Phone / Recovery mode (lock, GPS, evidence)
+- **Wipe code** — last-resort remote wipe only
+All three must be different. Codes (and recovery phrase / panic pattern) are bcrypt-hashed.
 
-## How to set up a device for testing
-device_id is client-generated and stored in localStorage key `dm_device_id`.
+## Pre-configured test device
+`device_id = dm-cover-test` (cover = calculator)
+- Access code: `2580`
+- Recovery code: `rec999`
+- Wipe code: `wipe888`
+- Recovery phrase: `bring it back`
+- Panic pattern: `159`
+- Trusted number: `+15550009`
 
-Backend setup (curl):
+Frontend: set localStorage `dm_device_id='dm-cover-test'` **before** navigation (addInitScript),
+then Launch App → Calculator cover → type `2580` then `=` → dashboard.
+
+## Configure a fresh device (curl)
 ```
 POST /api/security/setup
-{ "device_id": "<id>", "recovery_code": "test7421", "vault_code": "3344", "trusted_numbers": ["+15551234567"] }
+{ "device_id":"<id>", "owner_name":"Sam", "access_code":"2580",
+  "recovery_code":"rec999", "wipe_code":"wipe888",
+  "recovery_phrase":"bring it back", "panic_pattern":"159",
+  "trusted_numbers":["+15550009"], "cover_app":"calculator" }
 ```
-Then for tests use:
-- **Recovery code**: `test7421` (authorizes unlock / wipe / trap-deactivate / emergency)
-- **Vault code**: `3344` (dial in Phone Dialer to open Invisible Vault)
-- **Trusted number**: `+15551234567`
 
-Frontend: on first launch the app shows the **Setup Wizard** (data-testid `setup-wizard`).
-Complete it (recovery code + confirm, vault digits + confirm, ≥1 trusted number) to reach the dashboard.
-To force setup again, clear localStorage `dm_device_id` (or the device's `device_config`).
+## Code routing (which code each action needs)
+- Open dashboard: **Access** (`/verify-access`)
+- recovery/unlock, trap/deactivate, emergency/verify, profiles/add: **Recovery**
+- recovery/wipe (+ confirm:true): **Wipe**
+- recovery/trigger {secret}: recovery **phrase** | **panic pattern** | **recovery code**
 
-## Security Engine API (prefix /api/security)
-- Setup: `GET /setup/status`, `POST /setup`, `POST /verify-recovery`, `POST /verify-vault`
-- Recognition: `POST /telemetry`, `POST /score`, `GET /status`, `POST /baseline/reset`
-- Evidence: `GET/POST/DELETE /events`, `POST /evidence/photo`, `GET /alerts`
-- Trap: `GET /trap/status`, `POST /trap/activate|deactivate|log-action`
-- Recovery: `POST /recovery/lock|unlock|wipe|locate`, `GET /recovery/location`, `POST /panic`
-- Device change: `POST /device-change` (kind sim|network)
-- Privacy scan: `POST /privacy-scan`
-- Emergency: `POST /emergency/verify`
-- unlock/wipe/trap-deactivate/emergency require the device's own recovery_code; wipe also needs confirm:true
+## Multiple owner profiles
+`POST /profiles/add { device_id, name, access_code, recovery_code }` (recovery code required).
+Each profile's access code opens the dashboard.
 
 ## Notes
-- No user login/registration (single-owner device model). Recovery & vault codes hashed with bcrypt.
+- No user login (single-device model). Cover apps: calculator | clock | notes.
+- device_id in localStorage `dm_device_id`.
