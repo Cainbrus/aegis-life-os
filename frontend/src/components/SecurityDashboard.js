@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Shield, Fingerprint, Compass, FileClock, Bot, Ghost, ChevronRight, Settings, Siren, ScanLine } from 'lucide-react';
+import { Shield, Fingerprint, Compass, FileClock, Bot, Lock, ChevronRight, Settings, Siren, ScanLine } from 'lucide-react';
 import telemetry from '../services/TelemetryService';
 
-const SecurityDashboard = ({ onNavigate, onOpenVault, onOpenSettings, onSecretDemo, onPanic }) => {
+const SecurityDashboard = ({ onNavigate, onOpenSettings, onSecretDemo, onPanic, onLock }) => {
   const [status, setStatus] = useState(null);
   const [tap, setTap] = useState(0);
 
@@ -39,16 +39,21 @@ const SecurityDashboard = ({ onNavigate, onOpenVault, onOpenSettings, onSecretDe
           <h1 onClick={handleTitleTap} className="text-2xl font-black text-white select-none cursor-default tracking-tight">Digital Mate</h1>
           <p className="text-slate-500 text-sm">Security &amp; recovery</p>
         </div>
-        <button onClick={onOpenSettings} data-testid="settings-btn" className="text-slate-400 hover:text-white p-2">
-          <Settings size={22} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={onLock} data-testid="lock-btn" className="text-slate-400 hover:text-white p-2" title="Hide app">
+            <Lock size={20} />
+          </button>
+          <button onClick={onOpenSettings} data-testid="settings-btn" className="text-slate-400 hover:text-white p-2">
+            <Settings size={22} />
+          </button>
+        </div>
       </div>
 
       {/* Protection status hero */}
       <div className={`rounded-3xl p-6 mb-5 border ${trapActive ? 'bg-gradient-to-br from-red-950/60 to-orange-950/40 border-red-500/40' : 'bg-gradient-to-br from-emerald-950/50 to-cyan-950/40 border-emerald-500/30'}`} data-testid="protection-hero">
         <div className="flex items-center gap-3 mb-5">
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${trapActive ? 'bg-red-500/20' : 'bg-emerald-500/20'}`}>
-            {trapActive ? <Ghost className="text-red-400" size={24} /> : <Shield className="text-emerald-400" size={24} />}
+            {trapActive ? <Siren className="text-red-400" size={24} /> : <Shield className="text-emerald-400" size={24} />}
           </div>
           <div>
             <p className={`font-bold text-lg ${trapActive ? 'text-red-400' : 'text-emerald-400'}`}>
@@ -76,7 +81,6 @@ const SecurityDashboard = ({ onNavigate, onOpenVault, onOpenSettings, onSecretDe
       {/* Feature tiles */}
       <div className="space-y-3">
         <Tile icon={Fingerprint} title="Owner Recognition" subtitle={trained ? 'Model trained' : `${status?.samples_needed ?? 8} samples to go`} color="from-cyan-500 to-blue-500" onClick={() => onNavigate('owner')} testid="tile-owner" />
-        <Tile icon={Ghost} title="Invisible Vault" subtitle="Dial your secret code to open" color="from-purple-500 to-fuchsia-500" onClick={onOpenVault} testid="tile-vault" />
         <Tile icon={Compass} title="Device Recovery" subtitle="Locate, lock or wipe" color="from-emerald-500 to-teal-500" onClick={() => onNavigate('recovery')} testid="tile-recovery" />
         <Tile icon={ScanLine} title="Privacy &amp; Security Scan" subtitle="Check what can access your phone" color="from-sky-500 to-cyan-500" onClick={() => onNavigate('privacy')} testid="tile-privacy" />
         <Tile icon={FileClock} title="Evidence Center" subtitle="Photos, locations &amp; events" color="from-amber-500 to-orange-500" onClick={() => onNavigate('evidence')} testid="tile-evidence" />

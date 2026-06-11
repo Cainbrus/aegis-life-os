@@ -11,6 +11,7 @@ import requests
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://digital-mate-mvp.preview.emergentagent.com").rstrip("/")
 API = f"{BASE_URL}/api/security"
 OWNER_CODE = "15987"
+WIPE_CODE = "wipe888"
 
 # Owner baseline features (used to train and for "close" score)
 OWNER_FEATURES = {
@@ -39,9 +40,13 @@ def device_id():
     # Configure device with owner-defined codes (no defaults exist anymore)
     requests.post(f"{API}/setup", json={
         "device_id": did,
+        "owner_name": "Sam",
+        "access_code": "ax1234",
         "recovery_code": OWNER_CODE,
-        "vault_code": "3344",
+        "wipe_code": WIPE_CODE,
+        "recovery_phrase": "bring it back",
         "trusted_numbers": ["+15551234567"],
+        "cover_app": "calculator",
     }, timeout=10)
     yield did
     # cleanup
@@ -156,13 +161,13 @@ class TestRecovery:
 
     def test_wipe_with_code_but_no_confirm_400(self, session, device_id):
         r = session.post(f"{API}/recovery/wipe", json={
-            "device_id": device_id, "owner_code": OWNER_CODE, "confirm": False
+            "device_id": device_id, "owner_code": WIPE_CODE, "confirm": False
         }, timeout=10)
         assert r.status_code == 400
 
     def test_wipe_with_code_and_confirm(self, session, device_id):
         r = session.post(f"{API}/recovery/wipe", json={
-            "device_id": device_id, "owner_code": OWNER_CODE, "confirm": True
+            "device_id": device_id, "owner_code": WIPE_CODE, "confirm": True
         }, timeout=10)
         assert r.status_code == 200
         assert r.json()["wiped"] is True

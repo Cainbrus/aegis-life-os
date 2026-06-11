@@ -9,9 +9,8 @@ import EvidenceCenter from './components/EvidenceCenter';
 import RecoveryCenter from './components/RecoveryCenter';
 import PrivacyScan from './components/PrivacyScan';
 import SetupWizard from './components/SetupWizard';
+import CoverScreen from './components/CoverScreen';
 import AegisChat from './components/AegisChat';
-import CalculatorVault from './components/CalculatorVault';
-import PhoneDialer from './components/PhoneDialer';
 import DigitalMateWebsite from './components/DigitalMateWebsite';
 import { SubscriptionSuccess, SubscriptionCancel } from './components/SubscriptionPages';
 import telemetry from './services/TelemetryService';
@@ -31,10 +30,10 @@ function App() {
   // 'website' (public landing) or 'app' (security app)
   const [screen, setScreen] = useState('website');
   const [tab, setTab] = useState('home');
-  const [showDialer, setShowDialer] = useState(false);
-  const [showVault, setShowVault] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [configured, setConfigured] = useState(null); // null=checking, true, false
+  const [coverApp, setCoverApp] = useState('calculator');
+  const [unlocked, setUnlocked] = useState(false);     // dashboard opens only after Access code
 
   // Navigate + tell the recognition engine which screen is in use (app-usage habit)
   const go = (t) => { setTab(t); telemetry.setScreen(t); };
@@ -69,12 +68,15 @@ function App() {
   // Check first-run setup status when entering the app
   useEffect(() => {
     if (screen !== 'app') return;
-    telemetry.setupStatus().then((s) => setConfigured(!!(s && s.configured)));
+    telemetry.setupStatus().then((s) => {
+      setConfigured(!!(s && s.configured));
+      if (s && s.cover_app) setCoverApp(s.cover_app);
+    });
   }, [screen]);
 
-  // Start behavioural telemetry once inside the app
+  // Start behavioural telemetry only once the dashboard is unlocked (real owner inside)
   useEffect(() => {
-    if (screen !== 'app') return;
+    if (screen !== 'app' || !unlocked) return;
     telemetry.start();
     requestNotificationPermission();
 
@@ -85,18 +87,15 @@ function App() {
       const level = r.trap_level || 0;
 
       // SILENT escalation — the user sees no change; everything happens in the background.
-      // Level 2: silently capture intruder photo + start location tracking (once per episode)
       if (level >= 2 && !capturedRef.current) {
         capturedRef.current = true;
         telemetry.capturePhoto(level);
         startTracking();
       }
-      // Level 3: notify owner (their own/other device) + ensure recovery tracking
       if (level >= 3 && !notifiedRef.current) {
         notifiedRef.current = true;
         sendAlert('Possible theft detected. Recovery mode activated and device locked.', 'security');
       }
-      // Owner recognized again: reset escalation
       if (level === 0) {
         capturedRef.current = false;
         notifiedRef.current = false;
@@ -106,7 +105,17 @@ function App() {
 
     telemetry.sendTelemetry('owner');
     return () => { clearInterval(learn); clearInterval(guard); stopTracking(); };
-  }, [screen]);
+  }, [screen, unlocked]);
+
+  // Cover-screen submit: try Access code -> unlock; else try a secret recovery trigger (silent)
+  const handleCoverSubmit = async (code) => {
+    if (!code || code.length < 4) return 'none';
+    const r = await telemetry.verifyAccess(code);
+    if (r && r.verified) { setUnlocked(true); telemetry.setScreen('home'); return 'unlocked'; }
+    const t = await telemetry.triggerRecovery(code);
+    if (t && t.triggered) return 'recovery';  // silent — cover behaves normally
+    return 'none';
+  };
 
   const handlePanic = async () => {
     await telemetry.panic();
@@ -136,24 +145,26 @@ function App() {
   }
 
   // --- First-run setup gate (no default codes exist) ---
+  if (configured === null) {
+    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500" data-testid="app-loading">Loading…</div>;
+  }
   if (configured === false) {
     return (
       <>
         <Toaster position="top-center" theme="dark" />
-        <SetupWizard onDone={() => setConfigured(true)} />
+        <SetupWizard onDone={() => { setConfigured(true); setUnlocked(true); }} />
       </>
     );
   }
-  if (configured === null) {
-    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500" data-testid="app-loading">Loading…</div>;
-  }
 
-  // --- Vault flow ---
-  if (showVault) {
-    return <CalculatorVault onClose={() => setShowVault(false)} onVaultAccess={() => {}} />;
-  }
-  if (showDialer) {
-    return <PhoneDialer onClose={() => setShowDialer(false)} onVaultUnlock={() => { setShowDialer(false); setShowVault(true); }} verifyCode={(code) => telemetry.verifyVault(code)} />;
+  // --- Stealth cover (Calculator/Clock/Notes). Dashboard opens only with the Access code. ---
+  if (!unlocked) {
+    return (
+      <>
+        <Toaster position="top-center" theme="dark" />
+        <CoverScreen cover={coverApp} onSubmit={handleCoverSubmit} />
+      </>
+    );
   }
 
   // --- Main security app ---
@@ -164,9 +175,9 @@ function App() {
       {tab === 'home' && (
         <SecurityDashboard
           onNavigate={go}
-          onOpenVault={() => setShowDialer(true)}
           onOpenSettings={() => setShowSettings(true)}
           onPanic={handlePanic}
+          onLock={() => { setUnlocked(false); setTab('home'); }}
           onSecretDemo={() => toast.info('Developer mode is disabled in this build')}
         />
       )}

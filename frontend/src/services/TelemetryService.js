@@ -209,7 +209,8 @@ class TelemetryService {
       stream.getTracks().forEach((t) => t.stop());
       const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
       const loc = await this.getLocation();
-      await axios.post(`${API}/security/evidence/photo`, { device_id: this.deviceId, photo: dataUrl, level, lat: loc?.lat, lng: loc?.lng });
+      const bat = await this.getBattery();
+      await axios.post(`${API}/security/evidence/photo`, { device_id: this.deviceId, photo: dataUrl, level, lat: loc?.lat, lng: loc?.lng, battery: bat.battery, charging: bat.charging });
       return dataUrl;
     } catch (e) {
       try {
@@ -240,17 +241,32 @@ class TelemetryService {
     catch (e) { return null; }
   }
 
-  async submitSetup({ recovery_code, vault_code, trusted_numbers }) {
-    const res = await axios.post(`${API}/security/setup`, {
-      device_id: this.deviceId, recovery_code, vault_code, trusted_numbers,
-    });
+  async submitSetup(payload) {
+    const res = await axios.post(`${API}/security/setup`, { device_id: this.deviceId, ...payload });
     return res.data;
   }
 
-  async verifyVault(code) {
+  async verifyAccess(code) {
     try {
-      return (await axios.post(`${API}/security/verify-vault`, { device_id: this.deviceId, code })).data?.verified;
-    } catch (e) { return false; }
+      return (await axios.post(`${API}/security/verify-access`, { device_id: this.deviceId, code })).data;
+    } catch (e) { return { verified: false }; }
+  }
+
+  async triggerRecovery(secret) {
+    const loc = await this.getLocation();
+    try {
+      return (await axios.post(`${API}/security/recovery/trigger`, { device_id: this.deviceId, secret, lat: loc?.lat, lng: loc?.lng })).data;
+    } catch (e) { return { triggered: false }; }
+  }
+
+  async getBattery() {
+    try {
+      if (navigator.getBattery) {
+        const b = await navigator.getBattery();
+        return { battery: Math.round(b.level * 100), charging: b.charging };
+      }
+    } catch (e) { /* unsupported */ }
+    return { battery: null, charging: null };
   }
 
   // ---- Privacy & Security Scan ----

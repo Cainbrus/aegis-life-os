@@ -49,6 +49,22 @@ async def _verify_recovery(device_id: str, code: Optional[str]) -> bool:
     cfg = await _get_config(device_id)
     return bool(cfg and cfg.get("configured") and _verify_secret(code, cfg.get("recovery_hash")))
 
+
+async def _verify_wipe(device_id: str, code: Optional[str]) -> bool:
+    cfg = await _get_config(device_id)
+    return bool(cfg and cfg.get("configured") and _verify_secret(code, cfg.get("wipe_hash")))
+
+
+async def _verify_access(device_id: str, code: Optional[str]) -> Optional[str]:
+    """Return the matching owner profile name if the access code is valid, else None."""
+    cfg = await _get_config(device_id)
+    if not (cfg and cfg.get("configured")):
+        return None
+    for p in cfg.get("profiles", []):
+        if _verify_secret(code, p.get("access_hash")):
+            return p.get("name", "Owner")
+    return None
+
 # Numeric behavioural features the recognition engine understands.
 FEATURE_KEYS = [
     "typing_speed",       # avg ms between key presses (rhythm)
@@ -98,9 +114,29 @@ class ChangeIn(BaseModel):
 
 class SetupIn(BaseModel):
     device_id: str
-    recovery_code: str               # owner-defined; authorizes destructive actions
-    vault_code: str                  # owner-defined; opens the invisible vault
+    owner_name: str = "Owner"
+    access_code: str                 # opens the Digital Mate dashboard
+    recovery_code: str               # starts recovery / lost-phone mode
+    wipe_code: str                   # high-security; last-resort wipe only
+    recovery_phrase: str = ""        # secret text phrase to trigger recovery
+    panic_pattern: str = ""          # optional button pattern to trigger panic
+    recovery_email: str = ""         # where alerts are sent (email integration later)
     trusted_numbers: List[str] = Field(default_factory=list)
+    cover_app: str = "calculator"    # calculator | clock | notes
+
+
+class ProfileIn(BaseModel):
+    device_id: str
+    name: str
+    access_code: str
+    recovery_code: str               # must match device recovery code to add a profile
+
+
+class TriggerIn(BaseModel):
+    device_id: str
+    secret: str                      # recovery phrase OR panic pattern OR recovery code
+    lat: Optional[float] = None
+    lng: Optional[float] = None
 
 
 class CodeIn(BaseModel):
@@ -133,6 +169,8 @@ class PhotoIn(BaseModel):
     level: int = 2
     lat: Optional[float] = None
     lng: Optional[float] = None
+    battery: Optional[float] = None    # 0-100
+    charging: Optional[bool] = None
 
 
 class RecoveryAction(BaseModel):
@@ -276,53 +314,91 @@ async def _train_baseline(device_id: str):
 
 
 # ============================ Setup / Configuration ============================
+COVER_APPS = {"calculator", "clock", "notes"}
+
+
 @router.get("/setup/status")
 async def setup_status(device_id: str):
     cfg = await _get_config(device_id)
     return {
         "configured": bool(cfg and cfg.get("configured")),
-        "vault_set": bool(cfg and cfg.get("vault_hash")),
+        "cover_app": (cfg or {}).get("cover_app", "calculator"),
+        "profiles": [p.get("name") for p in (cfg or {}).get("profiles", [])],
         "trusted_numbers": (cfg or {}).get("trusted_numbers", []),
+        "has_email": bool((cfg or {}).get("recovery_email")),
     }
 
 
 @router.post("/setup")
 async def setup(req: SetupIn):
-    if len(req.recovery_code) < 4:
-        raise HTTPException(status_code=400, detail="Recovery code must be at least 4 characters")
-    if not req.vault_code.isdigit() or len(req.vault_code) < 4:
-        raise HTTPException(status_code=400, detail="Vault code must be at least 4 digits")
+    codes = {"access": req.access_code, "recovery": req.recovery_code, "wipe": req.wipe_code}
+    for name, c in codes.items():
+        if len(c) < 4:
+            raise HTTPException(status_code=400, detail=f"{name.title()} code must be at least 4 characters")
+    if len({req.access_code, req.recovery_code, req.wipe_code}) < 3:
+        raise HTTPException(status_code=400, detail="Access, Recovery and Wipe codes must all be different")
+    if len(req.recovery_phrase.strip()) < 4:
+        raise HTTPException(status_code=400, detail="Recovery phrase must be at least 4 characters")
     numbers = [n.strip() for n in req.trusted_numbers if n and n.strip()]
     if not numbers:
         raise HTTPException(status_code=400, detail="At least one trusted number is required")
+    cover = req.cover_app if req.cover_app in COVER_APPS else "calculator"
 
     await db.device_config.update_one(
         {"device_id": req.device_id},
         {"$set": {
             "device_id": req.device_id,
             "configured": True,
+            "cover_app": cover,
             "recovery_hash": _hash_secret(req.recovery_code),
-            "vault_hash": _hash_secret(req.vault_code),
+            "wipe_hash": _hash_secret(req.wipe_code),
+            "recovery_phrase_hash": _hash_secret(req.recovery_phrase.strip().lower()),
+            "panic_pattern_hash": _hash_secret(req.panic_pattern) if req.panic_pattern else None,
+            "recovery_email": req.recovery_email.strip(),
             "trusted_numbers": numbers,
+            "profiles": [{
+                "id": str(uuid.uuid4()),
+                "name": req.owner_name or "Owner",
+                "access_hash": _hash_secret(req.access_code),
+                "created_at": _now(),
+            }],
             "updated_at": _now(),
         }},
         upsert=True,
     )
     await _log_event(req.device_id, "recovery", "info", "Security setup completed",
-                     "Owner configured recovery code, vault code and trusted numbers.")
-    return {"ok": True, "configured": True}
+                     "Owner configured access, recovery and wipe codes, cover app and trusted numbers.")
+    return {"ok": True, "configured": True, "cover_app": cover}
+
+
+@router.post("/profiles/add")
+async def add_profile(req: ProfileIn):
+    """Add another owner profile (requires the device recovery code)."""
+    if not await _verify_recovery(req.device_id, req.recovery_code):
+        raise HTTPException(status_code=403, detail="Recovery code required to add a profile")
+    if len(req.access_code) < 4:
+        raise HTTPException(status_code=400, detail="Access code must be at least 4 characters")
+    await db.device_config.update_one(
+        {"device_id": req.device_id},
+        {"$push": {"profiles": {
+            "id": str(uuid.uuid4()), "name": req.name or "Owner",
+            "access_hash": _hash_secret(req.access_code), "created_at": _now(),
+        }}},
+    )
+    cfg = await _get_config(req.device_id)
+    return {"ok": True, "profiles": [p.get("name") for p in (cfg or {}).get("profiles", [])]}
+
+
+@router.post("/verify-access")
+async def verify_access_code(req: CodeIn):
+    """Unlock the dashboard from the cover app with an owner's access code."""
+    name = await _verify_access(req.device_id, req.code)
+    return {"verified": name is not None, "profile": name}
 
 
 @router.post("/verify-recovery")
 async def verify_recovery_code(req: CodeIn):
     return {"verified": await _verify_recovery(req.device_id, req.code)}
-
-
-@router.post("/verify-vault")
-async def verify_vault_code(req: CodeIn):
-    cfg = await _get_config(req.device_id)
-    ok = bool(cfg and _verify_secret(req.code, cfg.get("vault_hash")))
-    return {"verified": ok}
 
 
 # ============================ Owner Recognition ============================
@@ -340,6 +416,15 @@ async def ingest_telemetry(sample: TelemetrySample):
         "label": sample.label,
         "created_at": _now(),
     })
+
+    # New-device detection: first time we ever see this device, log it.
+    st = await db.device_state.find_one({"device_id": sample.device_id}, {"_id": 0, "first_seen": 1})
+    if not (st and st.get("first_seen")):
+        await db.device_state.update_one(
+            {"device_id": sample.device_id},
+            {"$set": {"first_seen": _now(), "device_id": sample.device_id}}, upsert=True)
+        await _log_event(sample.device_id, "device_change", "info", "New device registered",
+                         "Digital Mate started monitoring on a new device.")
 
     count = await db.behavior_samples.count_documents(
         {"device_id": sample.device_id, "label": "owner"}
@@ -570,11 +655,15 @@ async def device_change(c: ChangeIn):
 @router.post("/evidence/photo")
 async def add_photo(p: PhotoIn):
     """Store a front-camera intruder photo and log it on the evidence timeline."""
+    batt = ""
+    if p.battery is not None:
+        batt = f" Battery {round(p.battery)}%{' (charging)' if p.charging else ''}."
     return await _log_event(
         p.device_id, "intruder_photo", "critical",
         "Intruder photo captured",
-        f"Front camera photo captured at Trap Level {p.level}.",
-        metadata={"photo": p.photo, "level": p.level}, lat=p.lat, lng=p.lng,
+        f"Front camera photo captured at Trap Level {p.level}.{batt}",
+        metadata={"photo": p.photo, "level": p.level, "battery": p.battery, "charging": p.charging},
+        lat=p.lat, lng=p.lng,
     )
 
 
@@ -704,6 +793,43 @@ async def recovery_lock(req: RecoveryAction):
     return {"ok": True, "locked": True}
 
 
+@router.post("/recovery/trigger")
+async def recovery_trigger(req: TriggerIn):
+    """Activate recovery via the owner's secret recovery PHRASE, PANIC PATTERN or RECOVERY code.
+    Designed so future native triggers (trusted-number SMS, secret dial code) can call the same path."""
+    cfg = await _get_config(req.device_id)
+    if not (cfg and cfg.get("configured")):
+        raise HTTPException(status_code=404, detail="Device not configured")
+    s = (req.secret or "").strip()
+    via = None
+    if _verify_secret(s.lower(), cfg.get("recovery_phrase_hash")):
+        via = "phrase"
+    elif cfg.get("panic_pattern_hash") and _verify_secret(s, cfg.get("panic_pattern_hash")):
+        via = "pattern"
+    elif _verify_secret(s, cfg.get("recovery_hash")):
+        via = "code"
+    if not via:
+        return {"triggered": False}
+
+    await db.device_state.update_one(
+        {"device_id": req.device_id},
+        {"$set": {"locked": True, "lost_mode": True, "trap_level": 3, "trap_active": False,
+                  "panic_at": _now(), "device_id": req.device_id}},
+        upsert=True,
+    )
+    if req.lat is not None and req.lng is not None:
+        loc = {"lat": req.lat, "lng": req.lng, "at": _now()}
+        await db.device_state.update_one(
+            {"device_id": req.device_id},
+            {"$set": {"last_location": loc}, "$push": {"location_history": {"$each": [loc], "$slice": -50}}})
+    await _log_event(req.device_id, "recovery", "critical", f"Recovery triggered ({via})",
+                     "Owner activated Lost Phone mode via secret trigger. Tracking started.",
+                     lat=req.lat, lng=req.lng)
+    await _create_alert(req.device_id, "Recovery activated",
+                        f"Lost Phone mode was triggered via your secret {via}. Live tracking and lock are on.")
+    return {"triggered": True, "via": via}
+
+
 @router.post("/recovery/unlock")
 async def recovery_unlock(req: RecoveryAction):
     if not await _verify_recovery(req.device_id, req.owner_code):
@@ -721,8 +847,8 @@ async def recovery_unlock(req: RecoveryAction):
 
 @router.post("/recovery/wipe")
 async def recovery_wipe(req: RecoveryAction):
-    """Safe, owner-verified, confirmed remote wipe of app data/vault."""
-    if not await _verify_recovery(req.device_id, req.owner_code):
+    """Safe, wipe-code-verified, confirmed remote wipe of app data/vault."""
+    if not await _verify_wipe(req.device_id, req.owner_code):
         raise HTTPException(status_code=403, detail="Owner verification required")
     if not req.confirm:
         raise HTTPException(status_code=400, detail="Confirmation required to wipe")

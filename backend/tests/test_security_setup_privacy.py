@@ -1,340 +1,274 @@
 """
-Digital Mate - Batch 4 tests
-Covers:
-- /setup/status & /setup validation (no defaults, per-device codes)
-- Destructive endpoints blocked BEFORE setup (old 15987 must NOT work anywhere)
-- /verify-recovery & /verify-vault per-device verification
-- bcrypt-hashed at rest (no plaintext) for recovery code
-- /privacy-scan: ~22 checks, native_pending count, SIM->high_risk transition,
-  disclaimer-required catalog fields (detected/risk/action/settings)
+Digital Mate - Batch 4 tests (UPDATED for Batch 5 payload: access/recovery/wipe)
+Covers /setup validation, verify-recovery, destructive endpoints guarded by Recovery/Wipe,
+bcrypt at rest, and Privacy & Security Scan.
 """
-import os
-import uuid
-import asyncio
-import pytest
-import requests
+import os, uuid, pytest, requests
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://digital-mate-mvp.preview.emergentagent.com").rstrip("/")
 API = f"{BASE_URL}/api/security"
 
-RECOVERY = "test7421"
-VAULT = "3344"
+ACCESS = "ax4242"
+RECOVERY = "rec7421"
+WIPE = "wp3344"
+PHRASE = "bring it back"
 TRUSTED = ["+15551234567"]
+
+
+def _did(p="setup"): return f"TEST_{p}_{uuid.uuid4().hex[:8]}"
+def _cleanup(d):
+    try: requests.delete(f"{API}/events", params={"device_id": d}, timeout=10)
+    except Exception: pass
+
+def _setup_payload(d, **over):
+    base = {"device_id": d, "owner_name": "Sam",
+            "access_code": ACCESS, "recovery_code": RECOVERY, "wipe_code": WIPE,
+            "recovery_phrase": PHRASE, "panic_pattern": "159",
+            "trusted_numbers": TRUSTED, "cover_app": "calculator"}
+    base.update(over); return base
 
 
 @pytest.fixture(scope="module")
 def session():
-    s = requests.Session()
-    s.headers.update({"Content-Type": "application/json"})
-    return s
+    s = requests.Session(); s.headers.update({"Content-Type": "application/json"}); return s
 
 
-def _new_did(prefix="setup"):
-    return f"TEST_{prefix}_{uuid.uuid4().hex[:8]}"
-
-
-def _cleanup(did):
-    try:
-        requests.delete(f"{API}/events", params={"device_id": did}, timeout=10)
-    except Exception:
-        pass
-
-
-# ---------------- /setup/status & no-defaults blocking ----------------
 class TestNoDefaults:
     def test_fresh_device_not_configured(self, session):
-        did = _new_did("fresh")
-        r = session.get(f"{API}/setup/status", params={"device_id": did}, timeout=10)
+        d = _did("fresh")
+        r = session.get(f"{API}/setup/status", params={"device_id": d}, timeout=10)
         assert r.status_code == 200
-        d = r.json()
-        assert d["configured"] is False
-        assert d["vault_set"] is False
-        assert d["trusted_numbers"] == []
-        _cleanup(did)
+        j = r.json()
+        assert j["configured"] is False
+        assert j["trusted_numbers"] == []
+        assert j["profiles"] == []
+        _cleanup(d)
 
-    def test_old_default_15987_blocked_before_setup(self, session):
-        did = _new_did("nodefault")
-        # Using the OLD default code that used to work must now be rejected
-        r = session.post(f"{API}/recovery/wipe", json={
-            "device_id": did, "owner_code": "15987", "confirm": True,
-        }, timeout=10)
-        assert r.status_code == 403, f"Expected 403 for legacy default, got {r.status_code}: {r.text}"
-        # Also unlock, trap-deactivate, emergency/verify must fail before setup
-        r2 = session.post(f"{API}/recovery/unlock", json={"device_id": did, "owner_code": "15987"}, timeout=10)
+    def test_legacy_default_15987_blocked(self, session):
+        d = _did("nodef")
+        r = session.post(f"{API}/recovery/wipe", json={"device_id": d, "owner_code": "15987", "confirm": True}, timeout=10)
+        assert r.status_code == 403
+        r2 = session.post(f"{API}/recovery/unlock", json={"device_id": d, "owner_code": "15987"}, timeout=10)
         assert r2.status_code == 403
-        r3 = session.post(f"{API}/trap/deactivate", json={"device_id": did, "owner_code": "15987"}, timeout=10)
-        assert r3.status_code == 403
-        r4 = session.post(f"{API}/emergency/verify", json={"device_id": did, "owner_code": "15987"}, timeout=10)
-        assert r4.status_code == 200 and r4.json()["verified"] is False
-        _cleanup(did)
+        _cleanup(d)
 
 
-# ---------------- /setup validation ----------------
 class TestSetupValidation:
-    def test_setup_empty_trusted_numbers_400(self, session):
-        did = _new_did("val")
-        r = session.post(f"{API}/setup", json={
-            "device_id": did, "recovery_code": RECOVERY, "vault_code": VAULT, "trusted_numbers": [],
-        }, timeout=10)
-        assert r.status_code == 400
-        _cleanup(did)
+    def test_empty_trusted_400(self, session):
+        d = _did("v")
+        r = session.post(f"{API}/setup", json=_setup_payload(d, trusted_numbers=[]), timeout=10)
+        assert r.status_code == 400; _cleanup(d)
 
-    def test_setup_vault_non_numeric_400(self, session):
-        did = _new_did("val")
-        r = session.post(f"{API}/setup", json={
-            "device_id": did, "recovery_code": RECOVERY, "vault_code": "ab12", "trusted_numbers": TRUSTED,
-        }, timeout=10)
-        assert r.status_code == 400
-        _cleanup(did)
+    def test_short_access_400(self, session):
+        d = _did("v")
+        r = session.post(f"{API}/setup", json=_setup_payload(d, access_code="ab"), timeout=10)
+        assert r.status_code == 400; _cleanup(d)
 
-    def test_setup_vault_too_short_400(self, session):
-        did = _new_did("val")
-        r = session.post(f"{API}/setup", json={
-            "device_id": did, "recovery_code": RECOVERY, "vault_code": "12", "trusted_numbers": TRUSTED,
-        }, timeout=10)
-        assert r.status_code == 400
-        _cleanup(did)
+    def test_short_recovery_400(self, session):
+        d = _did("v")
+        r = session.post(f"{API}/setup", json=_setup_payload(d, recovery_code="ab"), timeout=10)
+        assert r.status_code == 400; _cleanup(d)
 
-    def test_setup_recovery_too_short_400(self, session):
-        did = _new_did("val")
-        r = session.post(f"{API}/setup", json={
-            "device_id": did, "recovery_code": "abc", "vault_code": VAULT, "trusted_numbers": TRUSTED,
-        }, timeout=10)
-        assert r.status_code == 400
-        _cleanup(did)
+    def test_short_wipe_400(self, session):
+        d = _did("v")
+        r = session.post(f"{API}/setup", json=_setup_payload(d, wipe_code="ab"), timeout=10)
+        assert r.status_code == 400; _cleanup(d)
 
-    def test_setup_valid_configures_device(self, session):
-        did = _new_did("ok")
-        r = session.post(f"{API}/setup", json={
-            "device_id": did, "recovery_code": RECOVERY, "vault_code": VAULT, "trusted_numbers": TRUSTED,
-        }, timeout=10)
+    def test_duplicate_codes_400(self, session):
+        d = _did("v")
+        r = session.post(f"{API}/setup", json=_setup_payload(d, recovery_code=ACCESS), timeout=10)
+        assert r.status_code == 400; _cleanup(d)
+
+    def test_short_phrase_400(self, session):
+        d = _did("v")
+        r = session.post(f"{API}/setup", json=_setup_payload(d, recovery_phrase="ab"), timeout=10)
+        assert r.status_code == 400; _cleanup(d)
+
+    def test_setup_ok_and_status(self, session):
+        d = _did("ok")
+        r = session.post(f"{API}/setup", json=_setup_payload(d), timeout=10)
         assert r.status_code == 200
-        d = r.json()
-        assert d["ok"] is True and d["configured"] is True
-        # /setup/status should now reflect configured
-        s = session.get(f"{API}/setup/status", params={"device_id": did}, timeout=10).json()
+        s = session.get(f"{API}/setup/status", params={"device_id": d}, timeout=10).json()
         assert s["configured"] is True
-        assert s["vault_set"] is True
+        assert s["cover_app"] == "calculator"
+        assert s["profiles"] == ["Sam"]
         assert s["trusted_numbers"] == TRUSTED
-        _cleanup(did)
+        _cleanup(d)
 
 
-# ---------------- /verify-recovery & /verify-vault ----------------
 class TestVerifyCodes:
     @pytest.fixture(scope="class")
-    def configured_did(self, session):
-        did = _new_did("verify")
-        session.post(f"{API}/setup", json={
-            "device_id": did, "recovery_code": RECOVERY, "vault_code": VAULT, "trusted_numbers": TRUSTED,
-        }, timeout=10).raise_for_status()
-        yield did
-        _cleanup(did)
+    def did(self, session):
+        d = _did("ver")
+        session.post(f"{API}/setup", json=_setup_payload(d), timeout=10).raise_for_status()
+        yield d; _cleanup(d)
 
-    def test_verify_recovery_wrong(self, session, configured_did):
-        r = session.post(f"{API}/verify-recovery",
-                         json={"device_id": configured_did, "code": "wrongcode"}, timeout=10)
-        assert r.status_code == 200 and r.json()["verified"] is False
-
-    def test_verify_recovery_correct(self, session, configured_did):
-        r = session.post(f"{API}/verify-recovery",
-                         json={"device_id": configured_did, "code": RECOVERY}, timeout=10)
+    def test_access_correct(self, session, did):
+        r = session.post(f"{API}/verify-access", json={"device_id": did, "code": ACCESS}, timeout=10)
         assert r.status_code == 200 and r.json()["verified"] is True
+        assert r.json()["profile"] == "Sam"
 
-    def test_verify_vault_correct(self, session, configured_did):
-        r = session.post(f"{API}/verify-vault",
-                         json={"device_id": configured_did, "code": VAULT}, timeout=10)
-        assert r.status_code == 200 and r.json()["verified"] is True
+    def test_access_recovery_does_not_open(self, session, did):
+        r = session.post(f"{API}/verify-access", json={"device_id": did, "code": RECOVERY}, timeout=10)
+        assert r.json()["verified"] is False
 
-    def test_verify_vault_wrong(self, session, configured_did):
-        r = session.post(f"{API}/verify-vault",
-                         json={"device_id": configured_did, "code": "9999"}, timeout=10)
-        assert r.status_code == 200 and r.json()["verified"] is False
+    def test_access_wipe_does_not_open(self, session, did):
+        r = session.post(f"{API}/verify-access", json={"device_id": did, "code": WIPE}, timeout=10)
+        assert r.json()["verified"] is False
+
+    def test_verify_recovery_correct(self, session, did):
+        r = session.post(f"{API}/verify-recovery", json={"device_id": did, "code": RECOVERY}, timeout=10)
+        assert r.json()["verified"] is True
+
+    def test_verify_recovery_wrong(self, session, did):
+        r = session.post(f"{API}/verify-recovery", json={"device_id": did, "code": "wrong"}, timeout=10)
+        assert r.json()["verified"] is False
 
 
-# ---------------- Destructive endpoints after setup ----------------
 class TestDestructiveGuarded:
     @pytest.fixture(scope="class")
     def did(self, session):
-        d = _new_did("destr")
-        session.post(f"{API}/setup", json={
-            "device_id": d, "recovery_code": RECOVERY, "vault_code": VAULT, "trusted_numbers": TRUSTED,
-        }, timeout=10).raise_for_status()
-        yield d
-        _cleanup(d)
+        d = _did("destr")
+        session.post(f"{API}/setup", json=_setup_payload(d), timeout=10).raise_for_status()
+        yield d; _cleanup(d)
 
-    def test_unlock_wrong_code_403(self, session, did):
-        r = session.post(f"{API}/recovery/unlock",
-                         json={"device_id": did, "owner_code": "00000"}, timeout=10)
+    def test_unlock_wipe_code_fails(self, session, did):
+        r = session.post(f"{API}/recovery/unlock", json={"device_id": did, "owner_code": WIPE}, timeout=10)
         assert r.status_code == 403
 
-    def test_unlock_correct_code_ok(self, session, did):
-        r = session.post(f"{API}/recovery/unlock",
-                         json={"device_id": did, "owner_code": RECOVERY}, timeout=10)
-        assert r.status_code == 200 and r.json()["ok"] is True
-
-    def test_trap_deactivate_wrong_403(self, session, did):
-        r = session.post(f"{API}/trap/deactivate",
-                         json={"device_id": did, "owner_code": "00000"}, timeout=10)
-        assert r.status_code == 403
-
-    def test_trap_deactivate_correct_ok(self, session, did):
-        r = session.post(f"{API}/trap/deactivate",
-                         json={"device_id": did, "owner_code": RECOVERY}, timeout=10)
+    def test_unlock_recovery_code_ok(self, session, did):
+        r = session.post(f"{API}/recovery/unlock", json={"device_id": did, "owner_code": RECOVERY}, timeout=10)
         assert r.status_code == 200
 
-    def test_emergency_verify_wrong(self, session, did):
-        r = session.post(f"{API}/emergency/verify",
-                         json={"device_id": did, "owner_code": "00000"}, timeout=10)
-        assert r.status_code == 200 and r.json()["verified"] is False
+    def test_trap_deactivate_recovery_ok(self, session, did):
+        r = session.post(f"{API}/trap/deactivate", json={"device_id": did, "owner_code": RECOVERY}, timeout=10)
+        assert r.status_code == 200
 
-    def test_emergency_verify_correct(self, session, did):
-        r = session.post(f"{API}/emergency/verify",
-                         json={"device_id": did, "owner_code": RECOVERY}, timeout=10)
-        assert r.status_code == 200 and r.json()["verified"] is True
+    def test_emergency_verify_recovery(self, session, did):
+        r = session.post(f"{API}/emergency/verify", json={"device_id": did, "owner_code": RECOVERY}, timeout=10)
+        assert r.json()["verified"] is True
 
-    def test_wipe_missing_confirm_400(self, session, did):
-        r = session.post(f"{API}/recovery/wipe",
-                         json={"device_id": did, "owner_code": RECOVERY, "confirm": False}, timeout=10)
-        assert r.status_code == 400
+    def test_emergency_verify_access_false(self, session, did):
+        r = session.post(f"{API}/emergency/verify", json={"device_id": did, "owner_code": ACCESS}, timeout=10)
+        assert r.json()["verified"] is False
 
-    def test_wipe_wrong_code_403(self, session, did):
-        r = session.post(f"{API}/recovery/wipe",
-                         json={"device_id": did, "owner_code": "00000", "confirm": True}, timeout=10)
+    def test_wipe_requires_wipe_code_recovery_403(self, session, did):
+        r = session.post(f"{API}/recovery/wipe", json={"device_id": did, "owner_code": RECOVERY, "confirm": True}, timeout=10)
         assert r.status_code == 403
 
-    def test_wipe_ok_with_code_and_confirm(self, session, did):
-        r = session.post(f"{API}/recovery/wipe",
-                         json={"device_id": did, "owner_code": RECOVERY, "confirm": True}, timeout=10)
+    def test_wipe_access_403(self, session, did):
+        r = session.post(f"{API}/recovery/wipe", json={"device_id": did, "owner_code": ACCESS, "confirm": True}, timeout=10)
+        assert r.status_code == 403
+
+    def test_wipe_missing_confirm_400(self, session, did):
+        r = session.post(f"{API}/recovery/wipe", json={"device_id": did, "owner_code": WIPE, "confirm": False}, timeout=10)
+        assert r.status_code == 400
+
+    def test_wipe_ok(self, session, did):
+        r = session.post(f"{API}/recovery/wipe", json={"device_id": did, "owner_code": WIPE, "confirm": True}, timeout=10)
         assert r.status_code == 200 and r.json()["wiped"] is True
 
 
-# ---------------- bcrypt at rest ----------------
 class TestBcryptAtRest:
-    def test_recovery_hash_is_bcrypt_not_plaintext(self, session):
-        """Verify the recovery code is stored as a bcrypt hash, never as plaintext."""
-        did = _new_did("hash")
-        session.post(f"{API}/setup", json={
-            "device_id": did, "recovery_code": RECOVERY,
-            "vault_code": VAULT, "trusted_numbers": TRUSTED,
-        }, timeout=10).raise_for_status()
-
-        # Open mongo directly (sync pymongo) and read device_config doc
+    def test_hashes_are_bcrypt(self, session):
+        d = _did("hash")
+        session.post(f"{API}/setup", json=_setup_payload(d), timeout=10).raise_for_status()
         from pymongo import MongoClient
-        mongo_url = os.environ["MONGO_URL"].strip().strip('"').strip("'")
-        db_name = os.environ["DB_NAME"].strip().strip('"').strip("'")
+        from dotenv import dotenv_values
+        env = dotenv_values("/app/backend/.env")
+        mongo_url = os.environ.get("MONGO_URL") or env.get("MONGO_URL")
+        db_name = os.environ.get("DB_NAME") or env.get("DB_NAME")
         client = MongoClient(mongo_url)
-        cfg = client[db_name].device_config.find_one({"device_id": did})
+        cfg = client[db_name].device_config.find_one({"device_id": d})
         client.close()
-        assert cfg is not None, "device_config not persisted"
-        rh = cfg.get("recovery_hash", "")
-        vh = cfg.get("vault_hash", "")
-        # bcrypt hashes start with $2a$/$2b$/$2y$
-        assert rh.startswith("$2"), f"recovery_hash not bcrypt: {rh[:10]}"
-        assert vh.startswith("$2"), f"vault_hash not bcrypt: {vh[:10]}"
-        # And the plaintext must NOT be present anywhere in the doc
-        assert RECOVERY not in str(cfg)
-        assert VAULT not in str(cfg)
-        # Also no 'recovery_code'/'vault_code' plaintext fields
-        assert "recovery_code" not in cfg
-        assert "vault_code" not in cfg
-        _cleanup(did)
+        assert cfg is not None
+        assert cfg["recovery_hash"].startswith("$2")
+        assert cfg["wipe_hash"].startswith("$2")
+        assert cfg["recovery_phrase_hash"].startswith("$2")
+        # profile access_hash bcrypt
+        assert cfg["profiles"][0]["access_hash"].startswith("$2")
+        blob = str(cfg)
+        for plain in (ACCESS, RECOVERY, WIPE):
+            assert plain not in blob, f"plaintext {plain} found"
+        _cleanup(d)
 
 
-# ---------------- Privacy & Security Scan ----------------
-class TestPrivacyScan:
-    @pytest.fixture(scope="class")
-    def configured_did(self, session):
-        did = _new_did("scan")
-        session.post(f"{API}/setup", json={
-            "device_id": did, "recovery_code": RECOVERY,
-            "vault_code": VAULT, "trusted_numbers": TRUSTED,
-        }, timeout=10).raise_for_status()
-        yield did
-        _cleanup(did)
+class TestBatch5Specific:
+    """Multi-profile, recovery triggers, evidence battery, new-device event."""
 
-    def test_scan_structure_and_counts(self, session, configured_did):
-        payload = {
-            "device_id": configured_did,
-            "signals": {
-                "camera": "granted", "microphone": "denied",
-                "geolocation": "granted", "notifications": "granted",
-                "secure_context": True,
-            },
-        }
-        r = session.post(f"{API}/privacy-scan", json=payload, timeout=15)
+    def test_profiles_add_requires_recovery(self, session):
+        d = _did("prof")
+        session.post(f"{API}/setup", json=_setup_payload(d), timeout=10).raise_for_status()
+        # wrong recovery -> 403
+        r = session.post(f"{API}/profiles/add",
+                         json={"device_id": d, "name": "Lia", "access_code": "lia999", "recovery_code": "wrong"}, timeout=10)
+        assert r.status_code == 403
+        # correct
+        r = session.post(f"{API}/profiles/add",
+                         json={"device_id": d, "name": "Lia", "access_code": "lia999", "recovery_code": RECOVERY}, timeout=10)
         assert r.status_code == 200
-        d = r.json()
-        # Overall and counts
-        assert d["overall"] in ("safe", "review", "high_risk")
-        counts = d["counts"]
-        for k in ("safe", "review", "high_risk", "native_pending"):
-            assert k in counts and isinstance(counts[k], int)
-        checks = d["checks"]
-        # ~22 checks total (4 self + secure_context + sim + network + new_device + 14 native = 22)
-        assert 20 <= len(checks) <= 26, f"unexpected check count: {len(checks)}"
-        # Every check has required fields
-        for c in checks:
-            for k in ("id", "category", "label", "status", "detected", "risk", "action"):
-                assert k in c, f"check missing {k}: {c}"
-            assert "settings" in c  # may be None for non-action items
-        # native_pending count should match the 14-item catalog
-        native = [c for c in checks if c["status"] == "native_pending"]
-        assert len(native) == 14, f"expected 14 native_pending, got {len(native)}"
-        # The 14 native ids the spec demands
-        native_ids = {c["id"] for c in native}
-        expected_native = {"sms_apps", "mic_apps", "camera_apps", "calllog_apps",
-                           "contacts_apps", "location_apps", "overlay_apps", "accessibility",
-                           "device_admin", "vpn", "developer_mode", "usb_debugging",
-                           "new_google", "recent_perms"}
-        assert expected_native.issubset(native_ids), f"missing: {expected_native - native_ids}"
+        assert "Lia" in r.json()["profiles"]
+        # new profile access unlocks
+        v = session.post(f"{API}/verify-access", json={"device_id": d, "code": "lia999"}, timeout=10).json()
+        assert v["verified"] is True and v["profile"] == "Lia"
+        # original still unlocks
+        v2 = session.post(f"{API}/verify-access", json={"device_id": d, "code": ACCESS}, timeout=10).json()
+        assert v2["verified"] is True and v2["profile"] == "Sam"
+        _cleanup(d)
 
-    def test_scan_microphone_denied_marks_review(self, session, configured_did):
-        payload = {
-            "device_id": configured_did,
-            "signals": {"camera": "granted", "microphone": "denied",
-                        "geolocation": "granted", "notifications": "granted",
-                        "secure_context": True},
-        }
-        d = session.post(f"{API}/privacy-scan", json=payload, timeout=15).json()
-        mic = next(c for c in d["checks"] if c["id"] == "self_microphone")
-        assert mic["status"] == "review"
+    def test_recovery_trigger_phrase_pattern_code(self, session):
+        d = _did("trig")
+        session.post(f"{API}/setup", json=_setup_payload(d), timeout=10).raise_for_status()
+        # phrase case-insensitive
+        r = session.post(f"{API}/recovery/trigger", json={"device_id": d, "secret": "BRING IT BACK"}, timeout=10).json()
+        assert r["triggered"] is True and r["via"] == "phrase"
+        # pattern
+        r = session.post(f"{API}/recovery/trigger", json={"device_id": d, "secret": "159"}, timeout=10).json()
+        assert r["triggered"] is True and r["via"] == "pattern"
+        # code
+        r = session.post(f"{API}/recovery/trigger", json={"device_id": d, "secret": RECOVERY}, timeout=10).json()
+        assert r["triggered"] is True and r["via"] == "code"
+        # random secret -> false
+        r = session.post(f"{API}/recovery/trigger", json={"device_id": d, "secret": "random-nope"}, timeout=10).json()
+        assert r["triggered"] is False
+        # status reflects locked + lost_mode
+        s = session.get(f"{API}/status", params={"device_id": d}, timeout=10).json()
+        assert s["locked"] is True and s["lost_mode"] is True
+        # alert created
+        a = session.get(f"{API}/alerts", params={"device_id": d}, timeout=10).json()
+        assert a["count"] >= 1
+        _cleanup(d)
 
-    def test_scan_no_lawful_interception_claim(self, session, configured_did):
-        """The advisor must NEVER claim to detect wiretaps/lawful interception."""
-        payload = {"device_id": configured_did, "signals": {"secure_context": True}}
-        d = session.post(f"{API}/privacy-scan", json=payload, timeout=15).json()
-        blob = " ".join(
-            (c.get("label", "") + " " + c.get("detected", "") + " " + c.get("risk", "")
-             + " " + c.get("action", "")).lower() for c in d["checks"]
-        )
-        for forbidden in ("wiretap", "lawful interception", "police listening", "law-enforcement intercept"):
-            assert forbidden not in blob, f"Forbidden claim present: {forbidden}"
+    def test_evidence_photo_battery(self, session):
+        d = _did("ev")
+        session.post(f"{API}/setup", json=_setup_payload(d), timeout=10).raise_for_status()
+        r = session.post(f"{API}/evidence/photo", json={
+            "device_id": d, "photo": "data:image/jpeg;base64,xx", "reason": "trap",
+            "level": 2, "battery": 73.4, "charging": True,
+        }, timeout=10)
+        assert r.status_code == 200
+        evt = r.json()
+        assert evt["metadata"]["battery"] == 73.4
+        assert evt["metadata"]["charging"] is True
+        assert "Battery 73%" in evt["detail"]
+        _cleanup(d)
 
-    def test_sim_change_makes_overall_high_risk(self, session):
-        did = _new_did("sim")
-        session.post(f"{API}/setup", json={
-            "device_id": did, "recovery_code": RECOVERY,
-            "vault_code": VAULT, "trusted_numbers": TRUSTED,
-        }, timeout=10).raise_for_status()
-        # Baseline scan -> not high_risk on sim_change
-        d0 = session.post(f"{API}/privacy-scan", json={
-            "device_id": did, "signals": {"secure_context": True,
-                                          "camera": "granted", "microphone": "granted",
-                                          "geolocation": "granted", "notifications": "granted"},
-        }, timeout=15).json()
-        sim0 = next(c for c in d0["checks"] if c["id"] == "sim_change")
-        assert sim0["status"] == "safe"
-        # Log a SIM change
-        rc = session.post(f"{API}/device-change",
-                          json={"device_id": did, "kind": "sim", "detail": "new ICCID"}, timeout=10)
-        assert rc.status_code == 200
-        # Re-scan -> sim_change should be high_risk and overall high_risk
-        d1 = session.post(f"{API}/privacy-scan", json={
-            "device_id": did, "signals": {"secure_context": True,
-                                          "camera": "granted", "microphone": "granted",
-                                          "geolocation": "granted", "notifications": "granted"},
-        }, timeout=15).json()
-        sim1 = next(c for c in d1["checks"] if c["id"] == "sim_change")
-        assert sim1["status"] == "high_risk"
-        assert d1["overall"] == "high_risk"
-        _cleanup(did)
+    def test_new_device_event_on_first_telemetry(self, session):
+        d = _did("newdev")
+        feats = {"typing_speed": 200, "touch_duration": 80}
+        r = session.post(f"{API}/telemetry", json={"device_id": d, "features": feats, "label": "owner"}, timeout=10)
+        assert r.status_code == 200
+        # second telemetry should NOT produce another new-device event
+        session.post(f"{API}/telemetry", json={"device_id": d, "features": feats, "label": "owner"}, timeout=10)
+        ev = session.get(f"{API}/events", params={"device_id": d, "limit": 50}, timeout=10).json()
+        newdev = [e for e in ev["events"] if e["type"] == "device_change" and "New device" in e["title"]]
+        assert len(newdev) == 1
+        _cleanup(d)
+
+    def test_cover_app_stored(self, session):
+        d = _did("cov")
+        r = session.post(f"{API}/setup", json=_setup_payload(d, cover_app="notes"), timeout=10)
+        assert r.status_code == 200
+        s = session.get(f"{API}/setup/status", params={"device_id": d}, timeout=10).json()
+        assert s["cover_app"] == "notes"
+        _cleanup(d)

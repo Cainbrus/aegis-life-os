@@ -121,8 +121,8 @@ const RecoveryCenter = () => {
 
       {/* Unlock modal */}
       {unlockOpen && (
-        <Modal onClose={() => setUnlockOpen(false)} title="Owner verification" testid="unlock-modal">
-          <p className="text-slate-400 text-sm mb-3">Enter your owner code to unlock.</p>
+        <Modal onClose={() => setUnlockOpen(false)} title="Recovery code" testid="unlock-modal">
+          <p className="text-slate-400 text-sm mb-3">Enter your Recovery code to unlock.</p>
           <CodeInput value={code} onChange={setCode} testid="unlock-code-input" />
           <button onClick={unlock} disabled={busy || code.length < 4} data-testid="unlock-confirm-btn"
             className="w-full mt-4 py-3 rounded-xl bg-emerald-500 text-slate-900 font-bold disabled:opacity-50">Unlock device</button>
@@ -135,7 +135,7 @@ const RecoveryCenter = () => {
           {wipeStep === 1 && (
             <>
               <div className="flex items-center gap-2 text-red-400 mb-3"><ShieldAlert size={18} /> <span className="font-semibold">This erases your vault</span></div>
-              <p className="text-slate-400 text-sm mb-3">Enter your owner code to continue.</p>
+              <p className="text-slate-400 text-sm mb-3">Enter your Emergency Wipe code to continue.</p>
               <CodeInput value={code} onChange={setCode} testid="wipe-code-input" />
               <button onClick={() => setWipeStep(2)} disabled={code.length < 4} data-testid="wipe-next-btn"
                 className="w-full mt-4 py-3 rounded-xl bg-slate-700 text-white font-semibold disabled:opacity-50">Continue</button>
