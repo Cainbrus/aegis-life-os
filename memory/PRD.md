@@ -134,12 +134,28 @@ after any pod reset since it lives outside `/app`.
 
 ### Build order from here (owner's priority)
 1. [x] "Who's using my phone?" dashboard
-2. [x] **Trusted Family Recognition** — profiles with roles (owner/trusted/limited/guest); role-gated UI; add/remove members
-3. [x] **SIM swap detection** (server escalation: lock+lost+L3+alert; real detection = native)
-4. [~] **Cross-device alerts** — Resend email wired to L3/SIM/panic/recovery (dormant until `RESEND_API_KEY` set); FCM push = native
-5. [ ] Bluetooth owner recognition (native)
+2. [x] Trusted Family Recognition (roles: owner/trusted/limited/guest; role-gated UI)
+3. [x] SIM swap detection (server escalation + native SIM_STATE receiver)
+4. [x] Cross-device alerts — Resend email wired (dormant until RESEND_API_KEY set)
+5. [x] **Additive trust model** — behaviour 25 / location 25 / known-device 20 / PIN 15 / app-usage 15; bands 70/40/20 Normal/Monitor/Trap/Recovery with debounce (reduces family false alarms)
 6. [x] Hidden calculator/clock/notes cover access
-7. [ ] **Native Android rebuild (Kotlin) — NEXT MAJOR PHASE** (`/app/NATIVE_ANDROID_ROADMAP.md`)
+7. [~] **NATIVE ANDROID (Kotlin) PHASE — STARTED & COMPILES INTO APK** (on-device testing required)
+
+### Native Android (Kotlin) — in the APK, needs on-device testing
+Files: `android/app/src/main/java/com/digitalmate/app/*.kt` + manifest + `res/xml/device_admin.xml`
+- `DigitalMatePlugin` (Capacitor): requestDeviceAdmin, isAdminActive, lockNow, wipeDevice, getSimSerial, getBondedDevices, startRecoveryService, configure
+- `DigitalMateDeviceAdminReceiver` — Device Admin lock/wipe + anti-disable
+- `SecretCodeReceiver` — hidden dial code `*#*#2468#*#*` → recovery trigger
+- `CallTriggerReceiver` — trusted-number ring detection → /recovery/call-trigger
+- `SimChangeReceiver` — SIM_STATE_CHANGED → /device-change (sim)
+- `RecoveryService` — foreground bg location reporting → /recovery/locate
+- JS bridge `frontend/src/services/NativeBridge.js`; configured on unlock; native lock on panic
+- **Build verified**: `gradlew assembleDebug` BUILD SUCCESSFUL with Kotlin. Functional verification needs a real device + runtime permissions.
+
+### Native next sub-steps (N4-N6)
+- [ ] Volume-button panic sequence (needs AccessibilityService)
+- [ ] Launcher/decoy at OS level; FCM push; carrier-privilege SIM serial
+- [ ] Play Store Device-Admin disclosures & review
 
 ### P2 — Next (security only — no productivity features per owner)
 - [ ] Email owner alerts via Resend at Level 3 / SIM change / panic (plumbing ready; awaiting user API key)
