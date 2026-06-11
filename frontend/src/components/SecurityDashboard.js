@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Fingerprint, Compass, FileClock, Bot, Lock, ChevronRight, Settings, Siren, ScanLine } from 'lucide-react';
+import { Fingerprint, Compass, FileClock, Bot, Lock, ChevronRight, Settings, Siren, ScanLine, Users } from 'lucide-react';
 import telemetry from '../services/TelemetryService';
 import LiveMonitor from './LiveMonitor';
 
-const SecurityDashboard = ({ onNavigate, onOpenSettings, onSecretDemo, onPanic, onLock }) => {
+const SecurityDashboard = ({ role = 'owner', onNavigate, onOpenSettings, onSecretDemo, onPanic, onLock }) => {
   const [status, setStatus] = useState(null);
   const [tap, setTap] = useState(0);
+  const canManage = role === 'owner' || role === 'trusted';
 
   const refresh = useCallback(async () => {
     const s = await telemetry.status();
@@ -51,19 +52,22 @@ const SecurityDashboard = ({ onNavigate, onOpenSettings, onSecretDemo, onPanic, 
       {/* Live "Who's using my phone right now?" — the centerpiece */}
       <LiveMonitor />
 
-      {/* Panic / Lost Phone */}
-      <button onClick={() => setConfirmPanic(true)} data-testid="panic-btn"
-        className={`w-full mb-5 rounded-2xl p-4 flex items-center justify-center gap-3 font-bold border transition-all ${lostMode ? 'bg-red-600/30 border-red-500/60 text-red-300' : 'bg-gradient-to-r from-red-600 to-rose-600 border-red-500/50 text-white hover:opacity-90'}`}>
-        <Siren size={22} />
-        {lostMode ? 'Lost Phone mode active — tracking' : 'Panic / Lost Phone'}
-      </button>
+      {/* Panic / Lost Phone — only owner/trusted */}
+      {canManage && (
+        <button onClick={() => setConfirmPanic(true)} data-testid="panic-btn"
+          className={`w-full mb-5 rounded-2xl p-4 flex items-center justify-center gap-3 font-bold border transition-all ${lostMode ? 'bg-red-600/30 border-red-500/60 text-red-300' : 'bg-gradient-to-r from-red-600 to-rose-600 border-red-500/50 text-white hover:opacity-90'}`}>
+          <Siren size={22} />
+          {lostMode ? 'Lost Phone mode active — tracking' : 'Panic / Lost Phone'}
+        </button>
+      )}
 
       {/* Feature tiles */}
       <div className="space-y-3">
         <Tile icon={Fingerprint} title="Owner Recognition" subtitle={trained ? 'Model trained' : `${status?.samples_needed ?? 8} samples to go`} color="from-cyan-500 to-blue-500" onClick={() => onNavigate('owner')} testid="tile-owner" />
-        <Tile icon={Compass} title="Device Recovery" subtitle="Locate, lock or wipe" color="from-emerald-500 to-teal-500" onClick={() => onNavigate('recovery')} testid="tile-recovery" />
-        <Tile icon={ScanLine} title="Privacy &amp; Security Scan" subtitle="Check what can access your phone" color="from-sky-500 to-cyan-500" onClick={() => onNavigate('privacy')} testid="tile-privacy" />
-        <Tile icon={FileClock} title="Evidence Center" subtitle="Photos, locations &amp; events" color="from-amber-500 to-orange-500" onClick={() => onNavigate('evidence')} testid="tile-evidence" />
+        {canManage && <Tile icon={Users} title="Trusted Family" subtitle="Manage who's recognised" color="from-violet-500 to-purple-500" onClick={() => onNavigate('family')} testid="tile-family" />}
+        {canManage && <Tile icon={Compass} title="Device Recovery" subtitle="Locate, lock or wipe" color="from-emerald-500 to-teal-500" onClick={() => onNavigate('recovery')} testid="tile-recovery" />}
+        {canManage && <Tile icon={ScanLine} title="Privacy &amp; Security Scan" subtitle="Check what can access your phone" color="from-sky-500 to-cyan-500" onClick={() => onNavigate('privacy')} testid="tile-privacy" />}
+        {canManage && <Tile icon={FileClock} title="Evidence Center" subtitle="Photos, locations &amp; events" color="from-amber-500 to-orange-500" onClick={() => onNavigate('evidence')} testid="tile-evidence" />}
         <Tile icon={Bot} title="AI Digital Mate" subtitle="Your security assistant" color="from-indigo-500 to-violet-500" onClick={() => onNavigate('mate')} testid="tile-mate" />
       </div>
 

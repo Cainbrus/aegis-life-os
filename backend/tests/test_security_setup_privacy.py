@@ -207,7 +207,7 @@ class TestBatch5Specific:
         r = session.post(f"{API}/profiles/add",
                          json={"device_id": d, "name": "Lia", "access_code": "lia999", "recovery_code": RECOVERY}, timeout=10)
         assert r.status_code == 200
-        assert "Lia" in r.json()["profiles"]
+        assert any(p.get("name") == "Lia" for p in r.json()["profiles"])
         # new profile access unlocks
         v = session.post(f"{API}/verify-access", json={"device_id": d, "code": "lia999"}, timeout=10).json()
         assert v["verified"] is True and v["profile"] == "Lia"

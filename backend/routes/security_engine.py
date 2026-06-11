@@ -20,6 +20,11 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from motor.motor_asyncio import AsyncIOMotorClient
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+import asyncio
+import logging
+import resend
+
+logger = logging.getLogger("security_engine")
 
 # --- DB (re-use same Mongo instance / DB as the main app) ---
 mongo_url = os.environ['MONGO_URL']
@@ -57,14 +62,14 @@ async def _verify_wipe(device_id: str, code: Optional[str]) -> bool:
     return bool(cfg and cfg.get("configured") and _verify_secret(code, cfg.get("wipe_hash")))
 
 
-async def _verify_access(device_id: str, code: Optional[str]) -> Optional[str]:
-    """Return the matching owner profile name if the access code is valid, else None."""
+async def _verify_access(device_id: str, code: Optional[str]) -> Optional[dict]:
+    """Return the matching owner profile {name, role} if the access code is valid, else None."""
     cfg = await _get_config(device_id)
     if not (cfg and cfg.get("configured")):
         return None
     for p in cfg.get("profiles", []):
         if _verify_secret(code, p.get("access_hash")):
-            return p.get("name", "Owner")
+            return {"name": p.get("name", "Owner"), "role": p.get("role", "owner")}
     return None
 
 # Numeric behavioural features the recognition engine understands.
@@ -123,6 +128,7 @@ class SetupIn(BaseModel):
     recovery_phrase: str = ""        # secret text phrase to trigger recovery
     panic_pattern: str = ""          # optional button pattern to trigger panic
     recovery_email: str = ""         # where alerts are sent (email integration later)
+    backup_email: str = ""           # secondary alert destination
     trusted_numbers: List[str] = Field(default_factory=list)
     backup_numbers: List[str] = Field(default_factory=list)
     cover_app: str = "calculator"    # calculator | clock | notes
@@ -132,7 +138,14 @@ class ProfileIn(BaseModel):
     device_id: str
     name: str
     access_code: str
+    role: str = "trusted"            # owner | trusted | limited | guest
     recovery_code: str               # must match device recovery code to add a profile
+
+
+class ProfileRemoveIn(BaseModel):
+    device_id: str
+    profile_id: str
+    recovery_code: str
 
 
 class TriggerIn(BaseModel):
@@ -241,6 +254,62 @@ async def _create_alert(device_id: str, title: str, body: str, level: int = 3):
     await db.owner_alerts.insert_one(alert)
     alert.pop("_id", None)
     return alert
+
+
+async def _send_alert_email(device_id: str, subject: str, heading: str, lines: List[str],
+                            photo_data_url: Optional[str] = None):
+    """Send an off-device owner alert via Resend. No-ops gracefully if not configured."""
+    api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    if not api_key:
+        return False  # email dormant until the owner adds RESEND_API_KEY
+    cfg = await _get_config(device_id)
+    recipients = [e for e in [(cfg or {}).get("recovery_email"), (cfg or {}).get("backup_email")] if e]
+    if not recipients:
+        return False
+
+    rows = "".join(f"<tr><td style='padding:4px 0;color:#334155'>{l}</td></tr>" for l in lines)
+    html = f"""<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto">
+      <div style="background:#0f172a;color:#fff;padding:16px 20px;border-radius:12px 12px 0 0">
+        <h2 style="margin:0">Digital Mate · {heading}</h2></div>
+      <div style="border:1px solid #e2e8f0;border-top:none;padding:20px;border-radius:0 0 12px 12px">
+        <table style="width:100%;font-size:14px">{rows}</table>
+      </div></div>"""
+
+    params = {"from": os.environ.get("SENDER_EMAIL", "onboarding@resend.dev"),
+              "to": recipients, "subject": subject, "html": html}
+    if photo_data_url and "," in photo_data_url:
+        params["attachments"] = [{"filename": "intruder.jpg", "content": photo_data_url.split(",", 1)[1]}]
+    try:
+        resend.api_key = api_key
+        await asyncio.to_thread(resend.Emails.send, params)
+        return True
+    except Exception as e:
+        logger.error(f"Resend email failed: {e}")
+        return False
+
+
+async def _theft_alert_payload(device_id: str):
+    """Gather facts for an alert email (location map link, latest photo, battery, recent changes)."""
+    state = await db.device_state.find_one({"device_id": device_id}, {"_id": 0}) or {}
+    cur = db.security_events.find({"device_id": device_id}, {"_id": 0}).sort("created_at", -1).limit(8)
+    events = await cur.to_list(length=8)
+    photo, battery = None, None
+    for e in events:
+        md = e.get("metadata") or {}
+        if md.get("photo") and not photo:
+            photo = md.get("photo")
+        if md.get("battery") is not None and battery is None:
+            battery = md.get("battery")
+    loc = state.get("last_location")
+    lines = [f"<b>Time:</b> {_now()}"]
+    if loc:
+        lines.append(f"<b>Last known location:</b> <a href='https://www.google.com/maps?q={loc['lat']},{loc['lng']}'>{loc['lat']:.5f}, {loc['lng']:.5f}</a>")
+    if battery is not None:
+        lines.append(f"<b>Battery:</b> {round(battery)}%")
+    sim = next((e for e in events if e.get("type") == "device_change" and "SIM" in e.get("title", "")), None)
+    if sim:
+        lines.append(f"<b>SIM/network:</b> {sim.get('title')}")
+    return lines, photo
 
 
 def _gaussian_similarity(x: float, mean: float, std: float) -> float:
@@ -366,11 +435,13 @@ async def setup(req: SetupIn):
             "recovery_phrase_hash": _hash_secret(req.recovery_phrase.strip().lower()),
             "panic_pattern_hash": _hash_secret(req.panic_pattern) if req.panic_pattern else None,
             "recovery_email": req.recovery_email.strip(),
+            "backup_email": req.backup_email.strip(),
             "trusted_numbers": numbers,
             "backup_numbers": [n.strip() for n in req.backup_numbers if n and n.strip()],
             "profiles": [{
                 "id": str(uuid.uuid4()),
                 "name": req.owner_name or "Owner",
+                "role": "owner",
                 "access_hash": _hash_secret(req.access_code),
                 "created_at": _now(),
             }],
@@ -383,35 +454,64 @@ async def setup(req: SetupIn):
     return {"ok": True, "configured": True, "cover_app": cover}
 
 
+VALID_ROLES = {"owner", "trusted", "limited", "guest"}
+
+
+@router.get("/profiles")
+async def list_profiles(device_id: str):
+    cfg = await _get_config(device_id)
+    profiles = [{"id": p.get("id"), "name": p.get("name"), "role": p.get("role", "trusted")}
+                for p in (cfg or {}).get("profiles", [])]
+    return {"profiles": profiles}
+
+
 @router.post("/profiles/add")
 async def add_profile(req: ProfileIn):
-    """Add another owner profile (requires the device recovery code)."""
+    """Add a trusted family profile (requires the device recovery code)."""
     if not await _verify_recovery(req.device_id, req.recovery_code):
         raise HTTPException(status_code=403, detail="Recovery code required to add a profile")
     if len(req.access_code) < 4:
         raise HTTPException(status_code=400, detail="Access code must be at least 4 characters")
+    role = req.role if req.role in VALID_ROLES else "trusted"
     await db.device_config.update_one(
         {"device_id": req.device_id},
         {"$push": {"profiles": {
-            "id": str(uuid.uuid4()), "name": req.name or "Owner",
+            "id": str(uuid.uuid4()), "name": req.name or "Member", "role": role,
             "access_hash": _hash_secret(req.access_code), "created_at": _now(),
         }}},
     )
+    return await list_profiles(req.device_id)
+
+
+@router.post("/profiles/remove")
+async def remove_profile(req: ProfileRemoveIn):
+    """Remove a family profile (requires the device recovery code). Cannot remove the owner."""
+    if not await _verify_recovery(req.device_id, req.recovery_code):
+        raise HTTPException(status_code=403, detail="Recovery code required")
     cfg = await _get_config(req.device_id)
-    return {"ok": True, "profiles": [p.get("name") for p in (cfg or {}).get("profiles", [])]}
+    target = next((p for p in (cfg or {}).get("profiles", []) if p.get("id") == req.profile_id), None)
+    if target and target.get("role") == "owner":
+        raise HTTPException(status_code=400, detail="Cannot remove the owner profile")
+    await db.device_config.update_one(
+        {"device_id": req.device_id},
+        {"$pull": {"profiles": {"id": req.profile_id}}})
+    return await list_profiles(req.device_id)
 
 
 @router.post("/verify-access")
 async def verify_access_code(req: CodeIn):
     """Unlock the dashboard from the cover app with an owner's access code."""
-    name = await _verify_access(req.device_id, req.code)
-    if name is not None:
+    match = await _verify_access(req.device_id, req.code)
+    if match is not None:
         await db.device_state.update_one(
             {"device_id": req.device_id},
-            {"$set": {"device_id": req.device_id, "last_owner": name, "last_unlocked_at": _now()}},
+            {"$set": {"device_id": req.device_id, "last_owner": match["name"],
+                      "last_role": match["role"], "last_unlocked_at": _now()}},
             upsert=True,
         )
-    return {"verified": name is not None, "profile": name}
+    return {"verified": match is not None,
+            "profile": match["name"] if match else None,
+            "role": match["role"] if match else None}
 
 
 @router.post("/verify-recovery")
@@ -586,6 +686,9 @@ async def score_session(req: ScoreRequest):
                 req.device_id, "Possible theft detected",
                 "Digital Mate locked your device and started recovery tracking. Open the app to locate it.",
             )
+            _lines, _photo = await _theft_alert_payload(req.device_id)
+            await _send_alert_email(req.device_id, "Digital Mate: possible theft detected",
+                                    "Possible theft detected", _lines, _photo)
 
     return {
         "trust_score": round(trust, 3),
@@ -625,8 +728,11 @@ async def security_status(device_id: str):
         "wiped": bool(state.get("wiped", False)),
         "last_location": state.get("last_location"),
         "last_owner": state.get("last_owner"),
+        "last_role": state.get("last_role"),
         "last_unlocked_at": state.get("last_unlocked_at"),
         "last_scored_at": state.get("last_scored_at"),
+        "profiles": [{"name": p.get("name"), "role": p.get("role", "trusted")}
+                     for p in ((await _get_config(device_id)) or {}).get("profiles", [])],
         "intruders_detected": intruders,
         "threats_blocked": threats,
     }
@@ -678,6 +784,9 @@ async def device_change(c: ChangeIn):
         )
         await _create_alert(c.device_id, "SIM card changed",
                             "The SIM in your device changed - a common sign of theft. Recovery mode activated; tracking and evidence capture started.")
+        _lines, _photo = await _theft_alert_payload(c.device_id)
+        await _send_alert_email(c.device_id, "Digital Mate: SIM card changed",
+                                "SIM card changed", _lines, _photo)
     return evt
 
 
@@ -722,6 +831,9 @@ async def panic(req: RecoveryAction):
                      lat=req.lat, lng=req.lng)
     await _create_alert(req.device_id, "Lost Phone mode activated",
                         "You activated Panic mode. Live tracking and remote lock are on.")
+    _lines, _photo = await _theft_alert_payload(req.device_id)
+    await _send_alert_email(req.device_id, "Digital Mate: Lost Phone mode activated",
+                            "Lost Phone mode activated", _lines, _photo)
     return {"ok": True, "locked": True, "trap_level": 3}
 
 
@@ -856,6 +968,9 @@ async def recovery_trigger(req: TriggerIn):
                      lat=req.lat, lng=req.lng)
     await _create_alert(req.device_id, "Recovery activated",
                         f"Lost Phone mode was triggered via your secret {via}. Live tracking and lock are on.")
+    _lines, _photo = await _theft_alert_payload(req.device_id)
+    await _send_alert_email(req.device_id, "Digital Mate: recovery activated",
+                            "Recovery activated", _lines, _photo)
     return {"triggered": True, "via": via}
 
 
@@ -1111,6 +1226,9 @@ async def call_trigger(c: CallTriggerIn):
                      lat=c.lat, lng=c.lng)
     await _create_alert(c.device_id, "Recovery activated by trusted call",
                         f"A trusted number called {count} times - Lost Phone mode is now on.")
+    _lines, _photo = await _theft_alert_payload(c.device_id)
+    await _send_alert_email(c.device_id, "Digital Mate: recovery via trusted call",
+                            "Recovery via trusted call", _lines, _photo)
     return {"triggered": True, "count": count, "via": "trusted_call"}
 
 

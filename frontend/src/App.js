@@ -11,6 +11,7 @@ import PrivacyScan from './components/PrivacyScan';
 import SetupWizard from './components/SetupWizard';
 import CoverScreen from './components/CoverScreen';
 import AISecurityAdvisor from './components/AISecurityAdvisor';
+import FamilyManager from './components/FamilyManager';
 import DigitalMateWebsite from './components/DigitalMateWebsite';
 import { SubscriptionSuccess, SubscriptionCancel } from './components/SubscriptionPages';
 import telemetry from './services/TelemetryService';
@@ -34,6 +35,7 @@ function App() {
   const [configured, setConfigured] = useState(null); // null=checking, true, false
   const [coverApp, setCoverApp] = useState('calculator');
   const [unlocked, setUnlocked] = useState(false);     // dashboard opens only after Access code
+  const [role, setRole] = useState('owner');           // role of the profile that unlocked
 
   // Navigate + tell the recognition engine which screen is in use (app-usage habit)
   const go = (t) => { setTab(t); telemetry.setScreen(t); };
@@ -112,7 +114,7 @@ function App() {
   const handleCoverSubmit = async (code) => {
     if (!code || code.length < 4) return 'none';
     const r = await telemetry.verifyAccess(code);
-    if (r && r.verified) { setUnlocked(true); telemetry.setScreen('home'); return 'unlocked'; }
+    if (r && r.verified) { setUnlocked(true); setRole(r.role || 'owner'); telemetry.setScreen('home'); return 'unlocked'; }
     const t = await telemetry.triggerRecovery(code);
     if (t && t.triggered) return 'recovery';  // silent — cover behaves normally
     return 'none';
@@ -175,15 +177,17 @@ function App() {
 
       {tab === 'home' && (
         <SecurityDashboard
+          role={role}
           onNavigate={go}
           onOpenSettings={() => setShowSettings(true)}
           onPanic={handlePanic}
-          onLock={() => { setUnlocked(false); setTab('home'); }}
+          onLock={() => { setUnlocked(false); setRole('owner'); setTab('home'); }}
           onSecretDemo={() => toast.info('Developer mode is disabled in this build')}
         />
       )}
       {tab === 'owner' && <ScreenWrap onBack={() => go('home')}><OwnerRecognition /></ScreenWrap>}
       {tab === 'privacy' && <ScreenWrap onBack={() => go('home')}><PrivacyScan /></ScreenWrap>}
+      {tab === 'family' && <ScreenWrap onBack={() => go('home')}><FamilyManager /></ScreenWrap>}
       {tab === 'recovery' && <RecoveryCenter />}
       {tab === 'evidence' && <EvidenceCenter />}
       {tab === 'mate' && (
@@ -192,11 +196,11 @@ function App() {
         </div>
       )}
 
-      {/* Bottom nav */}
+      {/* Bottom nav — limited/guest profiles only see Home + Mate */}
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 flex justify-around py-2 z-[10000]" data-testid="bottom-nav">
-        {NAV.map((n) => {
+        {NAV.filter((n) => (role === 'owner' || role === 'trusted') || ['home', 'mate'].includes(n.id)).map((n) => {
           const Icon = n.icon;
-          const active = tab === n.id || ((tab === 'owner' || tab === 'privacy') && n.id === 'home');
+          const active = tab === n.id || (['owner', 'privacy', 'family'].includes(tab) && n.id === 'home');
           return (
             <button key={n.id} onClick={() => go(n.id)} data-testid={`nav-${n.id}`}
               className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${active ? 'text-cyan-400' : 'text-slate-500'}`}>

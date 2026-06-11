@@ -21,6 +21,7 @@ const SetupWizard = ({ onDone }) => {
   const [phrase, setPhrase] = useState('');
   const [pattern, setPattern] = useState('');
   const [email, setEmail] = useState('');
+  const [email2, setEmail2] = useState('');
   const [numbers, setNumbers] = useState(['']);
   const [backup, setBackup] = useState('');
   const [busy, setBusy] = useState(false);
@@ -56,6 +57,7 @@ const SetupWizard = ({ onDone }) => {
         access_code: access, recovery_code: recovery, wipe_code: wipe,
         recovery_phrase: phrase.trim(), panic_pattern: pattern.trim(),
         recovery_email: email.trim(), trusted_numbers: trusted,
+        backup_email: email2.trim(),
         backup_numbers: backup.trim() ? [backup.trim()] : [],
       });
       toast.success('Setup complete — your codes are saved securely');
@@ -133,6 +135,7 @@ const SetupWizard = ({ onDone }) => {
           <Field label="Recovery phrase" value={phrase} onChange={setPhrase} testid="setup-phrase" placeholder="e.g. find my phone now" />
           <Field label="Panic pattern (optional)" value={pattern} onChange={setPattern} testid="setup-pattern" placeholder="e.g. 1-3-7-9" />
           <Field label="Recovery email (optional)" value={email} onChange={setEmail} type="email" testid="setup-email" placeholder="alerts@you.com" />
+          <Field label="Backup email (optional)" value={email2} onChange={setEmail2} type="email" testid="setup-backup-email" placeholder="backup@you.com" />
           <Primary onClick={next} testid="setup-next-4">Continue</Primary>
         </Card>
       )}

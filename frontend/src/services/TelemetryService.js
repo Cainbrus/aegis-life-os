@@ -244,6 +244,23 @@ class TelemetryService {
     catch (e) { return null; }
   }
 
+  async listProfiles() {
+    try { return (await axios.get(`${API}/security/profiles?device_id=${this.deviceId}`)).data; }
+    catch (e) { return { profiles: [] }; }
+  }
+
+  async addProfile({ name, access_code, role, recovery_code }) {
+    return (await axios.post(`${API}/security/profiles/add`, {
+      device_id: this.deviceId, name, access_code, role, recovery_code,
+    })).data;
+  }
+
+  async removeProfile(profile_id, recovery_code) {
+    return (await axios.post(`${API}/security/profiles/remove`, {
+      device_id: this.deviceId, profile_id, recovery_code,
+    })).data;
+  }
+
   // ---- Setup (owner-defined codes; no defaults) ----
   async setupStatus() {
     try { return (await axios.get(`${API}/security/setup/status?device_id=${this.deviceId}`)).data; }
