@@ -24,13 +24,17 @@ const LiveMonitor = () => {
   useEffect(() => {
     let alive = true;
     const tick = async () => {
+      // Keep the live score fresh so the "why" breakdown reflects right now
+      if (Date.now() - (telemetry.lastScoreAt || 0) > 9000) {
+        await telemetry.score();
+      }
       const st = await telemetry.status();
       if (!alive) return;
       setStatus(st);
       setScore(telemetry.lastScore);
     };
     tick();
-    const i = setInterval(tick, 4000);
+    const i = setInterval(tick, 5000);
     return () => { alive = false; clearInterval(i); };
   }, []);
 
@@ -39,6 +43,7 @@ const LiveMonitor = () => {
   const b = band(trust);
   const level = score?.trap_level ?? status?.trap_level ?? 0;
   const loc = status?.last_location;
+  const hasLoc = loc && typeof loc.lat === 'number' && typeof loc.lng === 'number';
 
   const sigs = score?.signals ? Object.entries(score.signals) : [];
   const matching = sigs.filter(([, v]) => v >= 0.6).sort((a, b2) => b2[1] - a[1]).slice(0, 3);
@@ -95,8 +100,8 @@ const LiveMonitor = () => {
       <div className="space-y-2">
         <Fact icon={UserCheck} label="Last recognised owner" value={status?.last_owner || '—'} testid="live-last-owner" />
         <Fact icon={MapPin} label="Current location"
-          value={loc ? `${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}` : 'Not reported'}
-          link={loc ? `https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=15/${loc.lat}/${loc.lng}` : null}
+          value={hasLoc ? `${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}` : 'Not reported'}
+          link={hasLoc ? `https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=15/${loc.lat}/${loc.lng}` : null}
           testid="live-location" />
         <Fact icon={level >= 2 ? Siren : ShieldCheck}
           label="Trap mode"

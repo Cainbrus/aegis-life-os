@@ -129,7 +129,17 @@ after any pod reset since it lives outside `/app`.
 - [x] **Trusted/backup-number call recovery** — 3 calls in 5 min from a trusted/backup number auto-starts recovery (`/recovery/call-trigger`; native call-detection feeds it)
 - [x] **SIM-swap escalation** — SIM change now auto locks + lost-mode + Level 3 + owner alert
 - [x] **Recovery dashboard** — Mark phone lost / Mark recovered controls
+- [x] **"Who's using my phone right now?" live monitor (HEADLINE FEATURE)** — dashboard centerpiece: live trust score + band label (Definitely owner / Uncertain / Suspicious / Likely thief), why it changed (matching vs mismatching signals), last recognised owner, current location, trap status; auto re-scores
 - [x] Rebuild focused APK (debug)
+
+### Build order from here (owner's priority)
+1. [x] "Who's using my phone?" dashboard
+2. [ ] Cross-device alerts (email via Resend — needs key / FCM push)
+3. [ ] SIM swap detection (native; server escalation done)
+4. [ ] Trusted phone-number recovery (server trigger done; native call detection pending)
+5. [ ] Bluetooth owner recognition (native)
+6. [x] Hidden calculator access (cover mode done)
+7. [ ] Native Android rebuild (Kotlin)
 
 ### P2 — Next (security only — no productivity features per owner)
 - [ ] Email owner alerts via Resend at Level 3 / SIM change / panic (plumbing ready; awaiting user API key)
