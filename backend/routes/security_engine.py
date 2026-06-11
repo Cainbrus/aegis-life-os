@@ -335,6 +335,7 @@ async def setup_status(device_id: str):
         "cover_app": (cfg or {}).get("cover_app", "calculator"),
         "profiles": [p.get("name") for p in (cfg or {}).get("profiles", [])],
         "trusted_numbers": (cfg or {}).get("trusted_numbers", []),
+        "backup_numbers": (cfg or {}).get("backup_numbers", []),
         "has_email": bool((cfg or {}).get("recovery_email")),
     }
 

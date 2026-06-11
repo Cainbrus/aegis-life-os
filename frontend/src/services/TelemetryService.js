@@ -236,7 +236,7 @@ class TelemetryService {
   }
 
   async aiInsights() {
-    try { return (await axios.post(`${API}/security/ai-insights`, { device_id: this.deviceId })).data; }
+    try { return (await axios.post(`${API}/security/ai-insights`, { device_id: this.deviceId }, { timeout: 20000 })).data; }
     catch (e) { return null; }
   }
 

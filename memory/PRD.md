@@ -125,12 +125,17 @@ after any pod reset since it lives outside `/app`.
 - [x] **Recovery phrase + Panic pattern** silent triggers (`/recovery/trigger`)
 - [x] **Multiple owner profiles** (each with own access code; `/profiles/add`)
 - [x] **Battery % + charging** in evidence; **new-device detection** event
+- [x] **AI Security Advisor** (Mate tab) — real-data insights via GPT-4o + rule-based fallback (replaced the chat clone)
+- [x] **Trusted/backup-number call recovery** — 3 calls in 5 min from a trusted/backup number auto-starts recovery (`/recovery/call-trigger`; native call-detection feeds it)
+- [x] **SIM-swap escalation** — SIM change now auto locks + lost-mode + Level 3 + owner alert
+- [x] **Recovery dashboard** — Mark phone lost / Mark recovered controls
 - [x] Rebuild focused APK (debug)
 
 ### P2 — Next (security only — no productivity features per owner)
 - [ ] Email owner alerts via Resend at Level 3 / SIM change / panic (plumbing ready; awaiting user API key)
 - [ ] Cross-device push alerts (FCM)
 - [ ] Per-profile behavioural baselines (currently shared device baseline across owners)
+- [ ] Charging-habit + Bluetooth-device recognition signals (Bluetooth needs native)
 
 ### P3 — Native Android (Kotlin) phase — see /app/NATIVE_ANDROID_ROADMAP.md
 - [ ] Device Admin (real device lock/wipe)
