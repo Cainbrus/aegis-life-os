@@ -1,10 +1,38 @@
 # Digital Mate — Native Android (Kotlin) Phase Roadmap
 
 The current app is a React + Capacitor build. It runs inside the normal Android app sandbox,
-so its protection is **in-app**: in-app owner recognition, an in-app decoy, and remote
-lock/wipe of the app's own vault. To deliver **device-level** security (lock the whole phone,
-wipe the device, replace the home screen with a decoy, capture sensors in the background),
-Digital Mate must add a **native Android layer in Kotlin**. This document is the build plan.
+so its protection is **in-app** plus a **native Kotlin layer that has now been started**
+(Device Admin, dial-code, call/SIM receivers, background recovery service — see below).
+To deliver full **device-level** security, Digital Mate continues the native migration below.
+
+---
+
+## 5-PHASE PLAN (high level)
+
+### Phase 1 — Current Capacitor version  ✅ (live)
+React UI + FastAPI backend + Capacitor wrapper. Owner recognition (additive trust model),
+Trap Mode L1-3, Recovery Center, Evidence Center, hidden Calculator/Clock/Notes cover,
+user-defined codes (no defaults), AI Security Advisor. A first native Kotlin module is
+included and compiles into the APK (DigitalMateNative plugin, Device Admin receiver,
+SecretCodeReceiver `*#*#2468#*#*`, CallTriggerReceiver, SimChangeReceiver, RecoveryService).
+
+### Phase 2 — Native Android (Kotlin) migration  🔨 (in progress)
+Harden and finish the native layer: real Device Admin lock/wipe, trusted-caller detection,
+SIM-state detection, Bluetooth bonded-device recognition, background recovery foreground
+service, hidden dial-code + volume-button (AccessibilityService) access. (Detail = N1-N3 below.)
+
+### Phase 3 — Advanced owner recognition
+On-device sensor streaming (accelerometer/gyro/touch pressure), Wi-Fi SSID + Bluetooth
+proximity as live factors, per-profile baselines, optional on-device TFLite model so scoring
+works offline and continuously in the background. (Detail = N3 below.)
+
+### Phase 4 — Advanced recovery tools
+Remote factory wipe (Device Owner), live location streaming, remote camera/siren, anti-uninstall
+(Device Admin disable lock + SIM-change lock), FCM cross-device push alerts. (Detail = N2/N5 below.)
+
+### Phase 5 — Play Store release
+Device-Admin / background-location / launcher disclosures, privacy policy, signed AAB,
+staged rollout, OEM battery-optimisation guidance. (Detail = N6 below.)
 
 ---
 
