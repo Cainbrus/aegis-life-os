@@ -22,7 +22,10 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 import asyncio
 import logging
-import resend
+try:
+    import resend
+except Exception:  # keep the module importable even if the package is missing
+    resend = None
 
 logger = logging.getLogger("security_engine")
 
@@ -260,7 +263,7 @@ async def _send_alert_email(device_id: str, subject: str, heading: str, lines: L
                             photo_data_url: Optional[str] = None):
     """Send an off-device owner alert via Resend. No-ops gracefully if not configured."""
     api_key = os.environ.get("RESEND_API_KEY", "").strip()
-    if not api_key:
+    if not api_key or resend is None:
         return False  # email dormant until the owner adds RESEND_API_KEY
     cfg = await _get_config(device_id)
     recipients = [e for e in [(cfg or {}).get("recovery_email"), (cfg or {}).get("backup_email")] if e]
@@ -472,6 +475,11 @@ async def add_profile(req: ProfileIn):
         raise HTTPException(status_code=403, detail="Recovery code required to add a profile")
     if len(req.access_code) < 4:
         raise HTTPException(status_code=400, detail="Access code must be at least 4 characters")
+    # Security: a member's access code must be unique and must not equal the recovery/wipe codes.
+    if await _verify_recovery(req.device_id, req.access_code) or await _verify_wipe(req.device_id, req.access_code):
+        raise HTTPException(status_code=400, detail="Access code cannot match the Recovery or Wipe code")
+    if await _verify_access(req.device_id, req.access_code) is not None:
+        raise HTTPException(status_code=409, detail="That access code is already used by another profile")
     role = req.role if req.role in VALID_ROLES else "trusted"
     await db.device_config.update_one(
         {"device_id": req.device_id},

@@ -134,12 +134,12 @@ after any pod reset since it lives outside `/app`.
 
 ### Build order from here (owner's priority)
 1. [x] "Who's using my phone?" dashboard
-2. [ ] Cross-device alerts (email via Resend — needs key / FCM push)
-3. [ ] SIM swap detection (native; server escalation done)
-4. [ ] Trusted phone-number recovery (server trigger done; native call detection pending)
+2. [x] **Trusted Family Recognition** — profiles with roles (owner/trusted/limited/guest); role-gated UI; add/remove members
+3. [x] **SIM swap detection** (server escalation: lock+lost+L3+alert; real detection = native)
+4. [~] **Cross-device alerts** — Resend email wired to L3/SIM/panic/recovery (dormant until `RESEND_API_KEY` set); FCM push = native
 5. [ ] Bluetooth owner recognition (native)
-6. [x] Hidden calculator access (cover mode done)
-7. [ ] Native Android rebuild (Kotlin)
+6. [x] Hidden calculator/clock/notes cover access
+7. [ ] **Native Android rebuild (Kotlin) — NEXT MAJOR PHASE** (`/app/NATIVE_ANDROID_ROADMAP.md`)
 
 ### P2 — Next (security only — no productivity features per owner)
 - [ ] Email owner alerts via Resend at Level 3 / SIM change / panic (plumbing ready; awaiting user API key)

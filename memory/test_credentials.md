@@ -34,9 +34,17 @@ POST /api/security/setup
 - recovery/wipe (+ confirm:true): **Wipe**
 - recovery/trigger {secret}: recovery **phrase** | **panic pattern** | **recovery code**
 
-## Multiple owner profiles
-`POST /profiles/add { device_id, name, access_code, recovery_code }` (recovery code required).
-Each profile's access code opens the dashboard.
+## Multiple owner profiles (Trusted Family)
+`POST /profiles/add { device_id, name, access_code, role, recovery_code }` (recovery code required).
+Roles: `owner | trusted | limited | guest`. owner/trusted = full UI; limited/guest = Home + AI Mate only.
+Access code must be unique and must NOT equal the recovery/wipe code (400/409 otherwise).
+`GET /profiles?device_id`, `POST /profiles/remove { device_id, profile_id, recovery_code }` (can't remove owner).
+- dm-cover-test currently also has **Lia** (limited, access `7777`) for role-gating tests.
+
+## Email alerts (Resend) — dormant until configured
+Add to `/app/backend/.env`: `RESEND_API_KEY=re_...` (and optionally `SENDER_EMAIL`).
+In Resend test mode, emails only deliver to your verified address — set the recovery/backup email to it.
+Sends on Level-3 theft / SIM change / panic / recovery trigger to recovery_email + backup_email.
 
 ## Notes
 - No user login (single-device model). Cover apps: calculator | clock | notes.
