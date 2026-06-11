@@ -105,7 +105,7 @@ class TestScoring:
         }, timeout=10)
         assert r.status_code == 200
         d = r.json()
-        assert d["trust_score"] >= 0.6, f"Expected >=0.6, got {d['trust_score']}"
+        assert d["trust_score"] >= 0.70, f"Expected >=0.70, got {d['trust_score']}"
         assert d["is_owner"] is True
         assert d["trap_active"] is False
         assert "signals" in d
@@ -120,19 +120,20 @@ class TestScoring:
         assert r1["trust_score"] == r2["trust_score"], "Score must be deterministic"
 
     def test_score_intruder_low_trust_and_trap(self, session, device_id):
-        # Escalation: 1st low-trust => L1 (logging only), 2nd => L2 (trap_active)
+        # New band model: trust < 0.20 -> level 2 on first reading, level 3 on second
+        # trust 0.20-0.39 -> level 1 first, level 2 second (debounced)
+        # trust 0.40-0.69 -> level 1 (monitor)
         r1 = session.post(f"{API}/score", json={
             "device_id": device_id, "features": INTRUDER_FEATURES
         }, timeout=10).json()
-        assert r1["trust_score"] < 0.6
+        assert r1["trust_score"] < 0.70
         assert r1["is_owner"] is False
-        assert r1["trap_level"] == 1
-        assert r1["trap_active"] is False
+        assert r1["trap_level"] >= 1
 
         r2 = session.post(f"{API}/score", json={
             "device_id": device_id, "features": INTRUDER_FEATURES
         }, timeout=10).json()
-        assert r2["trap_level"] == 2
+        assert r2["trap_level"] >= 2
         assert r2["trap_active"] is True
 
     def test_intruder_logs_critical_event(self, session, device_id):

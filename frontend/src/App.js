@@ -16,6 +16,7 @@ import DigitalMateWebsite from './components/DigitalMateWebsite';
 import { SubscriptionSuccess, SubscriptionCancel } from './components/SubscriptionPages';
 import telemetry from './services/TelemetryService';
 import { requestNotificationPermission, sendAlert } from './services/PushNotificationService';
+import { isNative, nativeConfigure, nativeBondedDevices, nativeLock, nativeStartRecovery } from './services/NativeBridge';
 import './App.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -114,7 +115,21 @@ function App() {
   const handleCoverSubmit = async (code) => {
     if (!code || code.length < 4) return 'none';
     const r = await telemetry.verifyAccess(code);
-    if (r && r.verified) { setUnlocked(true); setRole(r.role || 'owner'); telemetry.setScreen('home'); return 'unlocked'; }
+    if (r && r.verified) {
+      setUnlocked(true); setRole(r.role || 'owner'); telemetry.setScreen('home');
+      // Configure the native layer (background receivers/services) with the owner's settings
+      if (isNative()) {
+        const st = await telemetry.setupStatus();
+        nativeConfigure({
+          backendUrl: process.env.REACT_APP_BACKEND_URL,
+          deviceId: telemetry.deviceId,
+          trustedNumbers: (st?.trusted_numbers || []).concat(st?.backup_numbers || []).join(','),
+          callCount: 3, callWindowSec: 300,
+        });
+        nativeBondedDevices().then((devs) => { telemetry.knownDevice = devs && devs.length ? 1 : 0; });
+      }
+      return 'unlocked';
+    }
     const t = await telemetry.triggerRecovery(code);
     if (t && t.triggered) return 'recovery';  // silent — cover behaves normally
     return 'none';
@@ -124,6 +139,7 @@ function App() {
     await telemetry.panic();
     telemetry.capturePhoto(3);
     startTracking();
+    if (isNative()) { nativeLock(); nativeStartRecovery(); }  // real device lock + background tracking
     sendAlert('Lost Phone mode activated. Live tracking and remote lock are on.', 'emergency');
     go('recovery');
     toast.success('Panic activated — device locked & tracking started');

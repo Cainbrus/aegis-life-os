@@ -92,7 +92,7 @@ FEATURE_KEYS = [
 ]
 
 MIN_SAMPLES_TO_TRAIN = 8          # samples needed before a baseline is usable
-OWNER_TRUST_THRESHOLD = 0.60      # below this -> likely intruder
+OWNER_TRUST_THRESHOLD = 0.70      # >=70% = Normal/owner (band model)
 # No default codes exist. Each owner defines their own recovery & vault codes
 # during first-run Setup; they are stored hashed in db.device_config.
 
@@ -113,6 +113,8 @@ class ScoreRequest(BaseModel):
     lat: Optional[float] = None
     lng: Optional[float] = None
     screen: Optional[str] = None
+    pin_ok: Optional[bool] = None        # correct access code entered this session
+    known_device: Optional[float] = None # 0-1: a known Bluetooth device is connected (native)
 
 
 class ChangeIn(BaseModel):
@@ -135,6 +137,8 @@ class SetupIn(BaseModel):
     trusted_numbers: List[str] = Field(default_factory=list)
     backup_numbers: List[str] = Field(default_factory=list)
     cover_app: str = "calculator"    # calculator | clock | notes
+    call_trigger_count: int = 3      # trusted calls needed to trigger recovery
+    call_trigger_window_sec: int = 300  # within this window (seconds)
 
 
 class ProfileIn(BaseModel):
@@ -441,6 +445,8 @@ async def setup(req: SetupIn):
             "backup_email": req.backup_email.strip(),
             "trusted_numbers": numbers,
             "backup_numbers": [n.strip() for n in req.backup_numbers if n and n.strip()],
+            "call_trigger_count": max(1, min(10, req.call_trigger_count)),
+            "call_trigger_window_sec": max(30, min(1800, req.call_trigger_window_sec)),
             "profiles": [{
                 "id": str(uuid.uuid4()),
                 "name": req.owner_name or "Owner",
@@ -605,48 +611,70 @@ async def score_session(req: ScoreRequest):
         }
 
     baseline = profile["baseline"]
-    sims = []
+
+    # --- Additive, weighted trust model (reduces false alarms for trusted family) ---
+    # Each independent factor contributes up to its weight; trust = weighted mean over the
+    # factors we actually have data for. A correct PIN + home location + a known device keeps
+    # trust high even if typing differs (e.g. partner/kids using the phone).
+    behaviour_sims = []
     contributions = {}
     for key in FEATURE_KEYS:
         if key in feats and key in baseline:
             sim = _gaussian_similarity(feats[key], baseline[key]["mean"], baseline[key]["std"])
-            sims.append(sim)
+            behaviour_sims.append(sim)
             contributions[key] = round(sim, 3)
 
-    # Location habit signal
+    factors = []  # (weight, value 0-1)
+    if behaviour_sims:
+        bval = sum(behaviour_sims) / len(behaviour_sims)
+        factors.append((25, bval))
+        contributions["behaviour"] = round(bval, 3)
+
     loc_fam = _location_familiarity(profile, req.lat, req.lng)
     if loc_fam is not None:
-        sims.append(loc_fam)
+        factors.append((25, loc_fam))
         contributions["location_habit"] = loc_fam
 
-    # App-usage habit signal
+    if req.known_device is not None:
+        kd = max(0.0, min(1.0, float(req.known_device)))
+        factors.append((20, kd))
+        contributions["known_device"] = round(kd, 3)
+
+    if req.pin_ok is not None:
+        pv = 1.0 if req.pin_ok else 0.0
+        factors.append((15, pv))
+        contributions["pin"] = pv
+
     app_fam = _app_usage_familiarity(profile, req.screen)
     if app_fam is not None:
-        sims.append(app_fam)
+        factors.append((15, app_fam))
         contributions["app_usage"] = app_fam
 
-    if not sims:
+    if not factors:
         return {"trust_score": 1.0, "is_owner": True, "trap_active": False, "status": "no_signal"}
 
-    trust = sum(sims) / len(sims)
+    total_w = sum(w for w, _ in factors)
+    trust = sum(w * v for w, v in factors) / total_w
     is_owner = trust >= OWNER_TRUST_THRESHOLD
 
-    # --- Trap escalation levels (SILENT / invisible) ---
-    # L1: unknown behaviour -> start logging
-    # L2: repeated failed checks -> silent photo + location tracking
-    # L3: confirmed theft -> notify owner + recovery mode (lock + lost mode)
-    # The intruder is never shown any warning or decoy; the app keeps operating normally.
+    # --- Band-based escalation with debounce (SILENT / invisible) ---
+    # 70-100 Normal(0) · 40-69 Monitor(1) · 20-39 Trap(2) · 0-19 Recovery(3)
     state = await db.device_state.find_one({"device_id": req.device_id}, {"_id": 0}) or {}
     streak = int(state.get("low_trust_streak", 0))
     prev_level = int(state.get("trap_level", 0))
 
-    if is_owner:
+    if trust >= 0.70:
         streak = 0
         level = 0
         trap_active = False
     else:
         streak += 1
-        level = 1 if streak == 1 else (2 if streak == 2 else 3)
+        if trust >= 0.40:
+            level = 1                                   # Monitor
+        elif trust >= 0.20:
+            level = 2 if streak >= 2 else 1             # Trap (debounced: needs 2 readings)
+        else:
+            level = 3 if streak >= 2 else 2             # Recovery (debounced)
         trap_active = level >= 2
 
     set_state = {
@@ -1192,17 +1220,15 @@ async def privacy_scan(req: ScanIn):
 
 
 # ============================ Trusted-Number Call Recovery ============================
-CALL_TRIGGER_COUNT = 3
-CALL_TRIGGER_WINDOW_SEC = 300  # 5 minutes
-
-
 @router.post("/recovery/call-trigger")
 async def call_trigger(c: CallTriggerIn):
-    """A trusted/backup number calling the device N times within 5 min activates recovery -
-    no app interaction needed. (Native call-state detection feeds this in the native phase.)"""
+    """A trusted/backup number calling the device N times within the configured window
+    activates recovery - no app interaction needed. (Native call-state detection feeds this.)"""
     cfg = await _get_config(c.device_id)
     if not (cfg and cfg.get("configured")):
         raise HTTPException(status_code=404, detail="Device not configured")
+    trigger_count = int(cfg.get("call_trigger_count", 3))
+    window_sec = int(cfg.get("call_trigger_window_sec", 300))
     allowed = set(cfg.get("trusted_numbers", []) + cfg.get("backup_numbers", []))
     norm = c.from_number.strip()
     is_trusted = any(norm.replace(" ", "").endswith(a.replace(" ", "")[-7:]) for a in allowed) if allowed else False
@@ -1213,12 +1239,12 @@ async def call_trigger(c: CallTriggerIn):
     if not is_trusted:
         return {"triggered": False, "reason": "number_not_trusted", "count": 0}
 
-    cutoff = (now - timedelta(seconds=CALL_TRIGGER_WINDOW_SEC)).isoformat()
+    cutoff = (now - timedelta(seconds=window_sec)).isoformat()
     count = await db.call_events.count_documents(
         {"device_id": c.device_id, "from_number": norm, "trusted": True, "at": {"$gte": cutoff}})
 
-    if count < CALL_TRIGGER_COUNT:
-        return {"triggered": False, "count": count, "needed": CALL_TRIGGER_COUNT}
+    if count < trigger_count:
+        return {"triggered": False, "count": count, "needed": trigger_count}
 
     await db.device_state.update_one(
         {"device_id": c.device_id},

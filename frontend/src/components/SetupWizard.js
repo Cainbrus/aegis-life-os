@@ -24,6 +24,8 @@ const SetupWizard = ({ onDone }) => {
   const [email2, setEmail2] = useState('');
   const [numbers, setNumbers] = useState(['']);
   const [backup, setBackup] = useState('');
+  const [callCount, setCallCount] = useState(3);
+  const [callMins, setCallMins] = useState(5);
   const [busy, setBusy] = useState(false);
 
   const setNum = (i, v) => setNumbers((n) => n.map((x, idx) => (idx === i ? v : x)));
@@ -59,6 +61,8 @@ const SetupWizard = ({ onDone }) => {
         recovery_email: email.trim(), trusted_numbers: trusted,
         backup_email: email2.trim(),
         backup_numbers: backup.trim() ? [backup.trim()] : [],
+        call_trigger_count: Number(callCount) || 3,
+        call_trigger_window_sec: (Number(callMins) || 5) * 60,
       });
       toast.success('Setup complete — your codes are saved securely');
       onDone?.();
@@ -163,6 +167,18 @@ const SetupWizard = ({ onDone }) => {
               data-testid="setup-backup-number"
               className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white focus:border-cyan-500 outline-none" />
             <p className="text-slate-500 text-xs mt-1">A trusted/backup number calling you 3× in 5 min auto-starts recovery (native phase).</p>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-slate-400 text-xs mb-1 block">Calls to trigger</label>
+              <input type="number" min="1" max="10" value={callCount} onChange={(e) => setCallCount(e.target.value)} data-testid="setup-call-count"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white outline-none focus:border-cyan-500" />
+            </div>
+            <div>
+              <label className="text-slate-400 text-xs mb-1 block">Within (minutes)</label>
+              <input type="number" min="1" max="30" value={callMins} onChange={(e) => setCallMins(e.target.value)} data-testid="setup-call-mins"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white outline-none focus:border-cyan-500" />
+            </div>
           </div>
           <button onClick={finish} disabled={busy} data-testid="setup-finish"
             className="w-full mt-5 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold disabled:opacity-50 flex items-center justify-center gap-2">

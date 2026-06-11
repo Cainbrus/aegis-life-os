@@ -7,14 +7,15 @@ const LABELS = {
   typing_variance: 'Typing consistency', touch_duration: 'Touch duration', touch_pressure: 'Touch pressure',
   tap_interval: 'Tap cadence', swipe_velocity: 'Swipe speed', swipe_length: 'Swipe length',
   motion_avg: 'Device motion', hour_of_day: 'Time of day', day_of_week: 'Day pattern',
-  location_habit: 'Location habit', app_usage: 'App usage',
+  location_habit: 'At a usual place', app_usage: 'Normal app usage',
+  behaviour: 'Touch & typing', known_device: 'Known device nearby', pin: 'Correct access code',
 };
 
 const band = (t) => {
-  if (t >= 80) return { label: 'Definitely owner', color: '#34d399', text: 'text-emerald-400' };
-  if (t >= 55) return { label: 'Uncertain', color: '#fbbf24', text: 'text-amber-400' };
-  if (t >= 30) return { label: 'Suspicious', color: '#fb923c', text: 'text-orange-400' };
-  return { label: 'Likely thief', color: '#f87171', text: 'text-red-400' };
+  if (t >= 70) return { label: 'Definitely you', color: '#34d399', text: 'text-emerald-400' };
+  if (t >= 40) return { label: 'Monitoring', color: '#fbbf24', text: 'text-amber-400' };
+  if (t >= 20) return { label: 'Suspicious', color: '#fb923c', text: 'text-orange-400' };
+  return { label: 'Likely not you', color: '#f87171', text: 'text-red-400' };
 };
 
 const LiveMonitor = () => {
@@ -45,9 +46,10 @@ const LiveMonitor = () => {
   const loc = status?.last_location;
   const hasLoc = loc && typeof loc.lat === 'number' && typeof loc.lng === 'number';
 
-  const sigs = score?.signals ? Object.entries(score.signals) : [];
-  const matching = sigs.filter(([, v]) => v >= 0.6).sort((a, b2) => b2[1] - a[1]).slice(0, 3);
-  const mismatching = sigs.filter(([, v]) => v < 0.6).sort((a, b2) => a[1] - b2[1]).slice(0, 3);
+  const FACTOR_KEYS = ['behaviour', 'location_habit', 'known_device', 'pin', 'app_usage'];
+  const sigs = score?.signals ? Object.entries(score.signals).filter(([k]) => FACTOR_KEYS.includes(k)) : [];
+  const matching = sigs.filter(([, v]) => v >= 0.6).sort((a, b2) => b2[1] - a[1]).slice(0, 4);
+  const mismatching = sigs.filter(([, v]) => v < 0.6).sort((a, b2) => a[1] - b2[1]).slice(0, 4);
 
   const R = 78, C = 2 * Math.PI * R;
 

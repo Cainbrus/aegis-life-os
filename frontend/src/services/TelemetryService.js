@@ -41,6 +41,7 @@ class TelemetryService {
     this.lastNetwork = null;
     this.lastScore = null;
     this.lastScoreAt = 0;
+    this.knownDevice = undefined;     // 0-1 set by native Bluetooth bridge (owner's watch/car/earbuds)
     this.started = false;
   }
 
@@ -177,6 +178,8 @@ class TelemetryService {
       const res = await axios.post(`${API}/security/score`, {
         device_id: this.deviceId, features: this.buildFeatures(),
         screen: this.currentScreen, lat: loc?.lat, lng: loc?.lng,
+        pin_ok: true,                          // reachable only after the access code unlock
+        known_device: this.knownDevice,        // set by the native Bluetooth bridge when present
       });
       this.lastScore = res.data;       // cached for the live "who's using my phone" widget
       this.lastScoreAt = Date.now();
