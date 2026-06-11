@@ -11,13 +11,15 @@ from behavioural telemetry the app collects while the verified owner uses the ph
 import os
 import math
 import uuid
+import json
 import bcrypt
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from motor.motor_asyncio import AsyncIOMotorClient
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 # --- DB (re-use same Mongo instance / DB as the main app) ---
 mongo_url = os.environ['MONGO_URL']
@@ -122,6 +124,7 @@ class SetupIn(BaseModel):
     panic_pattern: str = ""          # optional button pattern to trigger panic
     recovery_email: str = ""         # where alerts are sent (email integration later)
     trusted_numbers: List[str] = Field(default_factory=list)
+    backup_numbers: List[str] = Field(default_factory=list)
     cover_app: str = "calculator"    # calculator | clock | notes
 
 
@@ -135,6 +138,13 @@ class ProfileIn(BaseModel):
 class TriggerIn(BaseModel):
     device_id: str
     secret: str                      # recovery phrase OR panic pattern OR recovery code
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+
+
+class CallTriggerIn(BaseModel):
+    device_id: str
+    from_number: str
     lat: Optional[float] = None
     lng: Optional[float] = None
 
@@ -356,6 +366,7 @@ async def setup(req: SetupIn):
             "panic_pattern_hash": _hash_secret(req.panic_pattern) if req.panic_pattern else None,
             "recovery_email": req.recovery_email.strip(),
             "trusted_numbers": numbers,
+            "backup_numbers": [n.strip() for n in req.backup_numbers if n and n.strip()],
             "profiles": [{
                 "id": str(uuid.uuid4()),
                 "name": req.owner_name or "Owner",
@@ -642,13 +653,21 @@ async def clear_events(device_id: str):
 
 @router.post("/device-change")
 async def device_change(c: ChangeIn):
-    """Record a SIM or network change as evidence (SIM detection needs the native phase)."""
-    title = "SIM change detected" if c.kind == "sim" else "Network change detected"
-    evt = await _log_event(c.device_id, "device_change", "warning", title, c.detail, metadata=c.metadata)
-    # A SIM swap on a lost device is a strong theft signal -> alert owner.
-    if c.kind == "sim":
+    """Record a SIM or network change as evidence (true SIM detection needs the native phase)."""
+    is_sim = c.kind == "sim"
+    title = "SIM change detected" if is_sim else "Network change detected"
+    sev = "critical" if is_sim else "warning"
+    evt = await _log_event(c.device_id, "device_change", sev, title, c.detail, metadata=c.metadata)
+    # A SIM swap is a strong theft signal -> immediately escalate to recovery + alert.
+    if is_sim:
+        await db.device_state.update_one(
+            {"device_id": c.device_id},
+            {"$set": {"device_id": c.device_id, "lost_mode": True, "locked": True,
+                      "trap_level": 3, "sim_alert": True, "sim_alert_at": _now()}},
+            upsert=True,
+        )
         await _create_alert(c.device_id, "SIM card changed",
-                            "The SIM in your device changed - a common sign of theft. Open Digital Mate to track it.")
+                            "The SIM in your device changed - a common sign of theft. Recovery mode activated; tracking and evidence capture started.")
     return evt
 
 
@@ -1037,3 +1056,132 @@ async def privacy_scan(req: ScanIn):
         upsert=True,
     )
     return {"overall": overall, "counts": counts, "checks": checks, "scanned_at": _now()}
+
+
+# ============================ Trusted-Number Call Recovery ============================
+CALL_TRIGGER_COUNT = 3
+CALL_TRIGGER_WINDOW_SEC = 300  # 5 minutes
+
+
+@router.post("/recovery/call-trigger")
+async def call_trigger(c: CallTriggerIn):
+    """A trusted/backup number calling the device N times within 5 min activates recovery -
+    no app interaction needed. (Native call-state detection feeds this in the native phase.)"""
+    cfg = await _get_config(c.device_id)
+    if not (cfg and cfg.get("configured")):
+        raise HTTPException(status_code=404, detail="Device not configured")
+    allowed = set(cfg.get("trusted_numbers", []) + cfg.get("backup_numbers", []))
+    norm = c.from_number.strip()
+    is_trusted = any(norm.replace(" ", "").endswith(a.replace(" ", "")[-7:]) for a in allowed) if allowed else False
+    now = datetime.now(timezone.utc)
+
+    await db.call_events.insert_one({
+        "device_id": c.device_id, "from_number": norm, "trusted": is_trusted, "at": now.isoformat()})
+    if not is_trusted:
+        return {"triggered": False, "reason": "number_not_trusted", "count": 0}
+
+    cutoff = (now - timedelta(seconds=CALL_TRIGGER_WINDOW_SEC)).isoformat()
+    count = await db.call_events.count_documents(
+        {"device_id": c.device_id, "from_number": norm, "trusted": True, "at": {"$gte": cutoff}})
+
+    if count < CALL_TRIGGER_COUNT:
+        return {"triggered": False, "count": count, "needed": CALL_TRIGGER_COUNT}
+
+    await db.device_state.update_one(
+        {"device_id": c.device_id},
+        {"$set": {"device_id": c.device_id, "locked": True, "lost_mode": True,
+                  "trap_level": 3, "call_trigger_at": _now()}}, upsert=True)
+    if c.lat is not None and c.lng is not None:
+        loc = {"lat": c.lat, "lng": c.lng, "at": _now()}
+        await db.device_state.update_one(
+            {"device_id": c.device_id},
+            {"$set": {"last_location": loc}, "$push": {"location_history": {"$each": [loc], "$slice": -50}}})
+    await _log_event(c.device_id, "recovery", "critical", "Recovery via trusted call",
+                     f"{count} calls from a trusted number ({norm}) within 5 minutes. Tracking + evidence started.",
+                     lat=c.lat, lng=c.lng)
+    await _create_alert(c.device_id, "Recovery activated by trusted call",
+                        f"A trusted number called {count} times - Lost Phone mode is now on.")
+    return {"triggered": True, "count": count, "via": "trusted_call"}
+
+
+# ============================ AI Security Advisor ============================
+class InsightsIn(BaseModel):
+    device_id: str
+
+
+@router.post("/ai-insights")
+async def ai_insights(req: InsightsIn):
+    """AI advisor focused on security: summarises real device signals into prioritized,
+    actionable insights (suspicious activity, recognition status, battery, privacy)."""
+    state = await db.device_state.find_one({"device_id": req.device_id}, {"_id": 0}) or {}
+    profile = await db.owner_profiles.find_one({"device_id": req.device_id}, {"_id": 0}) or {}
+    cur = db.security_events.find({"device_id": req.device_id}, {"_id": 0, "photo": 0}).sort("created_at", -1).limit(12)
+    events = await cur.to_list(length=12)
+    ev_lines = [f"- {e.get('severity')}: {e.get('title')} ({e.get('detail', '')[:80]})" for e in events]
+
+    # latest battery from most recent intruder photo
+    batt = None
+    for e in events:
+        md = e.get("metadata") or {}
+        if md.get("battery") is not None:
+            batt = md.get("battery"); break
+
+    facts = {
+        "trust_score_pct": round((state.get("last_trust_score", 1.0)) * 100),
+        "recognition_trained": bool(profile.get("trained")),
+        "trap_level": state.get("trap_level", 0),
+        "lost_mode": bool(state.get("lost_mode")),
+        "battery_pct": batt,
+        "privacy_overall": state.get("last_scan_overall"),
+        "recent_events": ev_lines or ["- no events yet"],
+    }
+
+    prompt = f"""You are Digital Mate's AI Security Advisor for a stealth anti-theft app.
+Using ONLY these real device facts, return 3-5 prioritized, practical security insights.
+Do NOT invent data. Do NOT claim to detect wiretaps or lawful interception.
+
+DEVICE FACTS:
+{json.dumps(facts, indent=2)}
+
+Return STRICT JSON: {{"insights":[{{"title":"...","severity":"info|warning|critical","detail":"one sentence","action":"one concrete action"}}]}}
+Focus on: owner-recognition status, any suspicious activity in recent events, battery advice if low, and privacy review if needed."""
+
+    try:
+        chat = LlmChat(
+            api_key=os.environ.get("EMERGENT_LLM_KEY"),
+            session_id=f"advisor_{req.device_id}",
+            system_message="You are a concise security advisor. Always reply with strict JSON only.",
+        ).with_model("openai", "gpt-4o")
+        raw = await chat.send_message(UserMessage(text=prompt))
+        txt = raw if isinstance(raw, str) else str(raw)
+        s, e = txt.find("{"), txt.rfind("}")
+        data = json.loads(txt[s:e + 1]) if s >= 0 else {"insights": []}
+        insights = data.get("insights", [])
+        if insights:
+            return {"insights": insights, "facts": facts, "source": "ai"}
+    except Exception:
+        pass  # fall through to deterministic rule-based insights
+
+    # Deterministic fallback so the advisor always returns something useful.
+    out = []
+    if not facts["recognition_trained"]:
+        out.append({"title": "Finish training owner recognition", "severity": "warning",
+                    "detail": "Your behavioural model isn't trained yet, so Digital Mate can't yet tell you apart from others.",
+                    "action": "Use the app normally for a bit or tap 'Capture my behaviour' in Owner Recognition."})
+    if facts["trap_level"] and facts["trap_level"] >= 2:
+        out.append({"title": "Suspicious activity detected", "severity": "critical",
+                    "detail": "Behaviour didn't match the owner recently and Trap Mode escalated.",
+                    "action": "Open the Evidence Center to review captured photos and locations."})
+    if facts["battery_pct"] is not None and facts["battery_pct"] < 20:
+        out.append({"title": "Low battery during monitoring", "severity": "warning",
+                    "detail": f"Battery is at {facts['battery_pct']}% - tracking may stop if it dies.",
+                    "action": "Charge the device or enable battery saver to keep recovery active."})
+    if facts["privacy_overall"] in ("review", "high_risk"):
+        out.append({"title": "Privacy review needed", "severity": "warning",
+                    "detail": "Your last Privacy & Security Scan flagged items to review.",
+                    "action": "Open Privacy & Security Scan and address the flagged checks."})
+    if not out:
+        out.append({"title": "All clear", "severity": "info",
+                    "detail": "No unusual activity. Owner recognition is active and protecting your phone.",
+                    "action": "Keep using your phone normally - Digital Mate keeps watching quietly."})
+    return {"insights": out, "facts": facts, "source": "rules"}

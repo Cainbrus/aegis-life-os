@@ -1,0 +1,28 @@
+{
+  "summary": "Batch 6 testing complete. Added /app/backend/tests/test_security_batch6.py covering AI Security Advisor (ai-insights w/ gpt-4o + rule fallback, no wiretap claims), Trusted/Backup-number call recovery (untrusted=no-trigger, 3-in-5min triggers + lock+lost+L3 + alert, backup-number last-7-digit match), setup backup_numbers persistence, and SIM-swap escalation (locked+lost_mode+trap_level 3 + alert) vs. network-change-no-escalation. 11/11 new tests pass; full suite 75/75 pass (no Batch 5 regressions). Frontend (dm-cover-test, 390x844): Mate tab renders AI Security Advisor (NOT a chat) - 4 insight cards initially, advisor-refresh re-runs and returns 3 different cards; Recovery Center shows mark-lost-btn -> after click status=Lost Mode active and button becomes mark-recovered-btn (opens unlock modal); Setup Wizard source confirmed setup-backup-number input present alongside setup-number-0 and setup-finish.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_security_batch6.py",
+    "/app/test_reports/pytest/batch6_results.xml",
+    "/app/test_reports/pytest/all_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ai-insights: GPT call has no explicit timeout — a slow OpenAI response could leave the UI on 'Analysing your device…' for a long time. AISecurityAdvisor.js should set a client-side fetch timeout and the backend could pass a max_tokens/timeout to LlmChat; rule fallback already exists so timing out faster is safe.",
+    "ai-insights: response is cached/computed each call (no rate limit). If user spams advisor-refresh, GPT credits burn. Consider a 15s debounce or server-side cache keyed by device_id+state hash.",
+    "call-trigger: trusted matching is last-7-digit suffix only, so two different real numbers ending in the same 7 digits would both be accepted. Consider also matching by exact normalized E.164 first, with last-7 as fallback.",
+    "device-change SIM escalation is now silent + automatic (lock+lost+L3). Confirm product intent: a legitimate SIM swap by the owner (e.g., upgrading) would lock the phone until Recovery code is used. Owner education / native confirmation prompt would reduce false positives.",
+    "Setup payload still doesn't expose backup_numbers via GET /setup/status — verified directly via Mongo. Recommend adding backup_numbers to the status payload so the wizard can show whether a backup is configured."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_security_batch6.py (NEW - 11 tests across AIInsights / CallTrigger / SetupBackupNumbers / SimEscalation)"
+  ],
+  "success_rate": {"backend": "100% (75/75; +11 new Batch 6)", "frontend": "100% on critical Batch 6 flows (advisor, mark-lost/recovered, source verified setup-backup-number)"},
+  "test_credentials": "dm-cover-test: access 2580 / recovery rec999 / wipe wipe888 / phrase 'bring it back' / pattern 159; trusted +15550009999; backup +15558887777 (used only in fresh TEST_ devices).",
+  "seed_data_creation": "Each new test uses TEST_ prefixed disposable device_ids; events cleaned via DELETE /api/security/events. dm-cover-test was left in Lost Mode during the FE test; I restored it via /recovery/unlock with rec999.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run backend tests with REACT_APP_BACKEND_URL/MONGO_URL/DB_NAME loaded from /app/frontend/.env and /app/backend/.env (do NOT use shell `export $(grep …)` — Mongo URL contains characters that break that pattern; use dotenv_values in Python or run pytest with env-loaded wrapper). dm-cover-test device is shared across runs and may be in Lost Mode if a prior test marked it lost — call POST /api/security/recovery/unlock with owner_code=rec999 to reset before UI tests. SIM-change kind=sim now ESCALATES (locked+lost_mode+trap_level 3); only kind=network remains warning-only. ai-insights returns source='ai' when GPT-4o reachable, source='rules' otherwise — both shapes have insights[].title/severity/detail/action.",
+  "rca of the issue": "No bugs found. Earlier FE test reported empty insights after refresh — that was just the spinner state because the test waited only 2.5s; GPT-4o responses take ~3-6s. Increasing wait to 7s confirmed the refresh works (4 cards -> 3 different cards)."
+}

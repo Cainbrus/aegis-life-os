@@ -79,9 +79,9 @@ const RecoveryCenter = () => {
       </div>
 
       {/* status banner */}
-      <div className={`rounded-xl border p-3 text-sm flex items-center gap-2 ${state.locked ? 'border-red-500/40 bg-red-500/10 text-red-300' : 'border-emerald-500/30 bg-emerald-500/5 text-emerald-300'}`}>
-        {state.locked ? <Lock size={16} /> : <Unlock size={16} />}
-        {state.locked ? 'Lost Mode active — device is remotely locked' : 'Device is in normal mode'}
+      <div className={`rounded-xl border p-3 text-sm flex items-center gap-2 ${state.lost_mode ? 'border-red-500/40 bg-red-500/10 text-red-300' : 'border-emerald-500/30 bg-emerald-500/5 text-emerald-300'}`}>
+        {state.lost_mode ? <Lock size={16} /> : <Unlock size={16} />}
+        {state.lost_mode ? 'Lost Mode active — tracking & evidence on' : 'Device is in normal mode'}
       </div>
 
       {/* Map */}
@@ -102,15 +102,15 @@ const RecoveryCenter = () => {
 
       {/* Actions */}
       <div className="grid grid-cols-2 gap-3">
-        {state.locked ? (
-          <button onClick={() => setUnlockOpen(true)} data-testid="unlock-btn"
+        {state.lost_mode ? (
+          <button onClick={() => setUnlockOpen(true)} data-testid="mark-recovered-btn"
             className="py-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 font-semibold flex flex-col items-center gap-1.5 hover:bg-emerald-500/25 transition-colors">
-            <Unlock size={22} /> Unlock
+            <Unlock size={22} /> Mark recovered
           </button>
         ) : (
-          <button onClick={lock} disabled={busy} data-testid="remote-lock-btn"
+          <button onClick={lock} disabled={busy} data-testid="mark-lost-btn"
             className="py-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-400 font-semibold flex flex-col items-center gap-1.5 hover:bg-amber-500/25 transition-colors">
-            <Lock size={22} /> Remote Lock
+            <Lock size={22} /> Mark phone lost
           </button>
         )}
         <button onClick={() => setWipeStep(1)} data-testid="remote-wipe-btn"

@@ -235,6 +235,11 @@ class TelemetryService {
     catch (e) { return null; }
   }
 
+  async aiInsights() {
+    try { return (await axios.post(`${API}/security/ai-insights`, { device_id: this.deviceId })).data; }
+    catch (e) { return null; }
+  }
+
   // ---- Setup (owner-defined codes; no defaults) ----
   async setupStatus() {
     try { return (await axios.get(`${API}/security/setup/status?device_id=${this.deviceId}`)).data; }

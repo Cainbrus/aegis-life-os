@@ -22,6 +22,7 @@ const SetupWizard = ({ onDone }) => {
   const [pattern, setPattern] = useState('');
   const [email, setEmail] = useState('');
   const [numbers, setNumbers] = useState(['']);
+  const [backup, setBackup] = useState('');
   const [busy, setBusy] = useState(false);
 
   const setNum = (i, v) => setNumbers((n) => n.map((x, idx) => (idx === i ? v : x)));
@@ -55,6 +56,7 @@ const SetupWizard = ({ onDone }) => {
         access_code: access, recovery_code: recovery, wipe_code: wipe,
         recovery_phrase: phrase.trim(), panic_pattern: pattern.trim(),
         recovery_email: email.trim(), trusted_numbers: trusted,
+        backup_numbers: backup.trim() ? [backup.trim()] : [],
       });
       toast.success('Setup complete — your codes are saved securely');
       onDone?.();
@@ -151,6 +153,13 @@ const SetupWizard = ({ onDone }) => {
             <button onClick={() => setNumbers((n) => [...n, ''])} data-testid="setup-add-number" className="text-cyan-400 text-sm flex items-center gap-1 hover:text-cyan-300">
               <Plus size={15} /> Add another number
             </button>
+          </div>
+          <div className="mt-4">
+            <label className="text-slate-400 text-xs mb-1 block">Backup number (optional)</label>
+            <input value={backup} onChange={(e) => setBackup(e.target.value)} placeholder="+1 555 999 8888"
+              data-testid="setup-backup-number"
+              className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white focus:border-cyan-500 outline-none" />
+            <p className="text-slate-500 text-xs mt-1">A trusted/backup number calling you 3× in 5 min auto-starts recovery (native phase).</p>
           </div>
           <button onClick={finish} disabled={busy} data-testid="setup-finish"
             className="w-full mt-5 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold disabled:opacity-50 flex items-center justify-center gap-2">

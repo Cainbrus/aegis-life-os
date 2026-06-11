@@ -10,7 +10,7 @@ import RecoveryCenter from './components/RecoveryCenter';
 import PrivacyScan from './components/PrivacyScan';
 import SetupWizard from './components/SetupWizard';
 import CoverScreen from './components/CoverScreen';
-import AegisChat from './components/AegisChat';
+import AISecurityAdvisor from './components/AISecurityAdvisor';
 import DigitalMateWebsite from './components/DigitalMateWebsite';
 import { SubscriptionSuccess, SubscriptionCancel } from './components/SubscriptionPages';
 import telemetry from './services/TelemetryService';
@@ -187,7 +187,7 @@ function App() {
       {tab === 'evidence' && <EvidenceCenter />}
       {tab === 'mate' && (
         <div className="min-h-screen" data-testid="mate-screen">
-          <AegisChat onClose={() => go('home')} userName="Owner" />
+          <AISecurityAdvisor />
         </div>
       )}
 
