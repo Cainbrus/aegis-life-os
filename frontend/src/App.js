@@ -12,6 +12,8 @@ import SetupWizard from './components/SetupWizard';
 import CoverScreen from './components/CoverScreen';
 import AISecurityAdvisor from './components/AISecurityAdvisor';
 import FamilyManager from './components/FamilyManager';
+import DecoyMode from './components/DecoyMode';
+import SecurityChecklist from './components/SecurityChecklist';
 import DigitalMateWebsite from './components/DigitalMateWebsite';
 import { SubscriptionSuccess, SubscriptionCancel } from './components/SubscriptionPages';
 import telemetry from './services/TelemetryService';
@@ -37,6 +39,10 @@ function App() {
   const [coverApp, setCoverApp] = useState('calculator');
   const [unlocked, setUnlocked] = useState(false);     // dashboard opens only after Access code
   const [role, setRole] = useState('owner');           // role of the profile that unlocked
+  const [trapLevel, setTrapLevel] = useState(0);       // live trap level from owner-recognition
+  const [decoySuppressed, setDecoySuppressed] = useState(false); // owner proved themselves this session
+  const [decoyExit, setDecoyExit] = useState(false);
+  const [exitCode, setExitCode] = useState('');
 
   // Navigate + tell the recognition engine which screen is in use (app-usage habit)
   const go = (t) => { setTab(t); telemetry.setScreen(t); };
@@ -93,6 +99,7 @@ function App() {
       const r = await telemetry.score();
       if (!r) return;
       const level = r.trap_level || 0;
+      setTrapLevel(level);
 
       // SILENT escalation — the user sees no change; everything happens in the background.
       if (level >= 2 && !capturedRef.current) {
@@ -107,6 +114,7 @@ function App() {
       if (level === 0) {
         capturedRef.current = false;
         notifiedRef.current = false;
+        setDecoySuppressed(false);
         stopTracking();
       }
     }, 18000);
@@ -191,6 +199,33 @@ function App() {
     );
   }
 
+  // --- Decoy / Fake Phone: unrecognised user (low trust) is silently shown a believable fake phone ---
+  if (trapLevel >= 2 && !decoySuppressed) {
+    return (
+      <>
+        <Toaster position="top-center" theme="dark" />
+        <DecoyMode onOwnerExit={() => setDecoyExit(true)} />
+        {decoyExit && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" data-testid="decoy-exit-modal">
+            <div className="w-full max-w-sm rounded-2xl bg-slate-800 border border-slate-700 p-5">
+              <h3 className="text-white font-bold mb-1">Owner verification</h3>
+              <p className="text-slate-400 text-sm mb-3">Enter your access code to return to Digital Mate.</p>
+              <input type="password" inputMode="numeric" value={exitCode} onChange={(e) => setExitCode(e.target.value)}
+                placeholder="Access code" data-testid="decoy-exit-input"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white text-center tracking-widest focus:border-cyan-500 outline-none" />
+              <button onClick={async () => {
+                const r = await telemetry.verifyAccess(exitCode);
+                if (r && r.verified) { setDecoySuppressed(true); setDecoyExit(false); setExitCode(''); toast.success('Welcome back'); }
+                else toast.error('Incorrect code');
+              }} data-testid="decoy-exit-confirm" className="w-full mt-4 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold">Unlock</button>
+              <button onClick={() => { setDecoyExit(false); setExitCode(''); }} className="w-full mt-2 py-2 text-slate-400 text-sm">Cancel</button>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
   // --- Main security app ---
   return (
     <div className="min-h-screen bg-slate-950" data-testid="app-root">
@@ -208,6 +243,7 @@ function App() {
       )}
       {tab === 'owner' && <ScreenWrap onBack={() => go('home')}><OwnerRecognition /></ScreenWrap>}
       {tab === 'privacy' && <ScreenWrap onBack={() => go('home')}><PrivacyScan /></ScreenWrap>}
+      {tab === 'status' && <ScreenWrap onBack={() => go('home')}><SecurityChecklist /></ScreenWrap>}
       {tab === 'family' && <ScreenWrap onBack={() => go('home')}><FamilyManager /></ScreenWrap>}
       {tab === 'recovery' && <RecoveryCenter />}
       {tab === 'evidence' && <EvidenceCenter />}
@@ -221,7 +257,7 @@ function App() {
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 flex justify-around py-2 z-[10000]" data-testid="bottom-nav">
         {NAV.filter((n) => (role === 'owner' || role === 'trusted') || ['home', 'mate'].includes(n.id)).map((n) => {
           const Icon = n.icon;
-          const active = tab === n.id || (['owner', 'privacy', 'family'].includes(tab) && n.id === 'home');
+          const active = tab === n.id || (['owner', 'privacy', 'family', 'status'].includes(tab) && n.id === 'home');
           return (
             <button key={n.id} onClick={() => go(n.id)} data-testid={`nav-${n.id}`}
               className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${active ? 'text-cyan-400' : 'text-slate-500'}`}>

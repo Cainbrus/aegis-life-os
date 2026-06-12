@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Fingerprint, Compass, FileClock, Bot, Lock, ChevronRight, Settings, Siren, ScanLine, Users } from 'lucide-react';
+import { Fingerprint, Compass, FileClock, Bot, Lock, ChevronRight, Settings, Siren, ScanLine, Users, ShieldCheck } from 'lucide-react';
 import telemetry from '../services/TelemetryService';
 import LiveMonitor from './LiveMonitor';
 
@@ -64,6 +64,7 @@ const SecurityDashboard = ({ role = 'owner', onNavigate, onOpenSettings, onSecre
       {/* Feature tiles */}
       <div className="space-y-3">
         <Tile icon={Fingerprint} title="Owner Recognition" subtitle={trained ? 'Model trained' : `${status?.samples_needed ?? 8} samples to go`} color="from-cyan-500 to-blue-500" onClick={() => onNavigate('owner')} testid="tile-owner" />
+        <Tile icon={ShieldCheck} title="Protection Status" subtitle="Permissions &amp; device protection" color="from-emerald-500 to-green-600" onClick={() => onNavigate('status')} testid="tile-status" />
         {canManage && <Tile icon={Users} title="Trusted Family" subtitle="Manage who's recognised" color="from-violet-500 to-purple-500" onClick={() => onNavigate('family')} testid="tile-family" />}
         {canManage && <Tile icon={Compass} title="Device Recovery" subtitle="Locate, lock or wipe" color="from-emerald-500 to-teal-500" onClick={() => onNavigate('recovery')} testid="tile-recovery" />}
         {canManage && <Tile icon={ScanLine} title="Privacy &amp; Security Scan" subtitle="Check what can access your phone" color="from-sky-500 to-cyan-500" onClick={() => onNavigate('privacy')} testid="tile-privacy" />}
