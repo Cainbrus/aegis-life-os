@@ -68,13 +68,18 @@ function App() {
     }
   }, []);
 
-  // Check first-run setup status when entering the app
+  // Check first-run setup status when entering the app (initial check only).
+  // Use a cancel flag + functional update so a late/stale response can NEVER overwrite a
+  // user-driven change (e.g. after the owner finishes setup -> configured must stay true).
   useEffect(() => {
-    if (screen !== 'app') return;
+    if (screen !== 'app') return undefined;
+    let cancelled = false;
     telemetry.setupStatus().then((s) => {
-      setConfigured(!!(s && s.configured));
+      if (cancelled) return;
+      setConfigured((prev) => (prev === null ? !!(s && s.configured) : prev));
       if (s && s.cover_app) setCoverApp(s.cover_app);
     });
+    return () => { cancelled = true; };
   }, [screen]);
 
   // Start behavioural telemetry only once the dashboard is unlocked (real owner inside)

@@ -271,7 +271,7 @@ class TelemetryService {
   }
 
   async submitSetup(payload) {
-    const res = await axios.post(`${API}/security/setup`, { device_id: this.deviceId, ...payload });
+    const res = await axios.post(`${API}/security/setup`, { device_id: this.deviceId, ...payload }, { timeout: 20000 });
     return res.data;
   }
 
