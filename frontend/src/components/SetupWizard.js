@@ -33,6 +33,9 @@ const SetupWizard = ({ onDone }) => {
   const next = () => {
     if (step === 1) {
       if (access.length < 4) return toast.error('Access code must be at least 4 characters');
+      if ((cover === 'calculator' || cover === 'clock') && !/^\d+$/.test(access)) {
+        return toast.error(`For the ${cover} cover, your access code must be digits only`);
+      }
       if (access !== access2) return toast.error('Access codes do not match');
     }
     if (step === 2) {
@@ -111,8 +114,9 @@ const SetupWizard = ({ onDone }) => {
       )}
 
       {step === 1 && (
-        <Card icon={KeyRound} title="Access code" subtitle="Opens the Digital Mate dashboard from the cover app.">
-          <Field label="Access code" value={access} onChange={setAccess} type="password" testid="setup-access" placeholder="At least 4 characters" />
+        <Card icon={KeyRound} title="Access code" subtitle={`Opens the Digital Mate dashboard from the ${cover} cover.`}>
+          <Field label="Access code" value={access} onChange={setAccess} type="password" testid="setup-access"
+            placeholder={cover === 'notes' ? 'At least 4 characters' : 'At least 4 digits (you type this on the cover)'} />
           <Field label="Confirm" value={access2} onChange={setAccess2} type="password" testid="setup-access2" placeholder="Re-enter" />
           <Primary onClick={next} testid="setup-next-1">Continue</Primary>
         </Card>
