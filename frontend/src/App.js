@@ -16,7 +16,7 @@ import DigitalMateWebsite from './components/DigitalMateWebsite';
 import { SubscriptionSuccess, SubscriptionCancel } from './components/SubscriptionPages';
 import telemetry from './services/TelemetryService';
 import { requestNotificationPermission, sendAlert } from './services/PushNotificationService';
-import { isNative, nativeConfigure, nativeBondedDevices, nativeLock, nativeStartRecovery } from './services/NativeBridge';
+import { isNative, nativeConfigure, nativeBondedDevices, nativeLock, nativeStartRecovery, nativeIsAdminActive, nativeRequestAdmin } from './services/NativeBridge';
 import './App.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -176,7 +176,7 @@ function App() {
     return (
       <>
         <Toaster position="top-center" theme="dark" />
-        <SetupWizard onDone={() => { setConfigured(true); setUnlocked(true); }} />
+        <SetupWizard onDone={() => { setConfigured(true); setUnlocked(false); }} />
       </>
     );
   }
@@ -248,11 +248,18 @@ const ScreenWrap = ({ children, onBack }) => (
 
 const SettingsPanel = ({ onClose, onWebsite }) => {
   const [resetting, setResetting] = useState(false);
+  const [adminActive, setAdminActive] = useState(false);
+  useEffect(() => { if (isNative()) nativeIsAdminActive().then(setAdminActive); }, []);
   const reset = async () => {
     setResetting(true);
     await axios.post(`${API}/security/baseline/reset`, { device_id: telemetry.deviceId });
     toast.success('Owner recognition reset — re-learning your behaviour');
     setResetting(false);
+  };
+  const enableProtection = async () => {
+    await nativeRequestAdmin();
+    toast.info('Grant Device Admin to enable remote lock & wipe');
+    setTimeout(() => nativeIsAdminActive().then(setAdminActive), 1500);
   };
   return (
     <div className="fixed inset-0 z-50 bg-slate-950 p-5 overflow-y-auto" data-testid="settings-panel">
@@ -263,6 +270,12 @@ const SettingsPanel = ({ onClose, onWebsite }) => {
       <div className="space-y-3">
         <Row label="Device ID" value={telemetry.deviceId.slice(0, 16) + '…'} />
         <Row label="Owner recovery code" value="•••••" />
+        {isNative() && (
+          <button onClick={enableProtection} data-testid="enable-protection-btn"
+            className={`w-full text-left border rounded-xl p-4 font-medium transition-colors ${adminActive ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-slate-800/60 border-slate-700 text-cyan-400 hover:bg-slate-800'}`}>
+            {adminActive ? 'Device protection enabled ✓' : 'Enable device protection (remote lock/wipe)'}
+          </button>
+        )}
         <button onClick={reset} disabled={resetting} data-testid="reset-baseline-btn"
           className="w-full text-left bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-amber-400 font-medium hover:bg-slate-800 transition-colors disabled:opacity-50">
           {resetting ? 'Resetting…' : 'Reset owner recognition'}

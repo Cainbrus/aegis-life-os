@@ -1,0 +1,28 @@
+{
+  "summary": "Verified the product-change requirement that a NEW user finishing the owner Setup flow must enter their access code ONCE on the cover before the dashboard opens. All 6 scenarios PASS via Playwright on the public preview URL (mobile 390x844, dm_device_id seeded via addInitScript BEFORE goto, ~400ms between fills). (1) FRESH-INSTALL -> COVER: brand-new device_id, Launch -> setup-wizard -> all 6 steps filled with NUMERIC access code 2580 (Cain / 2580 / rec22 / wip33 / 'find my phone' / +15551234567) -> setup-finish -> cover-calculator IS visible, security-dashboard is NOT visible, setup-wizard is NOT visible, and toast 'Setup complete — now enter your access code on the cover to confirm it' shown (matches expected). (2) UNLOCK WITH 2580=: from the cover, calc-key-2,5,8,0,equals -> security-dashboard visible, cover-calculator gone (dashboard shows Digital Mate / trust score / Owner Recognition / bottom tabs). (3) WRONG CODE STAYS HIDDEN: fresh device -> setup -> 9999= on cover -> cover-calculator STILL visible, dashboard NOT visible. (4) NUMERIC-CODE ENFORCEMENT: fresh device with default calculator cover, step1 access='acc11'/access2='acc11', click setup-next-1 -> toast contains 'For the calculator cover, your access code must be digits only' and setup-recovery (step2) NOT visible (blocked from advancing). (5) REFRESH-CONFIGURED-DEVICE: completed wizard with numeric code, then page.reload() with same dm_device_id, clicked Try the Demo again -> cover-calculator visible, setup-wizard NOT visible (configured state persisted). (6) REGRESSION: mismatched access codes (2580 vs 9999) on step1 still trigger 'Access codes do not match' toast and stay on step 1.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_11.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "SetupWizard.next() at step 1 correctly enforces digits-only for calculator/clock covers via /^\\d+$/.test(access). Order is good: length check -> digit check -> mismatch check. The Notes cover path remains permissive (alphanumeric allowed) as expected.",
+    "App.js onDone={() => { setConfigured(true); setUnlocked(false); }} cleanly implements the new 'verify your code once on the cover' requirement. Combined with the prior fix (functional updater on setConfigured) this means the late telemetry.setupStatus() resolution still cannot regress configured=true, AND the user must now type the access code on the cover to flip unlocked=true. This double-flag pattern is correct.",
+    "Native-only 'Enable device protection' button (data-testid enable-protection-btn) is correctly gated by isNative() in SettingsPanel — on web it does not render, which matches the expected no-op behavior. Not tested on-device per request.",
+    "Suggest also constraining the setup-access input to inputMode='numeric' and pattern='[0-9]*' on the calculator/clock cover so the mobile keyboard shows digits by default — improves UX though the validation toast already prevents the foot-gun.",
+    "Minor: the success toast 'Setup complete — now enter your access code on the cover to confirm it' is great copy; consider also showing a small inline hint on the cover (e.g. 'Enter your access code to finish setup') the very first time configured&&!unlocked, so a user who dismisses the toast still has guidance. Not blocking."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "not in scope (frontend-only test)", "frontend": "100% (6/6: fresh-install->cover, unlock 2580=, wrong-code-stays-hidden, alphanumeric-blocked-for-calculator, reload-shows-cover, mismatch-still-blocked)"},
+  "test_credentials": "Fresh devices generated per test (TEST_dm_iter11_*). Numeric access code 2580, recovery rec22, wipe wip33, phrase 'find my phone', trusted +15551234567.",
+  "seed_data_creation": "5 disposable TEST_dm_iter11_* devices created via the Setup Wizard (one per scenario). All prefixed TEST_ for cleanup. No production data touched.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The 'cover-before-dashboard' flow is verified and stable. Key notes for future iterations: (a) Always addInitScript dm_device_id BEFORE goto — mid-session injection is racy. (b) Use page.get_by_text('Try the Demo') to enter the app (no testid on the launch button). (c) After page.reload(), you must click 'Try the Demo' again because the marketing landing renders first; the configured state in localStorage then routes to cover-calculator. (d) Calculator cover only accepts numeric codes — use 2580 throughout. (e) The native 'enable-protection-btn' is only rendered when isNative()==true, so it WILL NOT appear in the web preview — do not fail tests on its absence. (f) The toast after setup-finish reads 'Setup complete — now enter your access code on the cover to confirm it' (used to assert the post-setup state).",
+  "rca of the issue": "N/A — this iteration verifies a product change, not a bug fix. The behavior previously verified in iteration_10 (onDone sets configured=true AND unlocked=true) has been intentionally changed so onDone now sets configured=true but unlocked=false, forcing the new owner to type their freshly chosen access code on the cover before the dashboard opens. This is implemented correctly in App.js (line 179) and the toast copy in SetupWizard.finish() was updated accordingly. The numeric-only enforcement for calculator/clock covers (SetupWizard.js step1) closes the foot-gun flagged in the iteration_10 code review."
+}

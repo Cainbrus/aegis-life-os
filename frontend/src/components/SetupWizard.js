@@ -67,7 +67,7 @@ const SetupWizard = ({ onDone }) => {
         call_trigger_count: Number(callCount) || 3,
         call_trigger_window_sec: (Number(callMins) || 5) * 60,
       });
-      toast.success('Setup complete — your codes are saved securely');
+      toast.success('Setup complete — now enter your access code on the cover to confirm it');
       onDone?.();
     } catch (e) {
       toast.error(e?.response?.data?.detail || 'Setup failed');
