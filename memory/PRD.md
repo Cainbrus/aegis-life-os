@@ -139,6 +139,8 @@ after any pod reset since it lives outside `/app`.
 4. [x] Cross-device alerts — Resend email wired (dormant until RESEND_API_KEY set)
 5. [x] **Additive trust model** — behaviour 25 / location 25 / known-device 20 / PIN 15 / app-usage 15; bands 70/40/20 Normal/Monitor/Trap/Recovery with debounce (reduces family false alarms)
 6. [x] Hidden calculator/clock/notes cover access
+6b. [x] **Stealth Decoy / Fake Phone** — low trust (Trap band) silently shows a believable fake phone; real data hidden; actions logged + photo/GPS; owner exits via 5 taps on clock + access code
+6c. [x] **Protection Status checklist** — permissions + device protection with tick/cross + Fix buttons
 7. [~] **NATIVE ANDROID (Kotlin) PHASE — STARTED & COMPILES INTO APK** (on-device testing required)
 
 ### Native Android (Kotlin) — in the APK, needs on-device testing

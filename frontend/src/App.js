@@ -120,7 +120,7 @@ function App() {
     }, 18000);
 
     telemetry.sendTelemetry('owner');
-    telemetry.score();   // immediate live score so the dashboard isn't blank
+    telemetry.score().then((r) => { if (r) setTrapLevel(r.trap_level || 0); });  // immediate live score + trap level
     return () => { clearInterval(learn); clearInterval(guard); stopTracking(); };
   }, [screen, unlocked]);
 

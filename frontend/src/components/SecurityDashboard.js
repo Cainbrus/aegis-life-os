@@ -32,7 +32,7 @@ const SecurityDashboard = ({ role = 'owner', onNavigate, onOpenSettings, onSecre
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-5 pb-24" data-testid="security-dashboard">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-5 pb-32" data-testid="security-dashboard">
       {/* Header */}
       <div className="flex items-center justify-between pt-3 mb-6">
         <div>
