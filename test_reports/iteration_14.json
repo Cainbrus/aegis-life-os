@@ -1,0 +1,26 @@
+{
+  "summary": "Iteration 14 — verified the STEALTH owner-recognition UX on the public preview (mobile 390x844, dm_device_id via addInitScript BEFORE goto, Try-the-Demo, calculator cover 2580=). Two devices were configured via /api/security/setup: (a) a Learning device (no telemetry) and (b) a Trained device (10x POST /api/security/telemetry, label='owner', with valid FEATURE_KEYS — confirmed via GET /api/security/status -> trained=true, samples_needed=0). LEARNING flow: dashboard shows tile-owner = 'Owner Recognition / Learning — 8 to go'; live-monitor shows live-status-label='Learning' with NO % anywhere on the dashboard; tapping the tile opens owner-recognition-screen which contains data-testid 'recognition-state'='Learning' + the passive list (typing/swipe/movement/unlock); the forbidden old test-ids (run-score-btn, train-baseline-btn, signal-breakdown, trust-score-value) are ALL absent; no '%' on the screen; no 'Verify me now' or 'Capture my behaviour' text. TRAINED flow: tile-owner is HIDDEN on the dashboard (disappears completely), live-status-label='Protected', no % anywhere, all other tiles intact (Protection Status, Hidden Vault, Trusted Family, Device Recovery, Evidence Center, AI Digital Mate). Bottom-nav (nav-home/recovery/evidence/mate) works. 0 console errors on both dashboards and on owner-recognition-screen. The background guard loop (App.js telemetry.score every ~18s) is preserved (verified by code review).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "OwnerRecognition.js: cleanly stealth — renders ONLY 'Learning' or 'Trained' (data-testid recognition-state), no buttons, no gauge, no signal-breakdown. Confirmed by source-grep that none of run-score-btn/train-baseline-btn/signal-breakdown/trust-score-value exist in /app/frontend/src.",
+    "LiveMonitor.js: 3-state status (Protected / Learning / Checking activity) driven by status.trained + status.trap_level. No %-strings anywhere; keeps 'Recognised owner' + 'Location' facts only. data-testid live-status-label is correctly exposed.",
+    "SecurityDashboard.js: {!trained && <Tile ... testid='tile-owner'/>} hides the Owner Recognition tile completely once trained — verified end-to-end on a real backend-trained device.",
+    "App.js: background guard loop (telemetry.score every ~18s) is unchanged, so the recognition engine still drives Decoy/Trap silently — matches the 'stealth but still protecting' spec.",
+    "Heads-up for future tests: the calc '=' key test-id is calc-key-equals (not calc-key-=), and valid telemetry features MUST be from FEATURE_KEYS in /app/backend/routes/security_engine.py (typing_speed/typing_dwell/typing_flight/typing_variance/touch_duration/touch_pressure/tap_interval/swipe_velocity/swipe_length/motion_avg/hour_of_day/day_of_week). Posting unknown keys returns 400 'No valid features provided' — easy to miss when seeding a trained device."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (frontend-only request)", "frontend": "100% (8/8 stealth assertions: tile-owner shown when learning, hidden when trained; live-status-label = Learning/Protected; no % on dashboard; no % on owner screen; recognition-state present; old testids absent; no Verify/Capture text; 0 console errors)"},
+  "test_credentials": "TEST_stealth_learn_<ts> and TEST_stealth_trained_<ts> devices (access=2580, recovery=rec22, cover=calculator). Disposable, TEST_-prefixed.",
+  "seed_data_creation": "Created 3 TEST_stealth_* devices via /api/security/setup. Trained one via 10x POST /api/security/telemetry (label=owner) with all 12 FEATURE_KEYS. No production data touched.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "STEALTH spec is fully implemented and verified. Key gotchas: (1) calculator '=' test-id is calc-key-equals; (2) backend /api/security/telemetry requires features from FEATURE_KEYS in /app/backend/routes/security_engine.py — any unknown keys cause 400; (3) to test the trained state, POST telemetry 8+ times with label='owner' then GET /status to confirm trained=true BEFORE loading the UI; (4) use addInitScript('localStorage.setItem(dm_device_id,...)') BEFORE goto. The owner-recognition-screen is now ONLY reachable while learning (tile-owner gates entry) — once trained the tile is gone and there is no other entry point on the dashboard, which matches the 'install and forget' spec.",
+  "rca of the issue": "No issues found — feature works as specified."
+}
