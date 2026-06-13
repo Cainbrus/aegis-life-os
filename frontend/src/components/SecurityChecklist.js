@@ -25,15 +25,19 @@ const SecurityChecklist = () => {
     const native = isNative();
 
     setItems([
+      { id: 'cover', label: 'Cover app selected', ok: !!status?.configured, fix: null },
+      { id: 'access', label: 'Access code set', ok: !!status?.configured, fix: null },
+      { id: 'recovery', label: 'Recovery code set', ok: !!status?.configured, fix: null },
       { id: 'location', label: 'Location permission', ok: loc, fix: fixLocation, web: true },
       { id: 'camera', label: 'Camera permission', ok: cam, fix: fixCamera, web: true },
       { id: 'notifications', label: 'Notifications permission', ok: notif, fix: fixNotif, web: true },
       { id: 'phone', label: 'Phone permission', ok: native, na: !native, fix: openInApp },
       { id: 'bluetooth', label: 'Bluetooth permission', ok: native, na: !native, fix: openInApp },
-      { id: 'admin', label: 'Device Admin enabled', ok: admin, na: !native, fix: fixAdmin },
+      { id: 'admin', label: 'Device protection (Admin)', ok: admin, na: !native, fix: fixAdmin },
       { id: 'sim', label: 'SIM monitoring active', ok: native, na: !native, fix: openInApp },
       { id: 'email', label: 'Recovery email active', ok: !!status?.has_email, fix: fixEmail },
       { id: 'decoy', label: 'Decoy mode active', ok: true, fix: null },
+      { id: 'vault', label: 'Hidden vault active', ok: true, fix: null },
     ]);
     setLoading(false);
   }, []);

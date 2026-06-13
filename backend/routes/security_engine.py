@@ -62,7 +62,12 @@ async def _verify_recovery(device_id: str, code: Optional[str]) -> bool:
 
 async def _verify_wipe(device_id: str, code: Optional[str]) -> bool:
     cfg = await _get_config(device_id)
-    return bool(cfg and cfg.get("configured") and _verify_secret(code, cfg.get("wipe_hash")))
+    if not (cfg and cfg.get("configured")):
+        return False
+    # If a separate Wipe code was set, require it; otherwise fall back to the Recovery code.
+    if cfg.get("wipe_hash"):
+        return _verify_secret(code, cfg.get("wipe_hash"))
+    return _verify_secret(code, cfg.get("recovery_hash"))
 
 
 async def _verify_access(device_id: str, code: Optional[str]) -> Optional[dict]:
@@ -129,7 +134,7 @@ class SetupIn(BaseModel):
     owner_name: str = "Owner"
     access_code: str                 # opens the Digital Mate dashboard
     recovery_code: str               # starts recovery / lost-phone mode
-    wipe_code: str                   # high-security; last-resort wipe only
+    wipe_code: str = ""              # optional high-security wipe code (falls back to recovery code)
     recovery_phrase: str = ""        # secret text phrase to trigger recovery
     panic_pattern: str = ""          # optional button pattern to trigger panic
     recovery_email: str = ""         # where alerts are sent (email integration later)
@@ -418,48 +423,45 @@ async def setup_status(device_id: str):
 
 @router.post("/setup")
 async def setup(req: SetupIn):
-    codes = {"access": req.access_code, "recovery": req.recovery_code, "wipe": req.wipe_code}
-    for name, c in codes.items():
-        if len(c) < 4:
-            raise HTTPException(status_code=400, detail=f"{name.title()} code must be at least 4 characters")
-    if len({req.access_code, req.recovery_code, req.wipe_code}) < 3:
-        raise HTTPException(status_code=400, detail="Access, Recovery and Wipe codes must all be different")
-    if len(req.recovery_phrase.strip()) < 4:
-        raise HTTPException(status_code=400, detail="Recovery phrase must be at least 4 characters")
-    numbers = [n.strip() for n in req.trusted_numbers if n and n.strip()]
-    if not numbers:
-        raise HTTPException(status_code=400, detail="At least one trusted number is required")
+    # Simple setup: only the Access code and Recovery code are required.
+    # Wipe code, recovery phrase, trusted numbers, email etc. are optional and can be added later.
+    if len(req.access_code) < 4:
+        raise HTTPException(status_code=400, detail="Access code must be at least 4 characters")
+    if len(req.recovery_code) < 4:
+        raise HTTPException(status_code=400, detail="Recovery code must be at least 4 characters")
+    if req.access_code == req.recovery_code:
+        raise HTTPException(status_code=400, detail="Access and Recovery codes must be different")
+    if req.wipe_code and (len(req.wipe_code) < 4 or req.wipe_code in {req.access_code, req.recovery_code}):
+        raise HTTPException(status_code=400, detail="Wipe code must be at least 4 characters and unique")
     cover = req.cover_app if req.cover_app in COVER_APPS else "calculator"
+    numbers = [n.strip() for n in req.trusted_numbers if n and n.strip()]
 
-    await db.device_config.update_one(
-        {"device_id": req.device_id},
-        {"$set": {
-            "device_id": req.device_id,
-            "configured": True,
-            "cover_app": cover,
-            "recovery_hash": _hash_secret(req.recovery_code),
-            "wipe_hash": _hash_secret(req.wipe_code),
-            "recovery_phrase_hash": _hash_secret(req.recovery_phrase.strip().lower()),
-            "panic_pattern_hash": _hash_secret(req.panic_pattern) if req.panic_pattern else None,
-            "recovery_email": req.recovery_email.strip(),
-            "backup_email": req.backup_email.strip(),
-            "trusted_numbers": numbers,
-            "backup_numbers": [n.strip() for n in req.backup_numbers if n and n.strip()],
-            "call_trigger_count": max(1, min(10, req.call_trigger_count)),
-            "call_trigger_window_sec": max(30, min(1800, req.call_trigger_window_sec)),
-            "profiles": [{
-                "id": str(uuid.uuid4()),
-                "name": req.owner_name or "Owner",
-                "role": "owner",
-                "access_hash": _hash_secret(req.access_code),
-                "created_at": _now(),
-            }],
-            "updated_at": _now(),
-        }},
-        upsert=True,
-    )
+    doc = {
+        "device_id": req.device_id,
+        "configured": True,
+        "cover_app": cover,
+        "recovery_hash": _hash_secret(req.recovery_code),
+        "wipe_hash": _hash_secret(req.wipe_code) if req.wipe_code else None,
+        "recovery_phrase_hash": _hash_secret(req.recovery_phrase.strip().lower()) if req.recovery_phrase.strip() else None,
+        "panic_pattern_hash": _hash_secret(req.panic_pattern) if req.panic_pattern else None,
+        "recovery_email": req.recovery_email.strip(),
+        "backup_email": req.backup_email.strip(),
+        "trusted_numbers": numbers,
+        "backup_numbers": [n.strip() for n in req.backup_numbers if n and n.strip()],
+        "call_trigger_count": max(1, min(10, req.call_trigger_count)),
+        "call_trigger_window_sec": max(30, min(1800, req.call_trigger_window_sec)),
+        "profiles": [{
+            "id": str(uuid.uuid4()),
+            "name": req.owner_name or "Owner",
+            "role": "owner",
+            "access_hash": _hash_secret(req.access_code),
+            "created_at": _now(),
+        }],
+        "updated_at": _now(),
+    }
+    await db.device_config.update_one({"device_id": req.device_id}, {"$set": doc}, upsert=True)
     await _log_event(req.device_id, "recovery", "info", "Security setup completed",
-                     "Owner configured access, recovery and wipe codes, cover app and trusted numbers.")
+                     "Owner configured access & recovery codes and cover app.")
     return {"ok": True, "configured": True, "cover_app": cover}
 
 
@@ -531,6 +533,60 @@ async def verify_access_code(req: CodeIn):
 @router.post("/verify-recovery")
 async def verify_recovery_code(req: CodeIn):
     return {"verified": await _verify_recovery(req.device_id, req.code)}
+
+
+# ============================ Hidden Vault / Invisible Folder ============================
+VAULT_KINDS = {"photo", "file", "note", "password", "video", "document"}
+MAX_VAULT_BYTES = 8_000_000  # ~8MB per item (base64)
+
+
+class VaultItemIn(BaseModel):
+    device_id: str
+    kind: str                        # photo | file | note | password | video | document
+    title: str
+    content: str                     # data URL (media/file) or text (note/password)
+    meta: Dict[str, Any] = Field(default_factory=dict)
+
+
+@router.post("/vault/add")
+async def vault_add(item: VaultItemIn):
+    """Hide a photo/file/note/password inside Digital Mate (stored in the app's private store,
+    NOT the phone gallery/file manager). Owner-only; the UI blocks this during Trap/Decoy mode."""
+    kind = item.kind if item.kind in VAULT_KINDS else "file"
+    if len(item.content) > MAX_VAULT_BYTES:
+        raise HTTPException(status_code=413, detail="Item too large (max ~8MB). Use object storage for large videos.")
+    doc = {
+        "id": str(uuid.uuid4()),
+        "device_id": item.device_id,
+        "kind": kind,
+        "title": (item.title or "Untitled")[:120],
+        "content": item.content,
+        "meta": item.meta,
+        "created_at": _now(),
+    }
+    await db.vault_items.insert_one(doc)
+    return {"id": doc["id"], "kind": kind, "title": doc["title"], "created_at": doc["created_at"]}
+
+
+@router.get("/vault/list")
+async def vault_list(device_id: str):
+    cur = db.vault_items.find({"device_id": device_id}, {"_id": 0, "content": 0}).sort("created_at", -1)
+    items = await cur.to_list(length=500)
+    return {"items": items, "count": len(items)}
+
+
+@router.get("/vault/item")
+async def vault_item(device_id: str, item_id: str):
+    doc = await db.vault_items.find_one({"device_id": device_id, "id": item_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Not found")
+    return doc
+
+
+@router.delete("/vault/item")
+async def vault_delete(device_id: str, item_id: str):
+    res = await db.vault_items.delete_many({"device_id": device_id, "id": item_id})
+    return {"ok": True, "deleted": res.deleted_count}
 
 
 # ============================ Owner Recognition ============================
@@ -1034,7 +1090,7 @@ async def recovery_wipe(req: RecoveryAction):
         raise HTTPException(status_code=400, detail="Confirmation required to wipe")
 
     # Wipe app-scoped sensitive data for this device.
-    await db.vault_files.delete_many({"device_id": req.device_id})
+    await db.vault_items.delete_many({"device_id": req.device_id})
     await db.device_state.update_one(
         {"device_id": req.device_id},
         {"$set": {"wiped": True, "wiped_at": _now(), "trap_active": False,

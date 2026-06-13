@@ -14,6 +14,7 @@ import AISecurityAdvisor from './components/AISecurityAdvisor';
 import FamilyManager from './components/FamilyManager';
 import DecoyMode from './components/DecoyMode';
 import SecurityChecklist from './components/SecurityChecklist';
+import VaultScreen from './components/VaultScreen';
 import DigitalMateWebsite from './components/DigitalMateWebsite';
 import { SubscriptionSuccess, SubscriptionCancel } from './components/SubscriptionPages';
 import telemetry from './services/TelemetryService';
@@ -244,6 +245,7 @@ function App() {
       {tab === 'owner' && <ScreenWrap onBack={() => go('home')}><OwnerRecognition /></ScreenWrap>}
       {tab === 'privacy' && <ScreenWrap onBack={() => go('home')}><PrivacyScan /></ScreenWrap>}
       {tab === 'status' && <ScreenWrap onBack={() => go('home')}><SecurityChecklist /></ScreenWrap>}
+      {tab === 'vault' && <ScreenWrap onBack={() => go('home')}><VaultScreen /></ScreenWrap>}
       {tab === 'family' && <ScreenWrap onBack={() => go('home')}><FamilyManager /></ScreenWrap>}
       {tab === 'recovery' && <RecoveryCenter />}
       {tab === 'evidence' && <EvidenceCenter />}
@@ -257,7 +259,7 @@ function App() {
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 flex justify-around py-2 z-[10000]" data-testid="bottom-nav">
         {NAV.filter((n) => (role === 'owner' || role === 'trusted') || ['home', 'mate'].includes(n.id)).map((n) => {
           const Icon = n.icon;
-          const active = tab === n.id || (['owner', 'privacy', 'family', 'status'].includes(tab) && n.id === 'home');
+          const active = tab === n.id || (['owner', 'privacy', 'family', 'status', 'vault'].includes(tab) && n.id === 'home');
           return (
             <button key={n.id} onClick={() => go(n.id)} data-testid={`nav-${n.id}`}
               className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${active ? 'text-cyan-400' : 'text-slate-500'}`}>

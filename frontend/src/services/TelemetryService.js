@@ -247,6 +247,23 @@ class TelemetryService {
     catch (e) { return null; }
   }
 
+  // ---- Hidden Vault ----
+  async vaultList() {
+    try { return (await axios.get(`${API}/security/vault/list?device_id=${this.deviceId}`)).data; }
+    catch (e) { return { items: [] }; }
+  }
+  async vaultAdd({ kind, title, content, meta }) {
+    return (await axios.post(`${API}/security/vault/add`, { device_id: this.deviceId, kind, title, content, meta: meta || {} })).data;
+  }
+  async vaultItem(itemId) {
+    try { return (await axios.get(`${API}/security/vault/item?device_id=${this.deviceId}&item_id=${itemId}`)).data; }
+    catch (e) { return null; }
+  }
+  async vaultDelete(itemId) {
+    try { return (await axios.delete(`${API}/security/vault/item?device_id=${this.deviceId}&item_id=${itemId}`)).data; }
+    catch (e) { return null; }
+  }
+
   async listProfiles() {
     try { return (await axios.get(`${API}/security/profiles?device_id=${this.deviceId}`)).data; }
     catch (e) { return { profiles: [] }; }

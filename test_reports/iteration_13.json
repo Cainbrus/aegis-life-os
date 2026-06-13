@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 13 — verified the simplified 5-step setup, wipe fallback to recovery code, and the new Hidden Vault (backend + frontend) on the public preview. Backend: 14/14 pytest assertions passed against /api/security/setup, /api/security/recovery/wipe, and /api/security/vault/{add,list,item,delete}. Frontend (390x900, mobile, dm_device_id pre-seeded via addInitScript, Try the Demo, #emergent-badge hidden): SetupWizard renders 4 progress segments and walks cleanly through name+cover -> access (setup-next-1) -> recovery (setup-next-2) -> permissions (3 Grant buttons present) -> setup-finish (Done) WITHOUT requiring any permission grant. Numeric cover enforcement works: typing 'abcd' on the calculator cover blocked the step (user stayed on step 1). After Done the calculator cover (cover-calculator) is shown; entering 2580= unlocks the security-dashboard. tile-vault opens vault-screen (empty state shows vault-empty). hide-something-btn opens vault-add-modal; vault-kind-note + vault-title + vault-text + vault-save adds an item (1 item visible in vault-items list). Opening the item renders vault-view-modal with the note hidden behind a reveal eye (bullet placeholder confirmed). vault-delete removes it (vault-empty re-appears). tile-status opens security-checklist-screen which now contains the new setup items ('Cover app selected', 'Access code set', 'Recovery code set' — all green ticks), permission Fix buttons (location/camera/notifications), native-only items pending, and the Decoy/Hidden vault rows. Regression: cover->access->dashboard and bottom-nav (Home/Recovery/Evidence/Mate) intact.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "VaultScreen / AddModal", "issue": "On 390x844 the 'Hide it' (vault-save) button sits in the bottom inset area and a plain Playwright .click(force=True) misses it (the gradient confirm button is below the visible viewport when the soft keyboard area is reserved). dispatch_event('click') or scroll_into_view_if_needed works fine, so this is a UX hint, not a functional break: real users should still be able to scroll within the modal. Consider making the modal scrollable (max-h-[85vh] overflow-y-auto) so the Hide-it button is always reachable above the bottom-nav.", "selector": "[data-testid='vault-save']", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_setup_vault_iter13.py",
+    "/app/test_reports/pytest/iter13_results.xml"
+  ],
+  "action_items": [
+    "(Optional/low) Make the vault-add-modal inner container scrollable on small viewports so the 'Hide it' button is always above the bottom-nav (max-h-[85vh] overflow-y-auto)."
+  ],
+  "critical_code_review_comments": [
+    "security_engine.py:_verify_wipe correctly falls back to recovery_hash when wipe_hash is unset — matches the simplified-setup spec (verified by test_wipe_with_recovery_code + test_wipe_clears_vault).",
+    "vault_add / vault_list / vault_item / vault_delete intentionally project content out of list responses (find(..., {'_id':0,'content':0})) and vault/add only echoes id/kind/title/created_at — confirmed by tests. Good privacy posture.",
+    "MAX_VAULT_BYTES enforced (413 verified). For multi-MB items this is fine for the current backend store; consider streaming/object-storage when native ships.",
+    "SetupIn keeps wipe_code/recovery_phrase/panic_pattern/trusted_numbers as optional with empty-string defaults — backward compatible. setup() now only validates access_code+recovery_code lengths + access!=recovery (matches spec).",
+    "SetupWizard.js correctly enforces numeric-only access on calculator/clock covers client-side (toast + step blocked). The 4-segment progress bar matches TOTAL=4.",
+    "VaultScreen.js: list endpoint is called on mount; viewing an item issues a second GET to fetch full content (so list responses stay slim). Reveal toggle for note/password works as a privacy guard inside the view modal.",
+    "TelemetryService.submitSetup posts only {device_id, owner_name, cover_app, access_code, recovery_code} — extra optional fields are not sent, keeping the simple flow simple.",
+    "(Carry-over from iter12, still relevant) tile-status overlap with the fixed bottom-nav on 390x844 — dispatch_event clicks work but a plain user tap can land on Home; consider pb-24 on the dashboard tile grid."
+  ],
+  "updated_files": ["/app/backend/tests/test_setup_vault_iter13.py"],
+  "success_rate": {"backend": "100% (14/14)", "frontend": "100% on the spec'd flows (setup wizard, numeric enforcement, vault add/view/delete, checklist new items)"},
+  "test_credentials": "Disposable TEST_iter13_* devices created per test/run; UI device used access=2580 / recovery=rec22 / cover=calculator.",
+  "seed_data_creation": "Pytest creates ~10 TEST_iter13_* devices via /api/security/setup; UI run created 2 additional TEST_iter13_ui_* devices. All TEST_-prefixed for easy cleanup. No production data touched.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend regression file is /app/backend/tests/test_setup_vault_iter13.py — 14 tests cover setup-min, setup-validation, wipe-fallback (recovery code), vault add/list/item/delete, 8MB cap (413), and wipe-clears-vault. UI: addInitScript dm_device_id BEFORE goto on a 390x900 mobile viewport, click 'Try the Demo' to enter the demo app. The vault-save button sits low in the modal — use locator.scroll_into_view_if_needed() then dispatch_event('click'); a plain force=True click can miss on 844-height viewports. The Protection Status checklist now contains the new setup rows (Cover/Access/Recovery + Hidden vault + Decoy) — verified by inner_text() keyword scan rather than per-row testids. Numeric-cover enforcement is client-side only (toast + step block), not echoed by the backend, so don't expect a 400 from /setup for alpha codes on calculator cover.",
+  "rca of the issue": "Only minor finding: on a 390x844 viewport, the vault-add-modal's confirm button can be partially below the visible viewport when the soft keyboard space is reserved. dispatch_event() succeeds, real users can scroll the modal; fix is a one-line CSS (max-h-[85vh] overflow-y-auto on the inner panel)."
+}
