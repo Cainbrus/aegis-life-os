@@ -103,7 +103,7 @@ const AddModal = ({ onClose, onAdded }) => {
   const isText = kind === 'note' || kind === 'password';
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 p-4" data-testid="vault-add-modal">
-      <div className="w-full max-w-sm rounded-2xl bg-slate-800 border border-slate-700 p-5">
+      <div className="w-full max-w-sm rounded-2xl bg-slate-800 border border-slate-700 p-5 max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-3"><h3 className="text-white font-bold">Hide something</h3><button onClick={onClose} className="text-slate-400"><X size={20} /></button></div>
         <div className="grid grid-cols-4 gap-2 mb-4">
           {KINDS.map((k) => { const I = k.icon; const sel = kind === k.id; return (
