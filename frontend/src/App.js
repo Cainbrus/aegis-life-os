@@ -12,6 +12,7 @@ import SetupWizard from './components/SetupWizard';
 import CoverScreen from './components/CoverScreen';
 import AISecurityAdvisor from './components/AISecurityAdvisor';
 import FamilyManager from './components/FamilyManager';
+import FamilyTracking from './components/FamilyTracking';
 import DecoyMode from './components/DecoyMode';
 import SecurityChecklist from './components/SecurityChecklist';
 import VaultScreen from './components/VaultScreen';
@@ -246,7 +247,8 @@ function App() {
       {tab === 'privacy' && <ScreenWrap onBack={() => go('home')}><PrivacyScan /></ScreenWrap>}
       {tab === 'status' && <ScreenWrap onBack={() => go('home')}><SecurityChecklist /></ScreenWrap>}
       {tab === 'vault' && <ScreenWrap onBack={() => go('home')}><VaultScreen /></ScreenWrap>}
-      {tab === 'family' && <ScreenWrap onBack={() => go('home')}><FamilyManager /></ScreenWrap>}
+      {tab === 'family' && <ScreenWrap onBack={() => go('home')}><FamilyTracking /></ScreenWrap>}
+      {tab === 'profiles' && <ScreenWrap onBack={() => go('home')}><FamilyManager /></ScreenWrap>}
       {tab === 'recovery' && <RecoveryCenter />}
       {tab === 'evidence' && <EvidenceCenter />}
       {tab === 'mate' && (
@@ -259,7 +261,7 @@ function App() {
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 flex justify-around py-2 z-[10000]" data-testid="bottom-nav">
         {NAV.filter((n) => (role === 'owner' || role === 'trusted') || ['home', 'mate'].includes(n.id)).map((n) => {
           const Icon = n.icon;
-          const active = tab === n.id || (['owner', 'privacy', 'family', 'status', 'vault'].includes(tab) && n.id === 'home');
+          const active = tab === n.id || (['owner', 'privacy', 'family', 'status', 'vault', 'profiles'].includes(tab) && n.id === 'home');
           return (
             <button key={n.id} onClick={() => go(n.id)} data-testid={`nav-${n.id}`}
               className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${active ? 'text-cyan-400' : 'text-slate-500'}`}>
@@ -271,7 +273,7 @@ function App() {
       </nav>
 
       {showSettings && (
-        <SettingsPanel onClose={() => setShowSettings(false)} onWebsite={() => setScreen('website')} />
+        <SettingsPanel onClose={() => setShowSettings(false)} onWebsite={() => setScreen('website')} onProfiles={() => { setShowSettings(false); go('profiles'); }} onFamily={() => { setShowSettings(false); go('family'); }} />
       )}
     </div>
   );
@@ -284,7 +286,7 @@ const ScreenWrap = ({ children, onBack }) => (
   </div>
 );
 
-const SettingsPanel = ({ onClose, onWebsite }) => {
+const SettingsPanel = ({ onClose, onWebsite, onProfiles, onFamily }) => {
   const [resetting, setResetting] = useState(false);
   const [adminActive, setAdminActive] = useState(false);
   useEffect(() => { if (isNative()) nativeIsAdminActive().then(setAdminActive); }, []);
@@ -317,6 +319,14 @@ const SettingsPanel = ({ onClose, onWebsite }) => {
         <button onClick={reset} disabled={resetting} data-testid="reset-baseline-btn"
           className="w-full text-left bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-amber-400 font-medium hover:bg-slate-800 transition-colors disabled:opacity-50">
           {resetting ? 'Resetting…' : 'Reset owner recognition'}
+        </button>
+        <button onClick={onProfiles} data-testid="open-profiles-btn"
+          className="w-full text-left bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-cyan-400 font-medium hover:bg-slate-800 transition-colors">
+          Who can unlock this phone (access profiles)
+        </button>
+        <button onClick={onFamily} data-testid="open-family-btn"
+          className="w-full text-left bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-violet-400 font-medium hover:bg-slate-800 transition-colors">
+          Family tracking &amp; sharing
         </button>
         <button onClick={onWebsite} data-testid="open-website-btn"
           className="w-full text-left bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-cyan-400 font-medium hover:bg-slate-800 transition-colors">

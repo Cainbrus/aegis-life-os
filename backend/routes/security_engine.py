@@ -634,7 +634,7 @@ async def family_join(req: FamilyJoinIn):
     fam = await db.families.find_one({"family_code": req.family_code.strip().upper()}, {"_id": 0})
     if not fam:
         raise HTTPException(status_code=404, detail="Invalid family code")
-    role = req.member_role if req.member_role in ("parent", "child") else "child"
+    role = req.member_role if req.member_role in ("parent", "teen", "child") else "child"
     await db.family_members.update_one(
         {"device_id": req.device_id},
         {"$set": {"family_id": fam["family_id"], "device_id": req.device_id,
@@ -665,14 +665,22 @@ async def family_members(device_id: str):
     me = await _my_membership(device_id)
     if not me:
         return {"in_family": False, "members": []}
-    # Kids see no one — only parents can view the family.
-    if me["member_role"] != "parent":
-        return {"in_family": True, "role": "child", "can_view": False, "members": []}
+    role = me["member_role"]
 
     cur = db.family_members.find({"family_id": me["family_id"]}, {"_id": 0})
-    members = await cur.to_list(length=100)
+    all_members = await cur.to_list(length=100)
+
+    # Visibility: parents see everyone; teens & children see only siblings (non-parents),
+    # never parents' location/history. Children additionally cannot see locations.
+    if role == "parent":
+        visible = all_members
+        show_locations = True
+    else:
+        visible = [m for m in all_members if m.get("member_role") != "parent"]
+        show_locations = role == "teen"   # teens see sibling locations; children do not
+
     out = []
-    for m in members:
+    for m in visible:
         st = await db.device_state.find_one({"device_id": m["device_id"]}, {"_id": 0}) or {}
         unread = await db.owner_alerts.count_documents({"device_id": m["device_id"], "read": False})
         latest = await db.owner_alerts.find_one({"device_id": m["device_id"]}, {"_id": 0}, sort=[("created_at", -1)])
@@ -680,14 +688,15 @@ async def family_members(device_id: str):
             "name": m["name"],
             "member_role": m["member_role"],
             "is_me": m["device_id"] == device_id,
-            "last_location": st.get("last_location"),
+            "last_location": st.get("last_location") if show_locations else None,
             "last_seen": st.get("last_scored_at") or st.get("last_seen"),
             "trap_level": st.get("trap_level", 0),
-            "lost_mode": bool(st.get("lost_mode", False)),
-            "alerts_unread": unread,
-            "latest_alert": (latest or {}).get("title"),
+            "lost_mode": bool(st.get("lost_mode", False)) if role == "parent" else False,
+            "alerts_unread": unread if role == "parent" else 0,
+            "latest_alert": (latest or {}).get("title") if role == "parent" else None,
         })
-    return {"in_family": True, "role": "parent", "can_view": True, "members": out}
+    return {"in_family": True, "role": role, "can_view": True,
+            "show_locations": show_locations, "can_manage": role == "parent", "members": out}
 
 
 @router.post("/family/leave")

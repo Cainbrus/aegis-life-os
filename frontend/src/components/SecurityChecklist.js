@@ -21,6 +21,7 @@ const SecurityChecklist = () => {
     setLoading(true);
     const [loc, cam, notif] = await Promise.all([permState('geolocation'), permState('camera'), permState('notifications')]);
     const status = await telemetry.setupStatus();
+    const fam = await telemetry.familyStatus();
     const admin = isNative() ? await nativeIsAdminActive() : false;
     const native = isNative();
 
@@ -36,6 +37,7 @@ const SecurityChecklist = () => {
       { id: 'admin', label: 'Device protection (Admin)', ok: admin, na: !native, fix: fixAdmin },
       { id: 'sim', label: 'SIM monitoring active', ok: native, na: !native, fix: openInApp },
       { id: 'email', label: 'Recovery email active', ok: !!status?.has_email, fix: fixEmail },
+      { id: 'family', label: 'Family Protection', ok: !!fam?.in_family, fix: openFamily },
       { id: 'decoy', label: 'Decoy mode active', ok: true, fix: null },
       { id: 'vault', label: 'Hidden vault active', ok: true, fix: null },
     ]);
@@ -60,6 +62,7 @@ const SecurityChecklist = () => {
     await nativeRequestAdmin(); toast.info('Grant Device Admin to enable remote lock/wipe'); setTimeout(scan, 1500);
   }
   function fixEmail() { toast.info('Add a recovery email in Settings → re-run setup'); }
+  function openFamily() { toast.info('Open Family from the dashboard to set up family protection'); }
   function openInApp() { toast.info('Available in the installed Android app with permissions granted'); }
 
   return (

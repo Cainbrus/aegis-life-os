@@ -247,6 +247,26 @@ class TelemetryService {
     catch (e) { return null; }
   }
 
+  // ---- Family tracking (cross-device) ----
+  async familyStatus() {
+    try { return (await axios.get(`${API}/security/family/status?device_id=${this.deviceId}`)).data; }
+    catch (e) { return { in_family: false }; }
+  }
+  async familyCreate(name) {
+    return (await axios.post(`${API}/security/family/create`, { device_id: this.deviceId, name, member_role: 'parent' })).data;
+  }
+  async familyJoin({ name, member_role, family_code }) {
+    return (await axios.post(`${API}/security/family/join`, { device_id: this.deviceId, name, member_role, family_code })).data;
+  }
+  async familyMembers() {
+    try { return (await axios.get(`${API}/security/family/members?device_id=${this.deviceId}`)).data; }
+    catch (e) { return { members: [] }; }
+  }
+  async familyLeave() {
+    try { return (await axios.post(`${API}/security/family/leave`, { device_id: this.deviceId })).data; }
+    catch (e) { return null; }
+  }
+
   // ---- Hidden Vault ----
   async vaultList() {
     try { return (await axios.get(`${API}/security/vault/list?device_id=${this.deviceId}`)).data; }

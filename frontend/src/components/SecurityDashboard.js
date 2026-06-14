@@ -66,7 +66,7 @@ const SecurityDashboard = ({ role = 'owner', onNavigate, onOpenSettings, onSecre
         {!trained && <Tile icon={Fingerprint} title="Owner Recognition" subtitle={`Learning — ${status?.samples_needed ?? 8} to go`} color="from-cyan-500 to-blue-500" onClick={() => onNavigate('owner')} testid="tile-owner" />}
         <Tile icon={ShieldCheck} title="Protection Status" subtitle="Permissions &amp; device protection" color="from-emerald-500 to-green-600" onClick={() => onNavigate('status')} testid="tile-status" />
         <Tile icon={Lock} title="Hidden Vault" subtitle="Hide photos, files, notes &amp; passwords" color="from-fuchsia-500 to-purple-600" onClick={() => onNavigate('vault')} testid="tile-vault" />
-        {canManage && <Tile icon={Users} title="Trusted Family" subtitle="Manage who's recognised" color="from-violet-500 to-purple-500" onClick={() => onNavigate('family')} testid="tile-family" />}
+        {canManage && <Tile icon={Users} title="Family" subtitle="Track &amp; protect family phones" color="from-violet-500 to-purple-500" onClick={() => onNavigate('family')} testid="tile-family" />}
         {canManage && <Tile icon={Compass} title="Device Recovery" subtitle="Locate, lock or wipe" color="from-emerald-500 to-teal-500" onClick={() => onNavigate('recovery')} testid="tile-recovery" />}
         {canManage && <Tile icon={ScanLine} title="Privacy &amp; Security Scan" subtitle="Check what can access your phone" color="from-sky-500 to-cyan-500" onClick={() => onNavigate('privacy')} testid="tile-privacy" />}
         {canManage && <Tile icon={FileClock} title="Evidence Center" subtitle="Photos, locations &amp; events" color="from-amber-500 to-orange-500" onClick={() => onNavigate('evidence')} testid="tile-evidence" />}
