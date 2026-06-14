@@ -45,7 +45,7 @@ const EvidenceCenter = () => {
   };
 
   return (
-    <div className="p-5 space-y-5" data-testid="evidence-center-screen">
+    <div className="p-5 pb-28 space-y-5" data-testid="evidence-center-screen">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">

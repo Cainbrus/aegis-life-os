@@ -70,7 +70,7 @@ const RecoveryCenter = () => {
     : null;
 
   return (
-    <div className="p-5 space-y-5" data-testid="recovery-center-screen">
+    <div className="p-5 pb-28 space-y-5" data-testid="recovery-center-screen">
       <div>
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
           <Compass className="text-cyan-400" size={26} /> Device Recovery

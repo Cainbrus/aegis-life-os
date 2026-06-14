@@ -278,7 +278,7 @@ function App() {
 }
 
 const ScreenWrap = ({ children, onBack }) => (
-  <div className="min-h-screen bg-slate-950 pb-24">
+  <div className="min-h-screen bg-slate-950 pb-28 overflow-y-auto">
     <button onClick={onBack} className="absolute top-4 right-4 z-10 text-slate-400 hover:text-white p-2" data-testid="screen-back-btn"><X size={22} /></button>
     {children}
   </div>

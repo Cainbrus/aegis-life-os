@@ -43,7 +43,7 @@ const PrivacyScan = () => {
   }, {}) : {};
 
   return (
-    <div className="p-5 space-y-5" data-testid="privacy-scan-screen">
+    <div className="p-5 pb-28 space-y-5" data-testid="privacy-scan-screen">
       <div>
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
           <ScanLine className="text-cyan-400" size={26} /> Privacy &amp; Security Scan
