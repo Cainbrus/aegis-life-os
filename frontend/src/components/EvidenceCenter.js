@@ -64,7 +64,7 @@ const EvidenceCenter = () => {
         <p className="text-slate-500 text-sm">Loading timeline…</p>
       ) : events.length === 0 ? (
         <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 text-center" data-testid="evidence-empty">
-          <ShieldAlert className="mx-auto text-emerald-400 mb-3" size={36} />
+          <img src={`${process.env.PUBLIC_URL}/brand/shield-emblem.png`} alt="" className="w-24 h-24 object-contain mx-auto mb-3 opacity-90" />
           <p className="text-white font-semibold">All clear</p>
           <p className="text-slate-400 text-sm mt-1">No suspicious activity recorded yet.</p>
         </div>

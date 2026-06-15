@@ -154,24 +154,20 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0e1a3a] via-[#0B1121] to-[#0B1121]"></div>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzA2YjZkNCIgc3Ryb2tlLW9wYWNpdHk9IjAuMDUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-60"></div>
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px]"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px]"></div>
 
         <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-20">
-          <div className="flex justify-center mb-8">
-            <AegisLogo size={200} showText={true} />
+          <div className="flex justify-center mb-6">
+            <img src={`${process.env.PUBLIC_URL}/brand/shield-emblem.png`} alt="Digital Mate" className="w-44 h-44 sm:w-56 sm:h-56 object-contain drop-shadow-[0_0_40px_rgba(37,99,235,0.45)]" />
           </div>
-          
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black mb-6">
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-300">
-              YOUR PHONE'S
-            </span>
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-              BODYGUARD
-            </span>
+
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black mb-4">
+            <span className="block text-white">DIGITAL MATE</span>
           </h1>
+          <p className="text-blue-400 font-semibold text-lg sm:text-xl mb-6 tracking-wide">Your Digital Bodyguard. Your Trusted Mate.</p>
 
           <p className="text-base sm:text-lg text-slate-300 mb-4 max-w-2xl mx-auto">
             We don't just lock attackers out. We let them IN — to <span className="text-blue-400 font-bold">fake data</span> — while capturing their photo and location.

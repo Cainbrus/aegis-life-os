@@ -62,7 +62,7 @@ const VaultScreen = () => {
 
       {loading ? <p className="text-slate-500 text-sm">Opening…</p> : items.length === 0 ? (
         <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 text-center" data-testid="vault-empty">
-          <Lock className="mx-auto text-slate-500 mb-3" size={34} />
+          <img src={`${process.env.PUBLIC_URL}/brand/shield-emblem.png`} alt="" className="w-24 h-24 object-contain mx-auto mb-3 opacity-90" />
           <p className="text-white font-semibold">{folder === 'review' ? 'Nothing to review' : 'Your vault is empty'}</p>
           <p className="text-slate-400 text-sm mt-1">{folder === 'review' ? 'Items you flag for review will appear here.' : 'Tap "Hide something" to add private items.'}</p>
         </div>

@@ -35,9 +35,12 @@ const SecurityDashboard = ({ role = 'owner', onNavigate, onOpenSettings, onSecre
     <div className="min-h-screen bg-gradient-to-b from-[#0B1121] via-[#0d1526] to-[#0B1121] p-5 pb-32" data-testid="security-dashboard">
       {/* Header */}
       <div className="flex items-center justify-between pt-3 mb-6">
-        <div>
-          <h1 onClick={handleTitleTap} className="text-2xl font-black text-white select-none cursor-default tracking-tight">Digital Mate</h1>
-          <p className="text-slate-500 text-xs tracking-wide">Your Digital Bodyguard</p>
+        <div className="flex items-center gap-2.5">
+          <img src={`${process.env.PUBLIC_URL}/brand/shield-emblem.png`} alt="" className="w-9 h-9 object-contain drop-shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
+          <div>
+            <h1 onClick={handleTitleTap} className="text-2xl font-black text-white select-none cursor-default tracking-tight">Digital Mate</h1>
+            <p className="text-slate-500 text-xs tracking-wide">Your Digital Bodyguard</p>
+          </div>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={onLock} data-testid="lock-btn" className="text-slate-400 hover:text-white p-2" title="Hide app">

@@ -64,9 +64,7 @@ const SetupWizard = ({ onDone }) => {
 
   if (done) return (
     <div className="min-h-screen bg-gradient-to-b from-[#0B1121] via-[#0d1526] to-[#0B1121] p-6 flex flex-col items-center justify-center text-center" data-testid="setup-complete">
-      <div className="w-20 h-20 rounded-3xl bg-emerald-500/15 flex items-center justify-center mb-5">
-        <Shield className="text-emerald-400" size={40} />
-      </div>
+      <img src={`${process.env.PUBLIC_URL}/brand/shield-emblem.png`} alt="Digital Mate" className="w-28 h-28 object-contain mb-4 drop-shadow-[0_0_30px_rgba(37,99,235,0.5)]" />
       <h1 className="text-2xl font-black text-white">You are protected</h1>
       <p className="text-emerald-400 font-semibold mt-1">Digital Mate is now protecting your phone.</p>
       <p className="text-slate-400 text-sm mt-3 max-w-xs">It quietly learns how you use your phone and steps in if someone else takes it. Enter your access code on the {cover} to open it.</p>
@@ -79,10 +77,10 @@ const SetupWizard = ({ onDone }) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0B1121] via-[#0d1526] to-[#0B1121] p-6 flex flex-col" data-testid="setup-wizard">
       <div className="flex items-center gap-3 pt-4 mb-2">
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center"><Shield className="text-white" size={22} /></div>
+        <img src={`${process.env.PUBLIC_URL}/brand/shield-emblem.png`} alt="Digital Mate" className="w-12 h-12 object-contain drop-shadow-[0_0_12px_rgba(37,99,235,0.5)]" />
         <div>
           <h1 className="text-xl font-black text-white">Set up Digital Mate</h1>
-          <p className="text-slate-400 text-sm">Set it up once, then forget it's there.</p>
+          <p className="text-slate-400 text-sm">Your Digital Bodyguard. Your Trusted Mate.</p>
         </div>
       </div>
       <div className="flex gap-1.5 my-5">
