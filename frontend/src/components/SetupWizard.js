@@ -18,6 +18,8 @@ const SetupWizard = ({ onDone }) => {
   const [access, setAccess] = useState(''); const [access2, setAccess2] = useState('');
   const [recovery, setRecovery] = useState(''); const [recovery2, setRecovery2] = useState('');
   const [perms, setPerms] = useState({ location: false, camera: false, notifications: false });
+  const [contact, setContact] = useState('');
+  const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const numericCover = cover === 'calculator' || cover === 'clock';
@@ -48,9 +50,10 @@ const SetupWizard = ({ onDone }) => {
   const finish = async () => {
     setBusy(true);
     try {
-      await telemetry.submitSetup({ owner_name: name || 'Owner', cover_app: cover, access_code: access, recovery_code: recovery });
-      toast.success('All set — enter your access code on the cover to open Digital Mate');
-      onDone?.();
+      const c = contact.trim();
+      const extra = c ? (c.includes('@') ? { recovery_email: c } : { trusted_numbers: [c] }) : {};
+      await telemetry.submitSetup({ owner_name: name || 'Owner', cover_app: cover, access_code: access, recovery_code: recovery, ...extra });
+      setDone(true);
     } catch (e) {
       toast.error(e?.response?.data?.detail || 'Setup failed');
     }
@@ -58,6 +61,20 @@ const SetupWizard = ({ onDone }) => {
   };
 
   const TOTAL = 4;
+
+  if (done) return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 flex flex-col items-center justify-center text-center" data-testid="setup-complete">
+      <div className="w-20 h-20 rounded-3xl bg-emerald-500/15 flex items-center justify-center mb-5">
+        <Shield className="text-emerald-400" size={40} />
+      </div>
+      <h1 className="text-2xl font-black text-white">You are protected</h1>
+      <p className="text-emerald-400 font-semibold mt-1">Digital Mate is now protecting your phone.</p>
+      <p className="text-slate-400 text-sm mt-3 max-w-xs">It quietly learns how you use your phone and steps in if someone else takes it. Enter your access code on the {cover} to open it.</p>
+      <button onClick={() => onDone?.()} data-testid="setup-complete-btn"
+        className="mt-8 px-8 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold">Open Digital Mate</button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 flex flex-col" data-testid="setup-wizard">
       <div className="flex items-center gap-3 pt-4 mb-2">
@@ -109,6 +126,7 @@ const SetupWizard = ({ onDone }) => {
           <PermRow icon={MapPin} label="Location" on={perms.location} onGrant={() => grant('location')} testid="perm-location" />
           <PermRow icon={Camera} label="Camera" on={perms.camera} onGrant={() => grant('camera')} testid="perm-camera" />
           <PermRow icon={Bell} label="Notifications" on={perms.notifications} onGrant={() => grant('notifications')} testid="perm-notifications" />
+          <Field label="Recovery email or phone (recommended)" value={contact} onChange={setContact} testid="setup-contact" placeholder="you@email.com or +1 555…" />
           <button onClick={finish} disabled={busy} data-testid="setup-finish"
             className="w-full mt-5 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold disabled:opacity-50 flex items-center justify-center gap-2">
             <Check size={18} /> {busy ? 'Saving…' : 'Done'}

@@ -545,7 +545,13 @@ class VaultItemIn(BaseModel):
     kind: str                        # photo | file | note | password | video | document
     title: str
     content: str                     # data URL (media/file) or text (note/password)
+    status: str = "vault"            # vault | review  (Review Folder = pending owner approval)
     meta: Dict[str, Any] = Field(default_factory=dict)
+
+
+class VaultActionIn(BaseModel):
+    device_id: str
+    item_id: str
 
 
 @router.post("/vault/add")
@@ -561,18 +567,30 @@ async def vault_add(item: VaultItemIn):
         "kind": kind,
         "title": (item.title or "Untitled")[:120],
         "content": item.content,
+        "status": "review" if item.status == "review" else "vault",
         "meta": item.meta,
         "created_at": _now(),
     }
     await db.vault_items.insert_one(doc)
-    return {"id": doc["id"], "kind": kind, "title": doc["title"], "created_at": doc["created_at"]}
+    return {"id": doc["id"], "kind": kind, "title": doc["title"], "status": doc["status"], "created_at": doc["created_at"]}
 
 
 @router.get("/vault/list")
-async def vault_list(device_id: str):
-    cur = db.vault_items.find({"device_id": device_id}, {"_id": 0, "content": 0}).sort("created_at", -1)
+async def vault_list(device_id: str, status: str = "vault"):
+    q = {"device_id": device_id, "status": status if status in ("vault", "review") else "vault"}
+    # older items have no status field -> treat as vault
+    if q["status"] == "vault":
+        q = {"device_id": device_id, "$or": [{"status": "vault"}, {"status": {"$exists": False}}]}
+    cur = db.vault_items.find(q, {"_id": 0, "content": 0}).sort("created_at", -1)
     items = await cur.to_list(length=500)
     return {"items": items, "count": len(items)}
+
+
+@router.post("/vault/approve")
+async def vault_approve(req: VaultActionIn):
+    """Approve a Review-Folder item -> move it into the Hidden Vault."""
+    await db.vault_items.update_one({"device_id": req.device_id, "id": req.item_id}, {"$set": {"status": "vault"}})
+    return {"ok": True}
 
 
 @router.get("/vault/item")

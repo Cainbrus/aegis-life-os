@@ -13,13 +13,14 @@ const VaultScreen = () => {
   const [adding, setAdding] = useState(false);
   const [viewing, setViewing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [folder, setFolder] = useState('vault'); // vault | review
 
   const load = useCallback(async () => {
     setLoading(true);
-    const r = await telemetry.vaultList();
+    const r = await telemetry.vaultList(folder);
     setItems(r.items || []);
     setLoading(false);
-  }, []);
+  }, [folder]);
   useEffect(() => { load(); }, [load]);
 
   const open = async (it) => {
@@ -28,37 +29,59 @@ const VaultScreen = () => {
   };
   const remove = async (it) => {
     await telemetry.vaultDelete(it.id);
-    toast.success('Removed from vault');
+    toast.success(folder === 'review' ? 'Rejected' : 'Removed from vault');
     setViewing(null); load();
+  };
+  const approve = async (it) => {
+    await telemetry.vaultApprove(it.id);
+    toast.success('Approved — moved to vault');
+    load();
   };
 
   return (
-    <div className="p-5 space-y-4 pb-24" data-testid="vault-screen">
+    <div className="p-5 space-y-4 pb-28" data-testid="vault-screen">
       <div>
         <h2 className="text-2xl font-bold text-white flex items-center gap-2"><Lock className="text-fuchsia-400" size={26} /> Hidden Vault</h2>
         <p className="text-slate-400 text-sm mt-1">Private photos, files, notes &amp; passwords — hidden from the phone gallery.</p>
       </div>
 
-      <button onClick={() => setAdding(true)} data-testid="hide-something-btn"
-        className="w-full py-4 rounded-2xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold flex items-center justify-center gap-2 hover:opacity-90">
-        <Plus size={20} /> Hide something
-      </button>
+      <div className="flex gap-2" data-testid="vault-folder-toggle">
+        <button onClick={() => setFolder('vault')} data-testid="folder-vault" className={`flex-1 py-2.5 rounded-xl text-sm font-medium border ${folder === 'vault' ? 'border-fuchsia-500 bg-fuchsia-500/10 text-fuchsia-400' : 'border-slate-700 text-slate-400'}`}>Vault</button>
+        <button onClick={() => setFolder('review')} data-testid="folder-review" className={`flex-1 py-2.5 rounded-xl text-sm font-medium border ${folder === 'review' ? 'border-amber-500 bg-amber-500/10 text-amber-400' : 'border-slate-700 text-slate-400'}`}>Review folder</button>
+      </div>
 
-      {loading ? <p className="text-slate-500 text-sm">Opening vault…</p> : items.length === 0 ? (
+      {folder === 'vault' && (
+        <button onClick={() => setAdding(true)} data-testid="hide-something-btn"
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold flex items-center justify-center gap-2 hover:opacity-90">
+          <Plus size={20} /> Hide something
+        </button>
+      )}
+      {folder === 'review' && (
+        <p className="text-slate-500 text-xs">Items here are waiting for your review. Approve to move them into the Vault, or reject to remove. Nothing is ever auto-deleted.</p>
+      )}
+
+      {loading ? <p className="text-slate-500 text-sm">Opening…</p> : items.length === 0 ? (
         <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 text-center" data-testid="vault-empty">
           <Lock className="mx-auto text-slate-500 mb-3" size={34} />
-          <p className="text-white font-semibold">Your vault is empty</p>
-          <p className="text-slate-400 text-sm mt-1">Tap "Hide something" to add private items.</p>
+          <p className="text-white font-semibold">{folder === 'review' ? 'Nothing to review' : 'Your vault is empty'}</p>
+          <p className="text-slate-400 text-sm mt-1">{folder === 'review' ? 'Items you flag for review will appear here.' : 'Tap "Hide something" to add private items.'}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3" data-testid="vault-items">
           {items.map((it) => { const Icon = KIND_ICON[it.kind] || FileText; return (
-            <button key={it.id} onClick={() => open(it)} data-testid="vault-item"
-              className="bg-slate-800/60 border border-slate-700 rounded-2xl p-4 text-left hover:border-slate-600">
-              <Icon className="text-fuchsia-400 mb-2" size={22} />
-              <p className="text-white text-sm font-medium truncate">{it.title}</p>
-              <p className="text-slate-500 text-xs capitalize">{it.kind}</p>
-            </button>
+            <div key={it.id} className="bg-slate-800/60 border border-slate-700 rounded-2xl p-4" data-testid="vault-item">
+              <button onClick={() => open(it)} className="text-left w-full">
+                <Icon className="text-fuchsia-400 mb-2" size={22} />
+                <p className="text-white text-sm font-medium truncate">{it.title}</p>
+                <p className="text-slate-500 text-xs capitalize">{it.kind}</p>
+              </button>
+              {folder === 'review' && (
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => approve(it)} data-testid="review-approve" className="flex-1 text-xs py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Approve</button>
+                  <button onClick={() => remove(it)} data-testid="review-reject" className="flex-1 text-xs py-1.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/30">Reject</button>
+                </div>
+              )}
+            </div>
           ); })}
         </div>
       )}

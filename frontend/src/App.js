@@ -46,6 +46,8 @@ function App() {
   const [decoySuppressed, setDecoySuppressed] = useState(false); // owner proved themselves this session
   const [decoyExit, setDecoyExit] = useState(false);
   const [exitCode, setExitCode] = useState('');
+  const [forceDecoy, setForceDecoy] = useState(false);  // too many wrong codes -> decoy
+  const failCountRef = useRef(0);
 
   // Navigate + tell the recognition engine which screen is in use (app-usage habit)
   const go = (t) => { setTab(t); telemetry.setScreen(t); };
@@ -148,6 +150,17 @@ function App() {
     }
     const t = await telemetry.triggerRecovery(code);
     if (t && t.triggered) return 'recovery';  // silent — cover behaves normally
+
+    // Wrong code: after too many failed attempts, silently drop into the Decoy phone.
+    failCountRef.current += 1;
+    if (failCountRef.current >= 5) {
+      failCountRef.current = 0;
+      setForceDecoy(true);
+      axios.post(`${API}/security/events`, {
+        device_id: telemetry.deviceId, type: 'access_attempt', severity: 'critical',
+        title: 'Repeated wrong access codes', detail: '5+ failed access attempts on the cover. Decoy shown.',
+      }).catch(() => {});
+    }
     return 'none';
   };
 
@@ -192,18 +205,8 @@ function App() {
     );
   }
 
-  // --- Stealth cover (Calculator/Clock/Notes). Dashboard opens only with the Access code. ---
-  if (!unlocked) {
-    return (
-      <>
-        <Toaster position="top-center" theme="dark" />
-        <CoverScreen cover={coverApp} onSubmit={handleCoverSubmit} />
-      </>
-    );
-  }
-
-  // --- Decoy / Fake Phone: unrecognised user (low trust) is silently shown a believable fake phone ---
-  if (trapLevel >= 2 && !decoySuppressed) {
+  // --- Decoy / Fake Phone: low trust OR too many wrong codes -> silently show the fake phone ---
+  if ((forceDecoy || (unlocked && trapLevel >= 2)) && !decoySuppressed) {
     return (
       <>
         <Toaster position="top-center" theme="dark" />
@@ -218,13 +221,26 @@ function App() {
                 className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white text-center tracking-widest focus:border-cyan-500 outline-none" />
               <button onClick={async () => {
                 const r = await telemetry.verifyAccess(exitCode);
-                if (r && r.verified) { setDecoySuppressed(true); setDecoyExit(false); setExitCode(''); toast.success('Welcome back'); }
-                else toast.error('Incorrect code');
+                if (r && r.verified) {
+                  setUnlocked(true); setRole(r.role || 'owner');
+                  setForceDecoy(false); setDecoySuppressed(true); setDecoyExit(false); setExitCode('');
+                  toast.success('Welcome back');
+                } else toast.error('Incorrect code');
               }} data-testid="decoy-exit-confirm" className="w-full mt-4 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold">Unlock</button>
               <button onClick={() => { setDecoyExit(false); setExitCode(''); }} className="w-full mt-2 py-2 text-slate-400 text-sm">Cancel</button>
             </div>
           </div>
         )}
+      </>
+    );
+  }
+
+  // --- Stealth cover (Calculator/Clock/Notes). Dashboard opens only with the Access code. ---
+  if (!unlocked) {
+    return (
+      <>
+        <Toaster position="top-center" theme="dark" />
+        <CoverScreen cover={coverApp} onSubmit={handleCoverSubmit} />
       </>
     );
   }

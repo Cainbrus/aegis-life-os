@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 17 — Stage-1 punch list fully verified end-to-end. Backend: 9/9 new tests PASS (Review folder add/list/approve/reject + setup recovery_email/trusted_numbers + Repeated wrong access codes event + verify-access). Frontend: (a) Fresh-device wizard ends on data-testid='setup-complete' with text 'Digital Mate is now protecting your phone.' and setup-complete-btn → cover-calculator → 2580= → dashboard (tile-vault visible). (b) Protection Status shows check-contact GREEN (emerald) when recovery_email is set during setup. (c) On a configured device, entering 9999= 5x on the cover silently switches to data-testid='decoy-mode' (no unlock occurs first — decoy gate is correctly placed before cover gate); /api/security/events records 'Repeated wrong access codes'. (d) Tapping the status-bar time 5x opens decoy-exit-modal; entering 2580 on decoy-exit-input + decoy-exit-confirm fully unlocks to the real dashboard. (e) Vault screen folder toggle folder-vault/folder-review works; seeded review item appears under Review with review-approve/review-reject; Approve moves it to Vault tab (toast 'Approved — moved to vault'). No JS errors observed during the flows.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_stage1_iter17.py",
+    "/app/test_reports/pytest/iter17_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "SetupWizard.js: completion screen branches on `done` and lives inside the same component — clean. setup-contact accepts either an email (forwarded as recovery_email) or anything else (forwarded as trusted_numbers[0]) — good UX; no client-side email validation, but backend already accepts both and SecurityChecklist's check-contact correctly OKs either via `status.has_email || status.trusted_numbers.length`.",
+    "App.js: failCountRef increments on every non-recovery, non-access submission; the threshold of 5 resets the counter and sets forceDecoy=true. The decoy gate `(forceDecoy || (unlocked && trapLevel >= 2)) && !decoySuppressed` now PRECEDES the cover gate, so the decoy is shown without ever unlocking — matches the spec. decoy-exit-confirm sets unlocked=true + role + clears forceDecoy + sets decoySuppressed=true + clears decoyExit — fully drops to dashboard. ✓",
+    "App.js: failCountRef is a useRef on App, which is fine for a single mounted component, but it does NOT persist across reloads. Acceptable trade-off (resets after browser restart), but worth noting if Stage-2 wants persistent counters.",
+    "security_engine.py /vault/list with status=vault uses an $or that ALSO includes documents with no status field — good backward compat for items created before the field was added.",
+    "security_engine.py /vault/approve does NOT verify ownership beyond device_id match — same trust model as the rest of the vault endpoints (device-id-scoped). Consistent with existing design.",
+    "VaultScreen.js: when folder=='review' there is correctly NO 'Hide something' button; review items each render approve/reject buttons; rejecting calls vault/item DELETE. ✓",
+    "SecurityChecklist.js: check-contact uses `status?.has_email || (status?.trusted_numbers || []).length` — green tick if EITHER email or trusted number is set. ✓"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_stage1_iter17.py"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9 iter17 + prior regressions)",
+    "frontend": "100% on tested Stage-1 flows"
+  },
+  "test_credentials": "Setup via /api/security/setup access_code=2580, recovery_code=rec22, recovery_email=me@test.com. Cover unlock = 2,5,8,0,=. Decoy exit access code = 2580.",
+  "seed_data_creation": "Pytest creates TEST_iter17_* devices. Playwright seeds iter17_<ts> (fresh-wizard path) and iter17b_<ts> (pre-configured via API then 9999= x5 -> decoy) with one seeded review item TEST_review_iter17b.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All Stage-1 items verified. Backend regression: pytest /app/backend/tests/test_stage1_iter17.py (9 tests). Frontend gotchas: (1) `await page.go_back()` after navigating into Protection Status will exit the SPA — instead navigate via the bottom nav (Home/Recovery/Evidence/Mate) or click an in-screen back chevron. (2) For wrong-code decoy testing, the device must already be configured via /api/security/setup; clicking 9999= five times on the calculator cover increments failCountRef and toggles forceDecoy after the 5th submission. (3) decoy-statusbar-time is the locator for the 5-tap exit. Outstanding (out of Stage-1 scope, not bugs): /panic still accepts an unverified 'secret' field — hardening pass for later. Next stage per agent_to_agent_context_note: design polish (navy/electric-blue/purple glass) + on-device native testing.",
+  "rca of the issue": "n/a — no functional bugs found. All Stage-1 punch-list items (setup completion screen, recovery contact + check-contact, Review Folder approve/reject, wrong-code -> decoy with logged event, decoy exit fully unlocks) are wired correctly backend↔frontend."
+}

@@ -277,12 +277,16 @@ class TelemetryService {
   }
 
   // ---- Hidden Vault ----
-  async vaultList() {
-    try { return (await axios.get(`${API}/security/vault/list?device_id=${this.deviceId}`)).data; }
+  async vaultList(status = 'vault') {
+    try { return (await axios.get(`${API}/security/vault/list?device_id=${this.deviceId}&status=${status}`)).data; }
     catch (e) { return { items: [] }; }
   }
-  async vaultAdd({ kind, title, content, meta }) {
-    return (await axios.post(`${API}/security/vault/add`, { device_id: this.deviceId, kind, title, content, meta: meta || {} })).data;
+  async vaultAdd({ kind, title, content, meta, status }) {
+    return (await axios.post(`${API}/security/vault/add`, { device_id: this.deviceId, kind, title, content, status: status || 'vault', meta: meta || {} })).data;
+  }
+  async vaultApprove(itemId) {
+    try { return (await axios.post(`${API}/security/vault/approve`, { device_id: this.deviceId, item_id: itemId })).data; }
+    catch (e) { return null; }
   }
   async vaultItem(itemId) {
     try { return (await axios.get(`${API}/security/vault/item?device_id=${this.deviceId}&item_id=${itemId}`)).data; }

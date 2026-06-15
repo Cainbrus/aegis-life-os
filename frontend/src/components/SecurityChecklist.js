@@ -29,6 +29,7 @@ const SecurityChecklist = ({ onNavigate }) => {
       { id: 'cover', label: 'Cover app selected', ok: !!status?.configured, fix: null },
       { id: 'access', label: 'Access code set', ok: !!status?.configured, fix: null },
       { id: 'recovery', label: 'Recovery code set', ok: !!status?.configured, fix: null },
+      { id: 'contact', label: 'Recovery contact set', ok: !!(status?.has_email || (status?.trusted_numbers || []).length), fix: fixEmail },
       { id: 'location', label: 'Location permission', ok: loc, fix: fixLocation, web: true },
       { id: 'camera', label: 'Camera permission', ok: cam, fix: fixCamera, web: true },
       { id: 'notifications', label: 'Notifications permission', ok: notif, fix: fixNotif, web: true },
