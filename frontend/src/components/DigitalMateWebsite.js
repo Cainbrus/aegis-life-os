@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import AegisLogo, { AegisLogoCompact } from './AegisLogo';
 import { EmailCollectionModal } from './SubscriptionPages';
 
 const DigitalMateWebsite = ({ onLaunchApp }) => {
@@ -39,7 +38,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <button onClick={() => setCurrentPage('home')} className="flex items-center space-x-2">
-            <AegisLogoCompact size={40} />
+            <img src={`${process.env.PUBLIC_URL}/brand/shield-emblem.png`} alt="Digital Mate" className="w-10 h-10 object-contain rounded-lg" />
             <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
               DIGITAL MATE
             </span>
@@ -110,7 +109,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <AegisLogoCompact size={30} />
+              <img src={`${process.env.PUBLIC_URL}/brand/shield-emblem.png`} alt="Digital Mate" className="w-8 h-8 object-contain rounded-md" />
               <span className="text-lg font-bold text-white">Digital Mate</span>
             </div>
             <p className="text-slate-400 text-sm">

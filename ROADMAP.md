@@ -12,8 +12,7 @@
 - Recovery: mark lost, recovery mode, tracking, emergency, timeline ✅
 - Protection checklist: Camera, Location, Notifications, Bluetooth, Phone, Device Admin, Recovery Email, Family Protection, Decoy ✅ (native items pending on-device)
 
-## PHASE 2 — Family Protection  (in progress)
-- Parent role: see all members + all locations + alerts + manage settings/history ✅
+## PHASE 2 — Family Protection  (in progress)- Parent role: see all members + all locations + alerts + manage settings/history ✅
 - **Teen role**: see siblings + sibling locations + message family; CANNOT see parent locations/history/activity ⬅ building
 - **Child role**: see siblings only (no locations); cannot see parents; cannot change settings ⬅ building
 - Real-time family alerts: leaves safe zone (geofence), phone stolen, emergency, suspicious, device offline ⬅ future (geofence/heartbeat = native/background)
@@ -31,3 +30,17 @@
 
 ## Build order: Security → Family → Privacy → Assistant
 Do NOT build Phase 4 productivity features until Phases 1-3 are solid.
+
+## Branding
+Official logo = the uploaded shield + human/digital handshake (master at /app/frontend/public/brand/shield-emblem.png).
+Do not redesign/replace it. Theme: navy #0B1121, electric-blue #2563EB, purple #8B5CF6 accents, glass cards, Manrope/Outfit. Tagline: "Your Digital Bodyguard. Your Trusted Mate." Applied to splash, app icon, website header/hero, setup, dashboard header, empty states.
+
+## TRAP MODE V2 — MIRROR DECOY (NATIVE — top of Android Studio roadmap)
+When Trap Mode activates, the decoy should MIRROR the owner's actual phone appearance:
+copy wallpaper, home-screen layout, app icon positions, folders, lock screen, notification style,
+light/dark theme — but replace all real data (contacts/messages/photos/notes/call log/calendar/files)
+with decoy data. Intruder believes it is the real phone. Log all actions to Evidence (timestamp,
+location, device info, screen interactions, front-camera capture when permitted).
+Decoy modes: Quick (generic — DONE), Mirror (copies phone appearance — NATIVE, becomes recommended
+default), Custom (owner-built — DONE). Mirror requires native launcher/WallpaperManager/PackageManager
+access (cannot be done in web/Capacitor) → implement in the Kotlin native phase.
