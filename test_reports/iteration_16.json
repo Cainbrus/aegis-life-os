@@ -1,0 +1,37 @@
+{
+  "summary": "Iteration 16 — Stage-1 gaps verified end-to-end: (1) Owner-created Decoy Profiles backend + UI editor + preview + save, and (2) Family SOS button (parent + sibling/teen views). 5/5 new backend tests PASSED (decoy GET/POST/strip + SOS lost_mode + parent-sees-kid-alerts) plus 12/12 prior family tests still PASS (no regression). UI: decoy editor → quickfill → edit (name, contacts textarea, message/note rows) → preview opens fake phone showing 'ZZTestContact' under Contacts decoy app → save persists (toast 'Decoy profile saved' + backend GET configured=true with custom contacts). Family parent-view SOS click fires panic, toast 'SOS sent — your location is shared with the family' appears, /status returns lost_mode=true & locked=true, parent view now shows 'Lost mode · 1 alert' chip on self row.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_decoy_sos_iter16.py",
+    "/app/backend/tests/test_family_tracking.py",
+    "/app/test_reports/pytest/iter16_decoy_sos.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "security_engine.py /decoy/profile GET returns {configured:false, ...DECOY_DEFAULTS} for new devices and {configured:true, name, contacts, messages, notes} after POST. POST strips empty strings + empty messages/notes and caps each list at 30 items — good safety bounds.",
+    "DecoyMode now accepts {profile, preview} props; in preview mode it skips telemetry.capturePhoto / reportLocation / 'entered_decoy' log — correct (no tracking when owner previews). It uses FAKE_*_DEFAULT fallbacks only when arrays are empty — good UX.",
+    "DecoyProfileEditor: quickfill (decoy-quickfill) writes a GENERIC dict to local state; contacts textarea splits on \\n + trims + filters empties on the client too — defence-in-depth with backend sanitisation. data-testids present: decoy-editor, decoy-quickfill, decoy-name, decoy-contacts, decoy-msg-row, decoy-note-row, decoy-preview-btn, decoy-preview, decoy-preview-close, decoy-save.",
+    "SecurityDashboard tile-decoy is gated by canManage — only owner/trusted role can edit (correct, matches problem statement).",
+    "FamilyTracking SosBtn is the SAME component reused in both ParentView and SiblingView; on click it calls telemetry.panic() (POST /api/security/panic) AND telemetry.reportLocation() — so the SOSer's last_location is also pushed to /family/members for siblings to see. Toast 'SOS sent — your location is shared with the family' is shown.",
+    "Backend /panic sets lost_mode + locked + trap_level=3, logs a recovery event ('Panic / Lost Phone activated'), creates an owner_alert ('Lost Phone mode activated'), and emails the configured alert recipient. Family /members returns alerts_unread + lost_mode + latest_alert per member — so a parent UI seeing a kid row updates correctly after the kid fires SOS.",
+    "Minor (pre-existing, not Stage-1 scope): /panic accepts a 'secret' field on RecoveryAction but doesn't actually verify it — any caller with a valid device_id can trigger lost_mode. Fine for the family-SOS use case (only family-app UI calls it) but worth gating in a future hardening pass."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_decoy_sos_iter16.py"
+  ],
+  "success_rate": {
+    "backend": "100% (5/5 new + 12/12 family regression)",
+    "frontend": "100% on tested flows (decoy editor + preview + save persistence + parent SOS click + lost_mode propagation)"
+  },
+  "test_credentials": "Setup via /api/security/setup with access_code=2580, recovery_code=rec22. Calculator cover unlock: 2,5,8,0,=.",
+  "seed_data_creation": "Backend pytest auto-seeds TEST_decoy_*_<ts> and TEST_fam_*_<ts> devices. Playwright runs created decoy_<ts> + sos_<ts> + sosKid_<ts> devices via in-page fetch(/api/security/setup + /family/create + /family/join).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Stage-1 decoy + SOS regression lives in /app/backend/tests/test_decoy_sos_iter16.py (5 tests). To unlock the demo: addInitScript('dm_device_id', '<id>') BEFORE page.goto, click 'Try the Demo →' (use get_by_role(\"button\", name=\"Try the Demo →\"), the text= selector misses), then calc-key-2/5/8/0/equals. Dashboard tiles in current order: tile-owner, tile-status, tile-vault, tile-decoy, tile-family, tile-recovery, tile-privacy, tile-evidence, tile-mate — scroll into view before clicking tile-family. WARNING about teen-view headless test: addInitScript fires on EVERY navigation (including reload), so to test a *different* dm_device_id you must either (a) clear+reset the init script before reload, or (b) use a fresh page context for each role. Verified teen flow via backend test_parent_sees_member_alerts_unread_bump_after_sibling_sos instead. /panic accepts a 'secret' field but does NOT verify it — fine for now but flag for future hardening.",
+  "rca of the issue": "n/a — no functional bugs found. Both Stage-1 gaps (Owner-created Decoy Profiles + Family SOS) are fully wired backend↔frontend."
+}

@@ -13,7 +13,7 @@ const permState = async (name) => {
   return false;
 };
 
-const SecurityChecklist = () => {
+const SecurityChecklist = ({ onNavigate }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -62,7 +62,7 @@ const SecurityChecklist = () => {
     await nativeRequestAdmin(); toast.info('Grant Device Admin to enable remote lock/wipe'); setTimeout(scan, 1500);
   }
   function fixEmail() { toast.info('Add a recovery email in Settings → re-run setup'); }
-  function openFamily() { toast.info('Open Family from the dashboard to set up family protection'); }
+  function openFamily() { if (onNavigate) onNavigate('family'); else toast.info('Open Family from the dashboard'); }
   function openInApp() { toast.info('Available in the installed Android app with permissions granted'); }
 
   return (

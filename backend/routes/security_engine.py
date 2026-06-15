@@ -589,6 +589,59 @@ async def vault_delete(device_id: str, item_id: str):
     return {"ok": True, "deleted": res.deleted_count}
 
 
+# ============================ Owner-created Decoy Profiles ============================
+# The fake phone shown to an intruder. Owner can customise the fake contacts/messages/notes.
+# SAFETY: only owner-approved content here — never vault files, passwords or private data.
+DECOY_DEFAULTS = {
+    "name": "Default",
+    "contacts": ["Alex Carter", "Mum", "Jordan", "Dr Patel", "Sam Reed", "Pizza Place", "Work", "Taylor"],
+    "messages": [
+        {"from": "Mum", "text": "Are you coming for dinner Sunday? x", "time": "9:41"},
+        {"from": "Jordan", "text": "haha yeah saw that", "time": "8:12"},
+        {"from": "Delivery", "text": "Your parcel is out for delivery today", "time": "Yesterday"},
+        {"from": "Sam", "text": "call me when you get a sec", "time": "Yesterday"},
+    ],
+    "notes": [
+        {"title": "Shopping", "body": "milk, eggs, bread, coffee"},
+        {"title": "Wifi", "body": "guest network: welcome123"},
+        {"title": "Ideas", "body": "weekend trip - book hotel"},
+    ],
+}
+
+
+class DecoyProfileIn(BaseModel):
+    device_id: str
+    name: str = "My decoy"
+    contacts: List[str] = Field(default_factory=list)
+    messages: List[Dict[str, Any]] = Field(default_factory=list)
+    notes: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+@router.get("/decoy/profile")
+async def get_decoy_profile(device_id: str):
+    doc = await db.decoy_profiles.find_one({"device_id": device_id}, {"_id": 0})
+    if not doc:
+        return {"configured": False, **DECOY_DEFAULTS}
+    return {"configured": True, "name": doc.get("name", "My decoy"),
+            "contacts": doc.get("contacts") or DECOY_DEFAULTS["contacts"],
+            "messages": doc.get("messages") or DECOY_DEFAULTS["messages"],
+            "notes": doc.get("notes") or DECOY_DEFAULTS["notes"]}
+
+
+@router.post("/decoy/profile")
+async def save_decoy_profile(req: DecoyProfileIn):
+    await db.decoy_profiles.update_one(
+        {"device_id": req.device_id},
+        {"$set": {
+            "device_id": req.device_id, "name": req.name or "My decoy",
+            "contacts": [c for c in req.contacts if c][:30],
+            "messages": [m for m in req.messages if m.get("text")][:30],
+            "notes": [n for n in req.notes if n.get("title") or n.get("body")][:30],
+            "updated_at": _now(),
+        }}, upsert=True)
+    return {"ok": True}
+
+
 # ============================ Family Tracking (cross-device) ============================
 # Parents (member_role 'parent') see all members' last location + security alerts.
 # Kids ('child') see no one — they are only protected themselves. Members link via a family code.

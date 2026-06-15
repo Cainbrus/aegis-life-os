@@ -51,6 +51,7 @@ const SiblingView = ({ role, members, onDone }) => {
   const located = members.filter((m) => m.last_location && typeof m.last_location.lat === 'number');
   return (
     <div className="space-y-4" data-testid="family-sibling-view">
+      <SosBtn />
       <div className="rounded-xl border border-slate-700 bg-slate-800/40 p-3 text-slate-300 text-sm">
         You are protected. {role === 'teen' ? 'You can see your siblings.' : 'You can see your siblings.'} Parents are private.
       </div>
@@ -135,6 +136,7 @@ const ParentView = ({ code, members, onRefresh, loading, onDone }) => {
   const located = members.filter((m) => m.last_location && typeof m.last_location.lat === 'number');
   return (
     <div className="space-y-4">
+      <SosBtn />
       <div className="rounded-2xl bg-slate-800/60 border border-slate-700 p-4 flex items-center justify-between" data-testid="family-code-card">
         <div>
           <p className="text-slate-400 text-xs">Family code (share with members)</p>
@@ -206,5 +208,22 @@ const LeaveBtn = ({ onDone }) => (
   <button onClick={async () => { await telemetry.familyLeave(); toast.success('Left family'); onDone(); }} data-testid="family-leave"
     className="w-full mt-2 py-2.5 rounded-xl text-slate-400 text-sm flex items-center justify-center gap-2 hover:text-red-400"><LogOut size={15} /> Leave family</button>
 );
+
+const SosBtn = () => {
+  const [busy, setBusy] = useState(false);
+  const sos = async () => {
+    setBusy(true);
+    await telemetry.panic();
+    telemetry.reportLocation();
+    toast.success('SOS sent — your location is shared with the family');
+    setBusy(false);
+  };
+  return (
+    <button onClick={sos} disabled={busy} data-testid="family-sos"
+      className="w-full py-4 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold flex items-center justify-center gap-2 hover:opacity-90">
+      <Siren size={22} /> {busy ? 'Sending…' : 'SOS — alert my family'}
+    </button>
+  );
+};
 
 export default FamilyTracking;

@@ -19,37 +19,46 @@ const FAKE_APPS = [
   { id: 'settings', name: 'Settings', icon: Settings, color: 'from-slate-600 to-slate-800' },
 ];
 
-const FAKE_MESSAGES = [
+const FAKE_MESSAGES_DEFAULT = [
   { from: 'Mum', text: 'Are you coming for dinner Sunday? x', time: '9:41' },
-  { from: 'Jordan', text: 'haha yeah saw that 😂', time: '8:12' },
+  { from: 'Jordan', text: 'haha yeah saw that', time: '8:12' },
   { from: 'Delivery', text: 'Your parcel is out for delivery today', time: 'Yesterday' },
   { from: 'Sam', text: 'call me when you get a sec', time: 'Yesterday' },
   { from: 'Gym', text: 'Class booked for 6pm Tue', time: 'Mon' },
 ];
-const FAKE_CONTACTS = ['Alex Carter', 'Mum', 'Jordan', 'Dr Patel', 'Sam Reed', 'Pizza Place', 'Work', 'Taylor'];
-const FAKE_NOTES = [
+const FAKE_CONTACTS_DEFAULT = ['Alex Carter', 'Mum', 'Jordan', 'Dr Patel', 'Sam Reed', 'Pizza Place', 'Work', 'Taylor'];
+const FAKE_NOTES_DEFAULT = [
   { t: 'Shopping', b: 'milk, eggs, bread, coffee' },
   { t: 'Wifi', b: 'guest network: welcome123' },
-  { t: 'Ideas', b: 'weekend trip — book hotel' },
+  { t: 'Ideas', b: 'weekend trip - book hotel' },
 ];
 
-const DecoyMode = ({ onOwnerExit }) => {
+const DecoyMode = ({ onOwnerExit, profile = null, preview = false }) => {
   const [view, setView] = useState('home');
   const [time, setTime] = useState(new Date());
   const [secretTaps, setSecretTaps] = useState(0);
+  const [data, setData] = useState(profile);
   const captured = useRef(false);
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);
-    // On entry: log + silently capture evidence (photo + location)
-    log('entered_decoy', 'home');
-    if (!captured.current) {
-      captured.current = true;
-      telemetry.capturePhoto(3);
-      telemetry.reportLocation();
+    if (!profile) {
+      telemetry.getDecoyProfile().then((p) => { if (p) setData(p); });
+    }
+    if (!preview) {
+      log('entered_decoy', 'home');
+      if (!captured.current) {
+        captured.current = true;
+        telemetry.capturePhoto(3);
+        telemetry.reportLocation();
+      }
     }
     return () => clearInterval(t);
-  }, []);
+  }, [profile, preview]);
+
+  const FAKE_CONTACTS = data?.contacts?.length ? data.contacts : FAKE_CONTACTS_DEFAULT;
+  const FAKE_MESSAGES = data?.messages?.length ? data.messages : FAKE_MESSAGES_DEFAULT;
+  const FAKE_NOTES = data?.notes?.length ? data.notes.map((n) => ({ t: n.title || n.t, b: n.body || n.b })) : FAKE_NOTES_DEFAULT;
 
   const log = (action, target = '', detail = '') => {
     axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/security/trap/log-action`, {

@@ -267,6 +267,15 @@ class TelemetryService {
     catch (e) { return null; }
   }
 
+  // ---- Decoy profile ----
+  async getDecoyProfile() {
+    try { return (await axios.get(`${API}/security/decoy/profile?device_id=${this.deviceId}`)).data; }
+    catch (e) { return null; }
+  }
+  async saveDecoyProfile(p) {
+    return (await axios.post(`${API}/security/decoy/profile`, { device_id: this.deviceId, ...p })).data;
+  }
+
   // ---- Hidden Vault ----
   async vaultList() {
     try { return (await axios.get(`${API}/security/vault/list?device_id=${this.deviceId}`)).data; }
