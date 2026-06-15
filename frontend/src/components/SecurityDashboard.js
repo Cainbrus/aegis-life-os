@@ -32,12 +32,12 @@ const SecurityDashboard = ({ role = 'owner', onNavigate, onOpenSettings, onSecre
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-5 pb-32" data-testid="security-dashboard">
+    <div className="min-h-screen bg-gradient-to-b from-[#0B1121] via-[#0d1526] to-[#0B1121] p-5 pb-32" data-testid="security-dashboard">
       {/* Header */}
       <div className="flex items-center justify-between pt-3 mb-6">
         <div>
           <h1 onClick={handleTitleTap} className="text-2xl font-black text-white select-none cursor-default tracking-tight">Digital Mate</h1>
-          <p className="text-slate-500 text-sm">Security &amp; recovery</p>
+          <p className="text-slate-500 text-xs tracking-wide">Your Digital Bodyguard</p>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={onLock} data-testid="lock-btn" className="text-slate-400 hover:text-white p-2" title="Hide app">
@@ -63,13 +63,13 @@ const SecurityDashboard = ({ role = 'owner', onNavigate, onOpenSettings, onSecre
 
       {/* Feature tiles */}
       <div className="space-y-3">
-        {!trained && <Tile icon={Fingerprint} title="Owner Recognition" subtitle={`Learning — ${status?.samples_needed ?? 8} to go`} color="from-cyan-500 to-blue-500" onClick={() => onNavigate('owner')} testid="tile-owner" />}
+        {!trained && <Tile icon={Fingerprint} title="Owner Recognition" subtitle={`Learning — ${status?.samples_needed ?? 8} to go`} color="from-blue-500 to-blue-500" onClick={() => onNavigate('owner')} testid="tile-owner" />}
         <Tile icon={ShieldCheck} title="Protection Status" subtitle="Permissions &amp; device protection" color="from-emerald-500 to-green-600" onClick={() => onNavigate('status')} testid="tile-status" />
         <Tile icon={Lock} title="Hidden Vault" subtitle="Hide photos, files, notes &amp; passwords" color="from-fuchsia-500 to-purple-600" onClick={() => onNavigate('vault')} testid="tile-vault" />
         {canManage && <Tile icon={Ghost} title="Decoy Profile" subtitle="Customise the fake phone" color="from-purple-500 to-indigo-600" onClick={() => onNavigate('decoy')} testid="tile-decoy" />}
         {canManage && <Tile icon={Users} title="Family" subtitle="Track &amp; protect family phones" color="from-violet-500 to-purple-500" onClick={() => onNavigate('family')} testid="tile-family" />}
         {canManage && <Tile icon={Compass} title="Device Recovery" subtitle="Locate, lock or wipe" color="from-emerald-500 to-teal-500" onClick={() => onNavigate('recovery')} testid="tile-recovery" />}
-        {canManage && <Tile icon={ScanLine} title="Privacy &amp; Security Scan" subtitle="Check what can access your phone" color="from-sky-500 to-cyan-500" onClick={() => onNavigate('privacy')} testid="tile-privacy" />}
+        {canManage && <Tile icon={ScanLine} title="Privacy &amp; Security Scan" subtitle="Check what can access your phone" color="from-sky-500 to-blue-500" onClick={() => onNavigate('privacy')} testid="tile-privacy" />}
         {canManage && <Tile icon={FileClock} title="Evidence Center" subtitle="Photos, locations &amp; events" color="from-amber-500 to-orange-500" onClick={() => onNavigate('evidence')} testid="tile-evidence" />}
         <Tile icon={Bot} title="AI Digital Mate" subtitle="Your security assistant" color="from-indigo-500 to-violet-500" onClick={() => onNavigate('mate')} testid="tile-mate" />
       </div>

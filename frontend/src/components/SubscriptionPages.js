@@ -58,8 +58,8 @@ export const SubscriptionSuccess = ({ onContinue }) => {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center p-4">
         <div className="bg-slate-800/80 rounded-3xl p-8 max-w-md w-full text-center border border-slate-700">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-cyan-500/20 flex items-center justify-center animate-pulse">
-            <svg className="w-8 h-8 text-cyan-400 animate-spin" fill="none" viewBox="0 0 24 24">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-blue-500/20 flex items-center justify-center animate-pulse">
+            <svg className="w-8 h-8 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -101,7 +101,7 @@ export const SubscriptionSuccess = ({ onContinue }) => {
           <div className="space-y-3">
             <button
               onClick={onContinue}
-              className="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl text-white font-bold text-lg hover:opacity-90 transition-all"
+              className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl text-white font-bold text-lg hover:opacity-90 transition-all"
             >
               Start Using Digital Mate →
             </button>
@@ -162,7 +162,7 @@ export const SubscriptionCancel = ({ onRetry, onContinue }) => {
         </p>
         
         <div className="bg-slate-900/50 rounded-xl p-4 mb-6">
-          <p className="text-cyan-400 font-semibold mb-2">Why Digital Mate?</p>
+          <p className="text-blue-400 font-semibold mb-2">Why Digital Mate?</p>
           <ul className="text-slate-300 text-sm text-left space-y-2">
             <li>✓ Trap Mode catches phone snoops</li>
             <li>✓ Invisible Vault hides your secrets</li>
@@ -174,7 +174,7 @@ export const SubscriptionCancel = ({ onRetry, onContinue }) => {
         <div className="space-y-3">
           <button
             onClick={onRetry}
-            className="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl text-white font-bold hover:opacity-90 transition-all"
+            className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl text-white font-bold hover:opacity-90 transition-all"
           >
             Try Again
           </button>
@@ -229,7 +229,7 @@ export const EmailCollectionModal = ({ isOpen, onClose, onSubmit, packageName, p
             <AegisLogoCompact size={40} />
             <div>
               <h3 className="text-xl font-bold text-white">Subscribe to {packageName}</h3>
-              <p className="text-cyan-400 font-semibold">${price}/month</p>
+              <p className="text-blue-400 font-semibold">${price}/month</p>
             </div>
           </div>
           <button 
@@ -250,7 +250,7 @@ export const EmailCollectionModal = ({ isOpen, onClose, onSubmit, packageName, p
               value={email}
               onChange={handleEmailChange}
               placeholder="your@email.com"
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-cyan-500 focus:outline-none transition-all"
+              className="w-full px-4 py-3 bg-[#0e1626] border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:outline-none transition-all"
               autoFocus
             />
             <p className="text-slate-500 text-xs mt-2">
@@ -269,14 +269,14 @@ export const EmailCollectionModal = ({ isOpen, onClose, onSubmit, packageName, p
             </div>
             <div className="flex justify-between font-semibold">
               <span className="text-slate-400">Total</span>
-              <span className="text-cyan-400">${price}/mo</span>
+              <span className="text-blue-400">${price}/mo</span>
             </div>
           </div>
 
           <button
             type="submit"
             disabled={!isValid || isSubmitting}
-            className="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl text-white font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl text-white font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Redirecting to Checkout...' : 'Continue to Payment →'}
           </button>

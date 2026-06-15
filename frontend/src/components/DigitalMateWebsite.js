@@ -24,8 +24,8 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
       onClick={() => { setCurrentPage(page); setMobileMenuOpen(false); }}
       className={`px-4 py-2 font-semibold transition-all ${
         currentPage === page 
-          ? 'text-cyan-400 border-b-2 border-cyan-400' 
-          : 'text-slate-300 hover:text-cyan-400'
+          ? 'text-blue-400 border-b-2 border-blue-400' 
+          : 'text-slate-300 hover:text-blue-400'
       }`}
     >
       {children}
@@ -34,13 +34,13 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
 
   // Header Component
   const Header = () => (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-cyan-500/20">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-blue-500/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <button onClick={() => setCurrentPage('home')} className="flex items-center space-x-2">
             <AegisLogoCompact size={40} />
-            <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+            <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
               DIGITAL MATE
             </span>
           </button>
@@ -59,7 +59,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
           <div className="hidden md:block">
             <button
               onClick={onLaunchApp}
-              className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-bold text-white hover:opacity-90 transition-all shadow-lg shadow-cyan-500/20"
+              className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-bold text-white hover:opacity-90 transition-all shadow-lg shadow-blue-500/20"
             >
               Launch App
             </button>
@@ -82,7 +82,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-cyan-500/20">
+          <div className="md:hidden py-4 border-t border-blue-500/20">
             <div className="flex flex-col space-y-2">
               <NavLink page="home">Home</NavLink>
               <NavLink page="features">Features</NavLink>
@@ -92,7 +92,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
               <NavLink page="contact">Contact</NavLink>
               <button
                 onClick={onLaunchApp}
-                className="mt-4 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-bold text-white"
+                className="mt-4 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-bold text-white"
               >
                 Launch App
               </button>
@@ -105,7 +105,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
 
   // Footer Component
   const Footer = () => (
-    <footer className="bg-slate-900 border-t border-cyan-500/20 py-12">
+    <footer className="bg-[#0e1626] border-t border-blue-500/20 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
@@ -120,24 +120,24 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
           <div>
             <h4 className="text-white font-bold mb-4">Product</h4>
             <ul className="space-y-2 text-slate-400 text-sm">
-              <li><button onClick={() => setCurrentPage('features')} className="hover:text-cyan-400">Features</button></li>
-              <li><button onClick={() => setCurrentPage('pricing')} className="hover:text-cyan-400">Pricing</button></li>
-              <li><button onClick={onLaunchApp} className="hover:text-cyan-400">Demo</button></li>
+              <li><button onClick={() => setCurrentPage('features')} className="hover:text-blue-400">Features</button></li>
+              <li><button onClick={() => setCurrentPage('pricing')} className="hover:text-blue-400">Pricing</button></li>
+              <li><button onClick={onLaunchApp} className="hover:text-blue-400">Demo</button></li>
             </ul>
           </div>
           <div>
             <h4 className="text-white font-bold mb-4">Company</h4>
             <ul className="space-y-2 text-slate-400 text-sm">
-              <li><button onClick={() => setCurrentPage('about')} className="hover:text-cyan-400">About Us</button></li>
-              <li><button onClick={() => setCurrentPage('contact')} className="hover:text-cyan-400">Contact</button></li>
-              <li><button onClick={() => setCurrentPage('investors')} className="hover:text-cyan-400">Investors</button></li>
+              <li><button onClick={() => setCurrentPage('about')} className="hover:text-blue-400">About Us</button></li>
+              <li><button onClick={() => setCurrentPage('contact')} className="hover:text-blue-400">Contact</button></li>
+              <li><button onClick={() => setCurrentPage('investors')} className="hover:text-blue-400">Investors</button></li>
             </ul>
           </div>
           <div>
             <h4 className="text-white font-bold mb-4">Legal</h4>
             <ul className="space-y-2 text-slate-400 text-sm">
-              <li><button onClick={() => setCurrentPage('privacy')} className="hover:text-cyan-400">Privacy Policy</button></li>
-              <li><button onClick={() => setCurrentPage('terms')} className="hover:text-cyan-400">Terms of Service</button></li>
+              <li><button onClick={() => setCurrentPage('privacy')} className="hover:text-blue-400">Privacy Policy</button></li>
+              <li><button onClick={() => setCurrentPage('terms')} className="hover:text-blue-400">Terms of Service</button></li>
             </ul>
           </div>
         </div>
@@ -156,7 +156,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"></div>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzA2YjZkNCIgc3Ryb2tlLW9wYWNpdHk9IjAuMDUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-60"></div>
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px]"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px]"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px]"></div>
 
         <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-20">
@@ -165,7 +165,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
           </div>
           
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black mb-6">
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-300">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-300">
               YOUR PHONE'S
             </span>
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
@@ -174,30 +174,30 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
           </h1>
 
           <p className="text-base sm:text-lg text-slate-300 mb-4 max-w-2xl mx-auto">
-            We don't just lock attackers out. We let them IN — to <span className="text-cyan-400 font-bold">fake data</span> — while capturing their photo and location.
+            We don't just lock attackers out. We let them IN — to <span className="text-blue-400 font-bold">fake data</span> — while capturing their photo and location.
           </p>
           
-          <p className="text-cyan-400 font-bold mb-8">
+          <p className="text-blue-400 font-bold mb-8">
             Proactive protection. Not reactive.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <button
               onClick={onLaunchApp}
-              className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl font-bold text-lg text-white hover:opacity-90 transition-all shadow-lg shadow-cyan-500/30"
+              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-bold text-lg text-white hover:opacity-90 transition-all shadow-lg shadow-blue-500/30"
             >
               Request Beta Access →
             </button>
             <button
               onClick={() => setCurrentPage('features')}
-              className="px-8 py-4 border-2 border-cyan-500/50 rounded-xl font-bold text-lg text-cyan-400 hover:bg-cyan-500/10 transition-all"
+              className="px-8 py-4 border-2 border-blue-500/50 rounded-xl font-bold text-lg text-blue-400 hover:bg-blue-500/10 transition-all"
             >
               See Features
             </button>
           </div>
 
           {/* Trust Badge */}
-          <div className="inline-flex items-center space-x-2 px-4 py-2 bg-slate-800/50 rounded-full border border-cyan-500/20">
+          <div className="inline-flex items-center space-x-2 px-4 py-2 bg-slate-800/50 rounded-full border border-blue-500/20">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
             <span className="text-slate-400 text-sm">Patent Pending Technology</span>
           </div>
@@ -208,7 +208,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
       <section className="py-20 bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <h2 className="text-3xl sm:text-4xl font-black text-center mb-4 text-white">
-            The <span className="text-cyan-400">Trap Mode</span> Difference
+            The <span className="text-blue-400">Trap Mode</span> Difference
           </h2>
           <p className="text-slate-400 text-center mb-12 max-w-2xl mx-auto">
             Every other security app locks intruders out. We let them in — to fake data.
@@ -225,14 +225,14 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
                 <li>• No duress protection</li>
               </ul>
             </div>
-            <div className="bg-slate-800/50 rounded-2xl p-8 border border-cyan-500/30">
-              <div className="text-cyan-400 text-xl font-bold mb-4">✓ AEGIS</div>
+            <div className="bg-slate-800/50 rounded-2xl p-8 border border-blue-500/30">
+              <div className="text-blue-400 text-xl font-bold mb-4">✓ AEGIS</div>
               <ul className="space-y-3 text-slate-300">
-                <li>• <span className="text-cyan-400">Lets them in to FAKE data</span></li>
-                <li>• <span className="text-cyan-400">Captures their photo</span></li>
-                <li>• <span className="text-cyan-400">Logs their location</span></li>
-                <li>• <span className="text-cyan-400">Records their actions</span></li>
-                <li>• <span className="text-cyan-400">Duress pattern for forced unlock</span></li>
+                <li>• <span className="text-blue-400">Lets them in to FAKE data</span></li>
+                <li>• <span className="text-blue-400">Captures their photo</span></li>
+                <li>• <span className="text-blue-400">Logs their location</span></li>
+                <li>• <span className="text-blue-400">Records their actions</span></li>
+                <li>• <span className="text-blue-400">Duress pattern for forced unlock</span></li>
               </ul>
             </div>
           </div>
@@ -247,17 +247,17 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-slate-900 rounded-2xl p-8 border border-green-500/30 text-center">
+            <div className="bg-[#0e1626] rounded-2xl p-8 border border-green-500/30 text-center">
               <div className="text-5xl mb-4">🔓</div>
               <h3 className="text-xl font-bold text-green-400 mb-2">Owner Pattern</h3>
               <p className="text-slate-400">Full access to all your real data. Everything normal.</p>
             </div>
-            <div className="bg-slate-900 rounded-2xl p-8 border border-yellow-500/30 text-center">
+            <div className="bg-[#0e1626] rounded-2xl p-8 border border-yellow-500/30 text-center">
               <div className="text-5xl mb-4">🆘</div>
               <h3 className="text-xl font-bold text-yellow-400 mb-2">Duress Pattern</h3>
               <p className="text-slate-400">Shows fake data. Silently alerts your emergency contacts.</p>
             </div>
-            <div className="bg-slate-900 rounded-2xl p-8 border border-red-500/30 text-center">
+            <div className="bg-[#0e1626] rounded-2xl p-8 border border-red-500/30 text-center">
               <div className="text-5xl mb-4">🎭</div>
               <h3 className="text-xl font-bold text-red-400 mb-2">Wrong Pattern</h3>
               <p className="text-slate-400">Trap Mode activates. Photo captured. Fake data shown.</p>
@@ -277,7 +277,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
           </p>
           <button
             onClick={onLaunchApp}
-            className="px-10 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl font-bold text-xl text-white hover:opacity-90 transition-all shadow-lg"
+            className="px-10 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-bold text-xl text-white hover:opacity-90 transition-all shadow-lg"
           >
             Request Beta Access →
           </button>
@@ -292,7 +292,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
       <section className="py-20 bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <h1 className="text-4xl sm:text-5xl font-black text-center mb-4 text-white">
-            All <span className="text-cyan-400">Features</span>
+            All <span className="text-blue-400">Features</span>
           </h1>
           <p className="text-slate-400 text-center mb-16 max-w-2xl mx-auto">
             Everything you need to protect your digital life.
@@ -300,7 +300,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
 
           {/* Security Features */}
           <div className="mb-16">
-            <h2 className="text-2xl font-bold text-cyan-400 mb-8 flex items-center">
+            <h2 className="text-2xl font-bold text-blue-400 mb-8 flex items-center">
               <span className="text-3xl mr-3">🛡️</span> Security
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -312,7 +312,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
                 { title: 'Calculator Vault', desc: 'Hidden storage behind a normal calculator', icon: '🔢' },
                 { title: 'Evidence Log', desc: 'Complete audit trail for police reports', icon: '📋' },
               ].map((feature, i) => (
-                <div key={i} className="bg-slate-800/50 rounded-xl p-6 border border-slate-700 hover:border-cyan-500/50 transition-all">
+                <div key={i} className="bg-slate-800/50 rounded-xl p-6 border border-slate-700 hover:border-blue-500/50 transition-all">
                   <div className="text-3xl mb-3">{feature.icon}</div>
                   <h3 className="text-lg font-bold text-white mb-2">{feature.title}</h3>
                   <p className="text-slate-400 text-sm">{feature.desc}</p>
@@ -448,10 +448,10 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
   // PRICING PAGE
   const PricingPage = () => (
     <div className="pt-20">
-      <section className="py-20 bg-slate-900 min-h-screen">
+      <section className="py-20 bg-[#0e1626] min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <h1 className="text-4xl sm:text-5xl font-black text-center mb-4 text-white">
-            Simple <span className="text-cyan-400">Pricing</span>
+            Simple <span className="text-blue-400">Pricing</span>
           </h1>
           <p className="text-slate-400 text-center mb-16 max-w-2xl mx-auto">
             Premium protection at a fair price. Cancel anytime.
@@ -487,18 +487,18 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
               <button 
                 onClick={() => handleSubscribeClick('basic_monthly')}
                 disabled={isProcessing}
-                className="w-full py-3 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500/10 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 border border-blue-500 rounded-lg text-blue-400 hover:bg-blue-500/10 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? 'Processing...' : 'Subscribe to Basic'}
               </button>
             </div>
 
             {/* Pro */}
-            <div className="bg-gradient-to-b from-cyan-900/50 to-slate-800/50 rounded-2xl p-8 border-2 border-cyan-500 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-cyan-500 rounded-full text-sm font-bold text-white">
+            <div className="bg-gradient-to-b from-cyan-900/50 to-slate-800/50 rounded-2xl p-8 border-2 border-blue-500 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-blue-500 rounded-full text-sm font-bold text-white">
                 BEST VALUE
               </div>
-              <div className="text-cyan-400 font-semibold mb-2">PRO</div>
+              <div className="text-blue-400 font-semibold mb-2">PRO</div>
               <div className="text-4xl font-black text-white mb-4">$9.99<span className="text-lg text-slate-500">/mo</span></div>
               <p className="text-slate-400 mb-6">Complete protection suite</p>
               <ul className="space-y-3 mb-8">
@@ -514,14 +514,14 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
                   'Family location sharing',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center text-slate-300">
-                    <span className="text-cyan-400 mr-2">✓</span> {item}
+                    <span className="text-blue-400 mr-2">✓</span> {item}
                   </li>
                 ))}
               </ul>
               <button 
                 onClick={() => handleSubscribeClick('pro_monthly')}
                 disabled={isProcessing}
-                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg text-white font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg text-white font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? 'Processing...' : 'Subscribe to Pro'}
               </button>
@@ -555,10 +555,10 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
   // ABOUT PAGE
   const AboutPage = () => (
     <div className="pt-20">
-      <section className="py-20 bg-slate-900 min-h-screen">
+      <section className="py-20 bg-[#0e1626] min-h-screen">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h1 className="text-4xl sm:text-5xl font-black text-center mb-4 text-white">
-            About <span className="text-cyan-400">Digital Mate</span>
+            About <span className="text-blue-400">Digital Mate</span>
           </h1>
           <p className="text-slate-400 text-center mb-16">
             Building the future of personal security
@@ -572,38 +572,38 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
               And what's protecting it? A password that can be stolen, or biometrics that can be forced.
             </p>
             <p className="text-slate-300 mb-4">
-              We asked a simple question: <span className="text-cyan-400 font-bold">"What happens when someone FORCES you to unlock your phone?"</span>
+              We asked a simple question: <span className="text-blue-400 font-bold">"What happens when someone FORCES you to unlock your phone?"</span>
             </p>
             <p className="text-slate-300">
               That's why we built AEGIS. Not just another security app that locks people out — but one that lets them 
-              into <span className="text-cyan-400">fake data</span> while gathering evidence against them. Proactive protection, not reactive.
+              into <span className="text-blue-400">fake data</span> while gathering evidence against them. Proactive protection, not reactive.
             </p>
           </div>
 
           {/* Team */}
-          <div className="bg-slate-800/50 rounded-2xl p-8 border border-cyan-500/30 mb-12">
+          <div className="bg-slate-800/50 rounded-2xl p-8 border border-blue-500/30 mb-12">
             <h2 className="text-2xl font-bold text-white mb-4">Contact the Digital Mate Team</h2>
             <p className="text-slate-300 mb-4">
               Digital Mate is currently in early development. For updates, investor interest,
               beta testing, or more information, contact the Digital Mate team by email.
             </p>
-            <a href="mailto:team@digitalmate.app" className="inline-block px-6 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold">
+            <a href="mailto:team@digitalmate.app" className="inline-block px-6 py-3 rounded-xl bg-blue-500 text-slate-900 font-bold">
               Email the team
             </a>
           </div>
           <div className="hidden">
             <div className="w-32 h-32"></div>
             <div>
-              <h3 className="text-xl font-bold text-cyan-400">Digital Mate Team</h3>
+              <h3 className="text-xl font-bold text-blue-400">Digital Mate Team</h3>
               <p className="text-slate-400 mb-3">Digital Mate Team</p>
             </div>
           </div>
 
           {/* Mission */}
-          <div className="bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-2xl p-8 border border-cyan-500/20 text-center">
+          <div className="bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-2xl p-8 border border-blue-500/20 text-center">
             <h2 className="text-2xl font-bold text-white mb-4">Our Mission</h2>
             <p className="text-xl text-slate-300">
-              "We're not building an app. We're building the <span className="text-cyan-400">future of personal security</span>."
+              "We're not building an app. We're building the <span className="text-blue-400">future of personal security</span>."
             </p>
           </div>
         </div>
@@ -850,7 +850,7 @@ Digital Mate Team`
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black mb-6">
             <span className="text-white">Invest in the Future of</span>
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Personal Security</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Personal Security</span>
           </h1>
           <p className="text-slate-300 text-lg max-w-3xl mx-auto mb-8">
             Digital Mate is revolutionizing smartphone security with proprietary technology that doesn't just lock intruders out - it lets them into fake data while gathering evidence.
@@ -861,13 +861,13 @@ Digital Mate Team`
                 setInvestorForm({...investorForm, inquiryType: 'pitch_deck'});
                 document.getElementById('investor-form')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl font-bold text-lg text-white hover:opacity-90 transition-all shadow-lg"
+              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-bold text-lg text-white hover:opacity-90 transition-all shadow-lg"
             >
               Get Pitch Deck →
             </button>
             <button
               onClick={onLaunchApp}
-              className="px-8 py-4 border-2 border-cyan-500/50 rounded-xl font-bold text-lg text-cyan-400 hover:bg-cyan-500/10 transition-all"
+              className="px-8 py-4 border-2 border-blue-500/50 rounded-xl font-bold text-lg text-blue-400 hover:bg-blue-500/10 transition-all"
             >
               Try Live Demo
             </button>
@@ -887,7 +887,7 @@ Digital Mate Team`
             ].map((stat, i) => (
               <div key={i} className="bg-slate-800/50 rounded-2xl p-6 text-center border border-slate-700">
                 <div className="text-3xl mb-2">{stat.icon}</div>
-                <div className="text-2xl sm:text-3xl font-black text-cyan-400">{stat.value}</div>
+                <div className="text-2xl sm:text-3xl font-black text-blue-400">{stat.value}</div>
                 <div className="text-slate-400 text-sm">{stat.label}</div>
               </div>
             ))}
@@ -968,7 +968,7 @@ Digital Mate Team`
                     <td className="py-4 px-4 text-white font-semibold">{row.metric}</td>
                     <td className="py-4 px-4 text-slate-300">{row.y1}</td>
                     <td className="py-4 px-4 text-slate-300">{row.y2}</td>
-                    <td className="py-4 px-4 text-cyan-400 font-semibold">{row.y3}</td>
+                    <td className="py-4 px-4 text-blue-400 font-semibold">{row.y3}</td>
                     <td className="py-4 px-4 text-green-400 font-bold">{row.y5}</td>
                   </tr>
                 ))}
@@ -985,14 +985,14 @@ Digital Mate Team`
           <p className="text-slate-400 text-center mb-8">Select what you'd like to receive and we'll send it immediately.</p>
           
           {investorSubmitted && autoReplyContent ? (
-            <div className="bg-slate-900 rounded-2xl p-8 border border-cyan-500/30">
+            <div className="bg-[#0e1626] rounded-2xl p-8 border border-blue-500/30">
               <div className="text-center mb-6">
                 <div className="text-5xl mb-4">✅</div>
                 <h3 className="text-2xl font-bold text-white">Information Sent!</h3>
                 <p className="text-slate-400 mt-2">Check your email for: {autoReplyContent.subject}</p>
               </div>
               <div className="bg-slate-800 rounded-xl p-6 mt-6">
-                <h4 className="text-cyan-400 font-bold mb-3">Preview:</h4>
+                <h4 className="text-blue-400 font-bold mb-3">Preview:</h4>
                 <pre className="text-slate-300 text-sm whitespace-pre-wrap font-sans">{autoReplyContent.content}</pre>
               </div>
               <button 
@@ -1015,13 +1015,13 @@ Digital Mate Team`
                       onClick={() => setInvestorForm({...investorForm, inquiryType: type.id})}
                       className={`p-4 rounded-xl border-2 transition-all text-left ${
                         investorForm.inquiryType === type.id
-                          ? 'border-cyan-500 bg-cyan-500/10'
+                          ? 'border-blue-500 bg-blue-500/10'
                           : 'border-slate-700 hover:border-slate-600'
                       }`}
                     >
                       <span className="text-2xl">{type.icon}</span>
                       <div className={`text-sm font-medium mt-2 ${
-                        investorForm.inquiryType === type.id ? 'text-cyan-400' : 'text-slate-300'
+                        investorForm.inquiryType === type.id ? 'text-blue-400' : 'text-slate-300'
                       }`}>
                         {type.label}
                       </div>
@@ -1037,7 +1037,7 @@ Digital Mate Team`
                     type="text"
                     value={investorForm.name}
                     onChange={(e) => setInvestorForm({...investorForm, name: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full px-4 py-3 bg-[#0e1626] border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:outline-none"
                     placeholder="John Smith"
                     required
                   />
@@ -1048,7 +1048,7 @@ Digital Mate Team`
                     type="email"
                     value={investorForm.email}
                     onChange={(e) => setInvestorForm({...investorForm, email: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full px-4 py-3 bg-[#0e1626] border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:outline-none"
                     placeholder="john@vc.com"
                     required
                   />
@@ -1061,7 +1061,7 @@ Digital Mate Team`
                   type="text"
                   value={investorForm.firm}
                   onChange={(e) => setInvestorForm({...investorForm, firm: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full px-4 py-3 bg-[#0e1626] border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:outline-none"
                   placeholder="Sequoia Capital"
                 />
               </div>
@@ -1071,7 +1071,7 @@ Digital Mate Team`
                 <textarea
                   value={investorForm.message}
                   onChange={(e) => setInvestorForm({...investorForm, message: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-cyan-500 focus:outline-none h-24 resize-none"
+                  className="w-full px-4 py-3 bg-[#0e1626] border border-slate-700 rounded-xl text-white focus:border-blue-500 focus:outline-none h-24 resize-none"
                   placeholder="Any specific questions or areas of interest?"
                 />
               </div>
@@ -1079,7 +1079,7 @@ Digital Mate Team`
               <button
                 type="submit"
                 disabled={!investorForm.inquiryType || !investorForm.name || !investorForm.email}
-                className="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl text-white font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl text-white font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Send Me the Information →
               </button>
@@ -1118,10 +1118,10 @@ Digital Mate Team`
 
   const ContactPage = () => (
     <div className="pt-20">
-      <section className="py-20 bg-slate-900 min-h-screen">
+      <section className="py-20 bg-[#0e1626] min-h-screen">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h1 className="text-4xl sm:text-5xl font-black text-center mb-4 text-white">
-            Get in <span className="text-cyan-400">Touch</span>
+            Get in <span className="text-blue-400">Touch</span>
           </h1>
           <p className="text-slate-400 text-center mb-16">
             Questions? Partnerships? Investment? Let's talk.
@@ -1157,13 +1157,13 @@ Digital Mate Team`
 
               <button
                 onClick={() => setCurrentPage('investors')}
-                className="mt-12 w-full p-6 bg-gradient-to-r from-cyan-900/40 to-purple-900/40 rounded-xl border border-cyan-500/30 hover:border-cyan-500/50 transition-all text-left"
+                className="mt-12 w-full p-6 bg-gradient-to-r from-cyan-900/40 to-purple-900/40 rounded-xl border border-blue-500/30 hover:border-blue-500/50 transition-all text-left"
               >
-                <h3 className="text-lg font-bold text-cyan-400 mb-2">🚀 For Investors</h3>
+                <h3 className="text-lg font-bold text-blue-400 mb-2">🚀 For Investors</h3>
                 <p className="text-slate-300 text-sm">
                   Interested in our seed round? Get instant access to pitch deck, financials, and schedule a demo.
                 </p>
-                <span className="text-cyan-400 text-sm font-semibold mt-2 inline-block">View Investor Page →</span>
+                <span className="text-blue-400 text-sm font-semibold mt-2 inline-block">View Investor Page →</span>
               </button>
             </div>
 
@@ -1184,7 +1184,7 @@ Digital Mate Team`
                       type="text"
                       value={contactForm.name}
                       onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:border-blue-500 focus:outline-none"
                       placeholder="Your name"
                       required
                     />
@@ -1195,7 +1195,7 @@ Digital Mate Team`
                       type="email"
                       value={contactForm.email}
                       onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:border-blue-500 focus:outline-none"
                       placeholder="your@email.com"
                       required
                     />
@@ -1205,14 +1205,14 @@ Digital Mate Team`
                     <textarea
                       value={contactForm.message}
                       onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:border-cyan-500 focus:outline-none h-32 resize-none"
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:border-blue-500 focus:outline-none h-32 resize-none"
                       placeholder="What's on your mind?"
                       required
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg text-white font-bold hover:opacity-90 transition-all"
+                    className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg text-white font-bold hover:opacity-90 transition-all"
                   >
                     Send Message
                   </button>
@@ -1228,10 +1228,10 @@ Digital Mate Team`
   // PRIVACY POLICY PAGE
   const PrivacyPolicyPage = () => (
     <div className="pt-20">
-      <section className="py-20 bg-slate-900 min-h-screen">
+      <section className="py-20 bg-[#0e1626] min-h-screen">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h1 className="text-4xl sm:text-5xl font-black text-center mb-4 text-white">
-            Privacy <span className="text-cyan-400">Policy</span>
+            Privacy <span className="text-blue-400">Policy</span>
           </h1>
           <p className="text-slate-400 text-center mb-12">
             Last updated: December 2025
@@ -1251,7 +1251,7 @@ Digital Mate Team`
               <h2 className="text-xl font-bold text-white mb-4">2. Information We Collect</h2>
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-cyan-400 font-semibold mb-2">Security Data (Stored Locally)</h3>
+                  <h3 className="text-blue-400 font-semibold mb-2">Security Data (Stored Locally)</h3>
                   <ul className="list-disc list-inside space-y-1 text-sm">
                     <li>Intruder photos captured during unauthorized access attempts</li>
                     <li>Location data when Trap Mode is activated</li>
@@ -1260,7 +1260,7 @@ Digital Mate Team`
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-cyan-400 font-semibold mb-2">Account Information</h3>
+                  <h3 className="text-blue-400 font-semibold mb-2">Account Information</h3>
                   <ul className="list-disc list-inside space-y-1 text-sm">
                     <li>Email address (for subscription management)</li>
                     <li>Payment information (processed securely via Stripe)</li>
@@ -1327,15 +1327,15 @@ Digital Mate Team`
             </div>
 
             {/* Contact */}
-            <div className="bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-2xl p-6 border border-cyan-500/30">
+            <div className="bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-2xl p-6 border border-blue-500/30">
               <h2 className="text-xl font-bold text-white mb-4">8. Contact Us</h2>
               <p className="mb-4">
                 If you have questions about this Privacy Policy or our data practices:
               </p>
               <div className="space-y-2">
-                <p><span className="text-cyan-400">Email:</span> privacy@digitalmate.app</p>
-                <p><span className="text-cyan-400">Email:</span> team@digitalmate.app</p>
-                <p><span className="text-cyan-400">Location:</span> Australia</p>
+                <p><span className="text-blue-400">Email:</span> privacy@digitalmate.app</p>
+                <p><span className="text-blue-400">Email:</span> team@digitalmate.app</p>
+                <p><span className="text-blue-400">Location:</span> Australia</p>
               </div>
             </div>
 
@@ -1355,10 +1355,10 @@ Digital Mate Team`
   // TERMS OF SERVICE PAGE
   const TermsPage = () => (
     <div className="pt-20">
-      <section className="py-20 bg-slate-900 min-h-screen">
+      <section className="py-20 bg-[#0e1626] min-h-screen">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h1 className="text-4xl sm:text-5xl font-black text-center mb-4 text-white">
-            Terms of <span className="text-cyan-400">Service</span>
+            Terms of <span className="text-blue-400">Service</span>
           </h1>
           <p className="text-slate-400 text-center mb-12">
             Last updated: December 2025
@@ -1407,9 +1407,9 @@ Digital Mate Team`
               </p>
             </div>
 
-            <div className="bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-2xl p-6 border border-cyan-500/30">
+            <div className="bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-2xl p-6 border border-blue-500/30">
               <h2 className="text-xl font-bold text-white mb-4">6. Contact</h2>
-              <p>For questions about these Terms: <span className="text-cyan-400">legal@digitalmate.app</span></p>
+              <p>For questions about these Terms: <span className="text-blue-400">legal@digitalmate.app</span></p>
             </div>
           </div>
         </div>
@@ -1432,7 +1432,7 @@ Digital Mate Team`
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-[#0e1626] text-white">
       <Header />
       {renderPage()}
       <Footer />

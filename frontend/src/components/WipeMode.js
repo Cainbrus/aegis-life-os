@@ -295,7 +295,7 @@ export const WipeCompleteScreen = () => {
           All data has been permanently deleted. The device is now in factory state.
         </p>
         
-        <div className="bg-slate-900 rounded-lg p-4 text-sm text-left mb-6">
+        <div className="bg-[#0e1626] rounded-lg p-4 text-sm text-left mb-6">
           <div className="text-green-400 font-semibold mb-2">✓ COMPLETED:</div>
           <div className="space-y-1 text-slate-300">
             <div>All user data permanently deleted</div>

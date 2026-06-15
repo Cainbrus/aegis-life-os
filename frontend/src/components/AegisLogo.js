@@ -8,10 +8,10 @@ const AegisLogo = ({ size = 200, showText = true, className = "" }) => {
     <div className={`flex flex-col items-center ${className}`}>
       {showText && (
         <div className="relative mb-4">
-          <div className="text-3xl font-black tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 animate-pulse drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
+          <div className="text-3xl font-black tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 animate-pulse drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
             DIGITAL
           </div>
-          <div className="absolute inset-0 text-3xl font-black tracking-[0.3em] text-cyan-400 blur-sm opacity-50">
+          <div className="absolute inset-0 text-3xl font-black tracking-[0.3em] text-blue-400 blur-sm opacity-50">
             DIGITAL
           </div>
         </div>
@@ -19,7 +19,7 @@ const AegisLogo = ({ size = 200, showText = true, className = "" }) => {
       
       <div className="relative" style={{ width: size, height: size * 1.2 }}>
         {/* Outer glow effects */}
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 blur-3xl opacity-30 animate-pulse"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-blue-500 to-purple-500 blur-3xl opacity-30 animate-pulse"></div>
         
         <svg 
           width={size} 
@@ -279,10 +279,10 @@ const AegisLogo = ({ size = 200, showText = true, className = "" }) => {
       
       {showText && (
         <div className="relative mt-4">
-          <div className="text-4xl font-black tracking-[0.4em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 animate-pulse drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
+          <div className="text-4xl font-black tracking-[0.4em] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 animate-pulse drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
             MATE
           </div>
-          <div className="absolute inset-0 text-4xl font-black tracking-[0.4em] text-cyan-400 blur-sm opacity-50">
+          <div className="absolute inset-0 text-4xl font-black tracking-[0.4em] text-blue-400 blur-sm opacity-50">
             MATE
           </div>
         </div>
@@ -295,7 +295,7 @@ const AegisLogo = ({ size = 200, showText = true, className = "" }) => {
 export const AegisLogoCompact = ({ size = 50 }) => (
   <div className="flex items-center space-x-3 group">
     <div className="relative">
-      <div className="absolute inset-0 bg-cyan-500 blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
+      <div className="absolute inset-0 bg-blue-500 blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
       <svg 
         width={size} 
         height={size * 1.1} 
@@ -360,8 +360,8 @@ export const AegisLogoCompact = ({ size = 50 }) => (
     </div>
     
     <div className="flex flex-col leading-none">
-      <span className="text-cyan-400 font-black text-sm tracking-widest drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]">DIGITAL</span>
-      <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 font-black text-2xl tracking-wider drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">MATE</span>
+      <span className="text-blue-400 font-black text-sm tracking-widest drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]">DIGITAL</span>
+      <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-black text-2xl tracking-wider drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">MATE</span>
     </div>
   </div>
 );

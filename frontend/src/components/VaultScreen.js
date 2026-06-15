@@ -69,7 +69,7 @@ const VaultScreen = () => {
       ) : (
         <div className="grid grid-cols-2 gap-3" data-testid="vault-items">
           {items.map((it) => { const Icon = KIND_ICON[it.kind] || FileText; return (
-            <div key={it.id} className="bg-slate-800/60 border border-slate-700 rounded-2xl p-4" data-testid="vault-item">
+            <div key={it.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4" data-testid="vault-item">
               <button onClick={() => open(it)} className="text-left w-full">
                 <Icon className="text-fuchsia-400 mb-2" size={22} />
                 <p className="text-white text-sm font-medium truncate">{it.title}</p>
@@ -131,16 +131,16 @@ const AddModal = ({ onClose, onAdded }) => {
         <div className="grid grid-cols-4 gap-2 mb-4">
           {KINDS.map((k) => { const I = k.icon; const sel = kind === k.id; return (
             <button key={k.id} onClick={() => { setKind(k.id); setFileData(null); }} data-testid={`vault-kind-${k.id}`}
-              className={`py-3 rounded-xl border flex flex-col items-center gap-1 ${sel ? 'border-fuchsia-500 bg-fuchsia-500/10 text-fuchsia-400' : 'border-slate-700 bg-slate-900 text-slate-300'}`}>
+              className={`py-3 rounded-xl border flex flex-col items-center gap-1 ${sel ? 'border-fuchsia-500 bg-fuchsia-500/10 text-fuchsia-400' : 'border-slate-700 bg-[#0e1626] text-slate-300'}`}>
               <I size={18} /><span className="text-[10px]">{k.label}</span>
             </button>
           ); })}
         </div>
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" data-testid="vault-title"
-          className="w-full px-4 py-3 mb-3 rounded-xl bg-slate-900 border border-slate-600 text-white outline-none focus:border-fuchsia-500" />
+          className="w-full px-4 py-3 mb-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white outline-none focus:border-fuchsia-500" />
         {isText ? (
           <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder={kind === 'password' ? 'Password / secret' : 'Your private note'} data-testid="vault-text"
-            rows={kind === 'password' ? 2 : 4} className="w-full px-4 py-3 mb-3 rounded-xl bg-slate-900 border border-slate-600 text-white outline-none focus:border-fuchsia-500" />
+            rows={kind === 'password' ? 2 : 4} className="w-full px-4 py-3 mb-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white outline-none focus:border-fuchsia-500" />
         ) : (
           <input type="file" accept={kind === 'photo' ? 'image/*' : '*/*'} onChange={onFile} data-testid="vault-file"
             className="w-full text-slate-300 text-sm mb-3 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-fuchsia-500/20 file:text-fuchsia-300" />
@@ -166,7 +166,7 @@ const ViewModal = ({ item, onClose, onDelete }) => {
         </div>
         {isImg && <img src={item.content} alt={item.title} className="w-full rounded-lg mb-3" />}
         {isText && (
-          <div className="bg-slate-900 rounded-lg p-3 mb-3 flex items-start justify-between gap-2">
+          <div className="bg-[#0e1626] rounded-lg p-3 mb-3 flex items-start justify-between gap-2">
             <p className="text-slate-200 text-sm break-all flex-1">{reveal ? item.content : '••••••••••'}</p>
             <button onClick={() => setReveal((r) => !r)} className="text-slate-400">{reveal ? <EyeOff size={16} /> : <Eye size={16} />}</button>
           </div>

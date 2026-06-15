@@ -59,7 +59,7 @@ const LiveMonitor = () => {
 const Fact = ({ icon: Icon, label, value, link, testid }) => (
   <div className="flex items-center justify-between bg-black/20 rounded-xl px-3 py-2.5" data-testid={testid}>
     <span className="text-slate-400 text-sm flex items-center gap-2"><Icon size={15} className="text-slate-500" /> {label}</span>
-    {link ? <a href={link} target="_blank" rel="noreferrer" className="text-cyan-400 text-sm font-medium">{value}</a>
+    {link ? <a href={link} target="_blank" rel="noreferrer" className="text-blue-400 text-sm font-medium">{value}</a>
       : <span className="text-white text-sm font-medium">{value}</span>}
   </div>
 );

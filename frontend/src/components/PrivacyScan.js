@@ -46,18 +46,18 @@ const PrivacyScan = () => {
     <div className="p-5 pb-28 space-y-5" data-testid="privacy-scan-screen">
       <div>
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <ScanLine className="text-cyan-400" size={26} /> Privacy &amp; Security Scan
+          <ScanLine className="text-blue-400" size={26} /> Privacy &amp; Security Scan
         </h2>
         <p className="text-slate-400 text-sm mt-1">See who and what can access your phone.</p>
       </div>
 
       {!report && (
         <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 text-center">
-          <ScanLine className="mx-auto text-cyan-400 mb-3" size={36} />
+          <ScanLine className="mx-auto text-blue-400 mb-3" size={36} />
           <p className="text-white font-semibold">Run a privacy &amp; security scan</p>
           <p className="text-slate-400 text-sm mt-1 mb-4">Checks permissions, network, SIM changes and device settings.</p>
           <button onClick={run} disabled={scanning} data-testid="run-scan-btn"
-            className="px-6 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold disabled:opacity-50">
+            className="px-6 py-3 rounded-xl bg-blue-500 text-slate-900 font-bold disabled:opacity-50">
             {scanning ? 'Scanning…' : 'Start scan'}
           </button>
         </div>
@@ -83,7 +83,7 @@ const PrivacyScan = () => {
             </div>
           ); })()}
 
-          <button onClick={run} disabled={scanning} data-testid="rescan-btn" className="text-cyan-400 text-sm">{scanning ? 'Scanning…' : 'Re-scan'}</button>
+          <button onClick={run} disabled={scanning} data-testid="rescan-btn" className="text-blue-400 text-sm">{scanning ? 'Scanning…' : 'Re-scan'}</button>
 
           {Object.entries(grouped).map(([cat, items]) => (
             <div key={cat} className="space-y-2">
@@ -106,7 +106,7 @@ const PrivacyScan = () => {
                         <Row label="Recommended" value={c.action} />
                         {c.settings && (
                           <button onClick={() => openSettings(c.settings)} data-testid={`open-settings-${c.id}`}
-                            className="mt-1 text-cyan-400 text-sm flex items-center gap-1 hover:text-cyan-300">
+                            className="mt-1 text-blue-400 text-sm flex items-center gap-1 hover:text-blue-300">
                             <ExternalLink size={14} /> Open Android settings
                           </button>
                         )}

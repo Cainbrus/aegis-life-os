@@ -37,7 +37,7 @@ const PushNotificationSettings = ({ isAuthenticated = false, onClose }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
             <span className="text-2xl">🔔</span>
           </div>
           <div>
@@ -93,7 +93,7 @@ const PushNotificationSettings = ({ isAuthenticated = false, onClose }) => {
             <span className="text-slate-300">Subscription Status</span>
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${
               isSubscribed 
-                ? 'bg-cyan-500/20 text-cyan-400' 
+                ? 'bg-blue-500/20 text-blue-400' 
                 : 'bg-yellow-500/20 text-yellow-400'
             }`}>
               {isSubscribed ? 'Active' : 'Pending'}
@@ -115,7 +115,7 @@ const PushNotificationSettings = ({ isAuthenticated = false, onClose }) => {
           <button
             onClick={requestPermission}
             disabled={isLoading}
-            className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-medium hover:from-cyan-400 hover:to-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium hover:from-blue-400 hover:to-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <>

@@ -70,15 +70,15 @@ const SecurityChecklist = ({ onNavigate }) => {
     <div className="p-5 space-y-4" data-testid="security-checklist-screen">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2"><ShieldCheck className="text-cyan-400" size={26} /> Protection Status</h2>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2"><ShieldCheck className="text-blue-400" size={26} /> Protection Status</h2>
           <p className="text-slate-400 text-sm mt-1">What's protecting your phone right now.</p>
         </div>
-        <button onClick={scan} disabled={loading} className="text-cyan-400 p-2" data-testid="checklist-refresh"><RefreshCw size={18} className={loading ? 'animate-spin' : ''} /></button>
+        <button onClick={scan} disabled={loading} className="text-blue-400 p-2" data-testid="checklist-refresh"><RefreshCw size={18} className={loading ? 'animate-spin' : ''} /></button>
       </div>
 
       <div className="space-y-2" data-testid="checklist-items">
         {items.map((it) => (
-          <div key={it.id} className="flex items-center gap-3 bg-slate-800/60 border border-slate-700 rounded-xl p-3.5" data-testid={`check-${it.id}`}>
+          <div key={it.id} className="flex items-center gap-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-3.5" data-testid={`check-${it.id}`}>
             <span className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${it.ok ? 'bg-emerald-500/20 text-emerald-400' : it.na ? 'bg-slate-600/30 text-slate-400' : 'bg-red-500/20 text-red-400'}`}>
               {it.ok ? <Check size={16} /> : <X size={16} />}
             </span>
@@ -87,7 +87,7 @@ const SecurityChecklist = ({ onNavigate }) => {
               {it.na && <p className="text-slate-500 text-xs">Needs the installed Android app</p>}
             </div>
             {!it.ok && it.fix && (
-              <button onClick={it.fix} data-testid={`fix-${it.id}`} className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/25">Fix</button>
+              <button onClick={it.fix} data-testid={`fix-${it.id}`} className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-500/15 text-blue-400 border border-blue-500/30 hover:bg-blue-500/25">Fix</button>
             )}
           </div>
         ))}

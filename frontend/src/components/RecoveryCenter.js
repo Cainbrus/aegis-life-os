@@ -73,7 +73,7 @@ const RecoveryCenter = () => {
     <div className="p-5 pb-28 space-y-5" data-testid="recovery-center-screen">
       <div>
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Compass className="text-cyan-400" size={26} /> Device Recovery
+          <Compass className="text-blue-400" size={26} /> Device Recovery
         </h2>
         <p className="text-slate-400 text-sm mt-1">Find, lock or wipe your phone if it's lost or stolen.</p>
       </div>
@@ -87,8 +87,8 @@ const RecoveryCenter = () => {
       {/* Map */}
       <div className="rounded-2xl border border-slate-700 bg-slate-800/40 overflow-hidden" data-testid="recovery-map">
         <div className="px-4 py-3 flex items-center justify-between">
-          <span className="text-white font-medium flex items-center gap-2"><MapPin size={16} className="text-cyan-400" /> Last known location</span>
-          <button onClick={locate} disabled={busy} data-testid="locate-btn" className="text-cyan-400 text-sm flex items-center gap-1 hover:text-cyan-300">
+          <span className="text-white font-medium flex items-center gap-2"><MapPin size={16} className="text-blue-400" /> Last known location</span>
+          <button onClick={locate} disabled={busy} data-testid="locate-btn" className="text-blue-400 text-sm flex items-center gap-1 hover:text-blue-300">
             <Crosshair size={15} /> Locate
           </button>
         </div>
@@ -171,7 +171,7 @@ const Modal = ({ title, children, onClose, testid }) => (
 const CodeInput = ({ value, onChange, testid }) => (
   <input type="password" inputMode="numeric" value={value} onChange={(e) => onChange(e.target.value)}
     placeholder="Owner code" data-testid={testid}
-    className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white tracking-widest text-center focus:border-cyan-500 outline-none" />
+    className="w-full px-4 py-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white tracking-widest text-center focus:border-blue-500 outline-none" />
 );
 
 export default RecoveryCenter;

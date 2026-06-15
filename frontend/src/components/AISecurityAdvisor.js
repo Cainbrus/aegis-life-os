@@ -24,7 +24,7 @@ const AISecurityAdvisor = () => {
   useEffect(() => { run(); }, [run]);
 
   return (
-    <div className="min-h-screen bg-slate-950 p-5 pb-24" data-testid="ai-advisor-screen">
+    <div className="min-h-screen bg-[#0B1121] p-5 pb-24" data-testid="ai-advisor-screen">
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
           <Bot className="text-indigo-400" size={26} /> AI Security Advisor
@@ -54,7 +54,7 @@ const AISecurityAdvisor = () => {
                     <p className="text-slate-400 text-sm mt-0.5">{ins.detail}</p>
                     {ins.action && (
                       <p className="text-slate-300 text-sm mt-2 flex items-start gap-1.5">
-                        <Info size={13} className="text-cyan-400 mt-0.5 shrink-0" /> {ins.action}
+                        <Info size={13} className="text-blue-400 mt-0.5 shrink-0" /> {ins.action}
                       </p>
                     )}
                   </div>

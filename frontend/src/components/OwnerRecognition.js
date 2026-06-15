@@ -23,12 +23,12 @@ const OwnerRecognition = () => {
     <div className="p-5 space-y-6" data-testid="owner-recognition-screen">
       <div>
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Fingerprint className="text-cyan-400" size={26} /> Owner Recognition
+          <Fingerprint className="text-blue-400" size={26} /> Owner Recognition
         </h2>
         <p className="text-slate-400 text-sm mt-1">Digital Mate quietly learns how you use your phone.</p>
       </div>
 
-      <div className="rounded-2xl bg-slate-800/70 border border-slate-700 p-8 text-center" data-testid="recognition-status">
+      <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-8 text-center" data-testid="recognition-status">
         <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 ${trained ? 'bg-emerald-500/15' : 'bg-amber-500/15'}`}>
           {trained ? <ShieldCheck className="text-emerald-400" size={32} /> : <Loader className="text-amber-400 animate-spin" size={30} />}
         </div>
@@ -42,7 +42,7 @@ const OwnerRecognition = () => {
         </p>
       </div>
 
-      <div className="rounded-2xl bg-slate-800/40 border border-slate-700/60 p-5">
+      <div className="rounded-2xl bg-white/5 backdrop-blur-md border border-white/10/60 p-5">
         <p className="text-slate-300 text-sm mb-2 font-medium">Learning quietly in the background</p>
         <ul className="text-slate-500 text-sm space-y-1.5">
           <li>· Typing rhythm</li>

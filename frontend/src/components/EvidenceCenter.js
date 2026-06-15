@@ -49,7 +49,7 @@ const EvidenceCenter = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <FileClock className="text-cyan-400" size={26} /> Evidence Center
+            <FileClock className="text-blue-400" size={26} /> Evidence Center
           </h2>
           <p className="text-slate-400 text-sm mt-1">Every suspicious event, access attempt and location.</p>
         </div>
@@ -93,7 +93,7 @@ const EvidenceCenter = () => {
                     {e.lat != null && e.lng != null && (
                       <a href={`https://www.openstreetmap.org/?mlat=${e.lat}&mlon=${e.lng}#map=16/${e.lat}/${e.lng}`}
                         target="_blank" rel="noreferrer"
-                        className="text-cyan-400/80 text-xs mt-1 flex items-center gap-1 hover:text-cyan-300 w-fit">
+                        className="text-blue-400/80 text-xs mt-1 flex items-center gap-1 hover:text-blue-300 w-fit">
                         <MapPin size={11} /> {e.lat.toFixed(4)}, {e.lng.toFixed(4)}
                       </a>
                     )}

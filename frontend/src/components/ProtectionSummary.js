@@ -31,13 +31,13 @@ export const ProtectionSummaryModal = ({ summary, onDismiss, onViewDetails }) =>
       ></div>
 
       {/* Modal */}
-      <div className={`relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 max-w-sm w-full border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 transform transition-all duration-500 ${
+      <div className={`relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 max-w-sm w-full border border-blue-500/30 shadow-2xl shadow-blue-500/20 transform transition-all duration-500 ${
         isVisible ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'
       }`}>
         {/* Shield Icon Animation */}
         <div className="flex justify-center mb-4">
           <div className="relative">
-            <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center animate-pulse">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center animate-pulse">
               <span className="text-4xl">🛡️</span>
             </div>
             <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold animate-bounce">
@@ -50,7 +50,7 @@ export const ProtectionSummaryModal = ({ summary, onDismiss, onViewDetails }) =>
         <h2 className="text-xl font-bold text-white text-center mb-2">
           While You Were Away...
         </h2>
-        <p className="text-cyan-400 text-center text-sm mb-6">
+        <p className="text-blue-400 text-center text-sm mb-6">
           Aegis kept your phone protected
         </p>
 
@@ -111,7 +111,7 @@ export const ProtectionSummaryModal = ({ summary, onDismiss, onViewDetails }) =>
           )}
           <button
             onClick={() => { playSuccess(); onDismiss(); }}
-            className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-medium hover:opacity-90 transition-all"
+            className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium hover:opacity-90 transition-all"
           >
             Got It, Thanks Aegis!
           </button>
@@ -165,7 +165,7 @@ export const IntruderPhotosViewer = ({ photos, onClose }) => {
       </div>
 
       {/* Photo Info */}
-      <div className="bg-slate-900 p-4">
+      <div className="bg-[#0e1626] p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-slate-400 text-sm">
             {new Date(currentPhoto.timestamp).toLocaleString()}

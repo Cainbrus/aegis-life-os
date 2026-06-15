@@ -63,22 +63,23 @@ const SetupWizard = ({ onDone }) => {
   const TOTAL = 4;
 
   if (done) return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 flex flex-col items-center justify-center text-center" data-testid="setup-complete">
+    <div className="min-h-screen bg-gradient-to-b from-[#0B1121] via-[#0d1526] to-[#0B1121] p-6 flex flex-col items-center justify-center text-center" data-testid="setup-complete">
       <div className="w-20 h-20 rounded-3xl bg-emerald-500/15 flex items-center justify-center mb-5">
         <Shield className="text-emerald-400" size={40} />
       </div>
       <h1 className="text-2xl font-black text-white">You are protected</h1>
       <p className="text-emerald-400 font-semibold mt-1">Digital Mate is now protecting your phone.</p>
       <p className="text-slate-400 text-sm mt-3 max-w-xs">It quietly learns how you use your phone and steps in if someone else takes it. Enter your access code on the {cover} to open it.</p>
+      <p className="text-blue-400/80 text-xs mt-4 tracking-wide">Your Digital Bodyguard. Your Trusted Mate.</p>
       <button onClick={() => onDone?.()} data-testid="setup-complete-btn"
-        className="mt-8 px-8 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold">Open Digital Mate</button>
+        className="mt-7 px-8 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-[0_0_15px_rgba(37,99,235,0.35)]">Open Digital Mate</button>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 flex flex-col" data-testid="setup-wizard">
+    <div className="min-h-screen bg-gradient-to-b from-[#0B1121] via-[#0d1526] to-[#0B1121] p-6 flex flex-col" data-testid="setup-wizard">
       <div className="flex items-center gap-3 pt-4 mb-2">
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center"><Shield className="text-white" size={22} /></div>
+        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center"><Shield className="text-white" size={22} /></div>
         <div>
           <h1 className="text-xl font-black text-white">Set up Digital Mate</h1>
           <p className="text-slate-400 text-sm">Set it up once, then forget it's there.</p>
@@ -86,7 +87,7 @@ const SetupWizard = ({ onDone }) => {
       </div>
       <div className="flex gap-1.5 my-5">
         {Array.from({ length: TOTAL }).map((_, i) => (
-          <div key={i} className={`flex-1 h-1.5 rounded-full ${i <= step ? 'bg-cyan-500' : 'bg-slate-700'}`} />
+          <div key={i} className={`flex-1 h-1.5 rounded-full ${i <= step ? 'bg-blue-500' : 'bg-slate-700'}`} />
         ))}
       </div>
 
@@ -96,7 +97,7 @@ const SetupWizard = ({ onDone }) => {
           <div className="grid grid-cols-3 gap-2 mt-2">
             {COVERS.map((c) => { const I = c.icon; const sel = cover === c.id; return (
               <button key={c.id} onClick={() => setCover(c.id)} data-testid={`cover-${c.id}`}
-                className={`py-4 rounded-xl border flex flex-col items-center gap-2 ${sel ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400' : 'border-slate-700 bg-slate-800/50 text-slate-300'}`}>
+                className={`py-4 rounded-xl border flex flex-col items-center gap-2 ${sel ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-slate-700 bg-slate-800/50 text-slate-300'}`}>
                 <I size={24} /> <span className="text-xs">{c.name}</span>
               </button>
             ); })}
@@ -128,7 +129,7 @@ const SetupWizard = ({ onDone }) => {
           <PermRow icon={Bell} label="Notifications" on={perms.notifications} onGrant={() => grant('notifications')} testid="perm-notifications" />
           <Field label="Recovery email or phone (recommended)" value={contact} onChange={setContact} testid="setup-contact" placeholder="you@email.com or +1 555…" />
           <button onClick={finish} disabled={busy} data-testid="setup-finish"
-            className="w-full mt-5 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+            className="w-full mt-5 py-3 rounded-xl bg-blue-500 text-slate-900 font-bold disabled:opacity-50 flex items-center justify-center gap-2">
             <Check size={18} /> {busy ? 'Saving…' : 'Done'}
           </button>
           <p className="text-slate-500 text-xs text-center mt-2">You can grant permissions later from Protection Status.</p>
@@ -139,17 +140,17 @@ const SetupWizard = ({ onDone }) => {
 };
 
 const PermRow = ({ icon: Icon, label, on, onGrant, testid }) => (
-  <div className="flex items-center gap-3 bg-slate-900 border border-slate-700 rounded-xl p-3 mb-2">
+  <div className="flex items-center gap-3 bg-[#0e1626] border border-slate-700 rounded-xl p-3 mb-2">
     <Icon size={20} className={on ? 'text-emerald-400' : 'text-slate-400'} />
     <span className="flex-1 text-white text-sm">{label}</span>
     {on ? <span className="text-emerald-400 text-sm flex items-center gap-1"><Check size={15} /> Granted</span>
-      : <button onClick={onGrant} data-testid={testid} className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">Grant</button>}
+      : <button onClick={onGrant} data-testid={testid} className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-500/15 text-blue-400 border border-blue-500/30">Grant</button>}
   </div>
 );
 
 const Card = ({ icon: Icon, title, subtitle, children }) => (
-  <div className="rounded-2xl bg-slate-800/60 border border-slate-700 p-5">
-    <div className="flex items-center gap-2 mb-1"><Icon className="text-cyan-400" size={20} /><h2 className="text-white font-bold text-lg">{title}</h2></div>
+  <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5">
+    <div className="flex items-center gap-2 mb-1"><Icon className="text-blue-400" size={20} /><h2 className="text-white font-bold text-lg">{title}</h2></div>
     <p className="text-slate-400 text-sm mb-4">{subtitle}</p>
     {children}
   </div>
@@ -158,11 +159,11 @@ const Field = ({ label, value, onChange, type = 'text', testid, placeholder }) =
   <div className="mb-3">
     <label className="text-slate-400 text-xs mb-1 block">{label}</label>
     <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} data-testid={testid}
-      className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white focus:border-cyan-500 outline-none" />
+      className="w-full px-4 py-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white focus:border-blue-500 outline-none" />
   </div>
 );
 const Primary = ({ onClick, children, testid }) => (
-  <button onClick={onClick} data-testid={testid} className="w-full mt-2 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold">{children}</button>
+  <button onClick={onClick} data-testid={testid} className="w-full mt-2 py-3 rounded-xl bg-blue-500 text-slate-900 font-bold">{children}</button>
 );
 
 export default SetupWizard;

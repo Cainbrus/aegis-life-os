@@ -34,7 +34,7 @@ const CalculatorCover = ({ onSubmit }) => {
 
   const keys = ['C', '/', '*', '⌫', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', '.'];
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col justify-end p-4" data-testid="cover-calculator">
+    <div className="min-h-screen bg-[#0e1626] flex flex-col justify-end p-4" data-testid="cover-calculator">
       <div className="text-right text-white text-5xl font-light px-4 py-10 break-all min-h-[120px]" data-testid="calc-display">{display}</div>
       <div className="grid grid-cols-4 gap-2">
         {keys.map((k) => (
@@ -58,7 +58,7 @@ const Pad = ({ onSubmit, onClose }) => {
     setV((s) => (s.length < 12 ? s + d : s));
   };
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6" data-testid="cover-pad">
+    <div className="fixed inset-0 z-50 bg-[#0B1121]/95 flex flex-col items-center justify-center p-6" data-testid="cover-pad">
       <input value={v} readOnly className="text-center text-white text-3xl tracking-widest mb-6 bg-transparent" placeholder="••••" />
       <div className="grid grid-cols-3 gap-4">
         {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'del', '0', 'ok'].map((d) => (
@@ -81,7 +81,7 @@ const ClockCover = ({ onSubmit }) => {
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(t); }, []);
   const tap = () => { const n = taps + 1; setTaps(n); if (n >= 3) { setPad(true); setTaps(0); } setTimeout(() => setTaps(0), 1500); };
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-950 to-slate-950 flex flex-col items-center justify-center" data-testid="cover-clock" onClick={tap}>
+    <div className="min-h-screen bg-gradient-to-b from-indigo-950 to-[#0B1121] flex flex-col items-center justify-center" data-testid="cover-clock" onClick={tap}>
       <p className="text-white text-7xl font-thin tabular-nums">{now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
       <p className="text-slate-400 mt-2">{now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
       {pad && <Pad onSubmit={onSubmit} onClose={() => setPad(false)} />}
@@ -94,10 +94,10 @@ const NotesCover = ({ onSubmit }) => {
   const [text, setText] = useState('');
   const save = async () => { const r = await onSubmit(text.trim().replace(/\s+/g, '')); if (r !== 'unlocked') setText(''); };
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col" data-testid="cover-notes">
+    <div className="min-h-screen bg-[#0e1626] flex flex-col" data-testid="cover-notes">
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
         <h1 className="text-white text-xl font-semibold">Notes</h1>
-        <button onClick={save} data-testid="notes-save" className="text-cyan-400 font-medium">Done</button>
+        <button onClick={save} data-testid="notes-save" className="text-blue-400 font-medium">Done</button>
       </div>
       <textarea value={text} onChange={(e) => setText(e.target.value)} autoFocus placeholder="Tap to add a note…"
         data-testid="notes-text"

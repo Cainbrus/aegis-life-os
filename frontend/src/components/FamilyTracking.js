@@ -59,9 +59,9 @@ const SiblingView = ({ role, members, onDone }) => {
       <div className="space-y-2" data-testid="family-members">
         {members.length === 0 && <p className="text-slate-500 text-sm">No siblings in your family yet.</p>}
         {members.map((m, i) => (
-          <div key={i} className="bg-slate-800/60 border border-slate-700 rounded-xl p-3.5 flex items-center gap-3" data-testid="family-member">
+          <div key={i} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3" data-testid="family-member">
             <div className="w-10 h-10 rounded-xl bg-slate-700/60 flex items-center justify-center">
-              {m.member_role === 'teen' ? <Users size={18} className="text-cyan-400" /> : <Baby size={18} className="text-cyan-400" />}
+              {m.member_role === 'teen' ? <Users size={18} className="text-blue-400" /> : <Baby size={18} className="text-blue-400" />}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white font-medium">{m.name}{m.is_me ? ' (you)' : ''}</p>
@@ -69,7 +69,7 @@ const SiblingView = ({ role, members, onDone }) => {
             </div>
             {role === 'teen' && m.last_location && (
               <a href={`https://www.openstreetmap.org/?mlat=${m.last_location.lat}&mlon=${m.last_location.lng}#map=15/${m.last_location.lat}/${m.last_location.lng}`}
-                target="_blank" rel="noreferrer" className="text-cyan-400"><MapPin size={18} /></a>
+                target="_blank" rel="noreferrer" className="text-blue-400"><MapPin size={18} /></a>
             )}
           </div>
         ))}
@@ -106,22 +106,22 @@ const JoinOrCreate = ({ onDone }) => {
       <button onClick={() => setMode('create')} data-testid="family-create-btn"
         className="w-full bg-violet-600 text-white rounded-2xl p-4 font-bold flex items-center justify-center gap-2 hover:opacity-90"><Crown size={20} /> Create a family (parent)</button>
       <button onClick={() => setMode('join')} data-testid="family-join-btn"
-        className="w-full bg-slate-800 border border-slate-700 text-cyan-400 rounded-2xl p-4 font-semibold flex items-center justify-center gap-2 hover:bg-slate-700/60"><UserPlus size={20} /> Join with a family code</button>
+        className="w-full bg-slate-800 border border-slate-700 text-blue-400 rounded-2xl p-4 font-semibold flex items-center justify-center gap-2 hover:bg-slate-700/60"><UserPlus size={20} /> Join with a family code</button>
     </div>
   );
 
   return (
-    <div className="rounded-2xl bg-slate-800/60 border border-slate-700 p-5 space-y-3" data-testid="family-form">
+    <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5 space-y-3" data-testid="family-form">
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" data-testid="family-name"
-        className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white outline-none focus:border-violet-500" />
+        className="w-full px-4 py-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white outline-none focus:border-violet-500" />
       {mode === 'join' && (
         <>
           <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Family code (6 chars)" data-testid="family-code-input"
-            className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white tracking-widest uppercase outline-none focus:border-violet-500" />
+            className="w-full px-4 py-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white tracking-widest uppercase outline-none focus:border-violet-500" />
           <div className="grid grid-cols-3 gap-2">
             <button onClick={() => setRole('parent')} data-testid="family-role-parent" className={`py-3 rounded-xl border flex flex-col items-center gap-1 ${role === 'parent' ? 'border-violet-500 bg-violet-500/10 text-violet-400' : 'border-slate-700 text-slate-300'}`}><Crown size={16} /><span className="text-[11px]">Parent</span></button>
-            <button onClick={() => setRole('teen')} data-testid="family-role-teen" className={`py-3 rounded-xl border flex flex-col items-center gap-1 ${role === 'teen' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400' : 'border-slate-700 text-slate-300'}`}><Users size={16} /><span className="text-[11px]">Teen</span></button>
-            <button onClick={() => setRole('child')} data-testid="family-role-child" className={`py-3 rounded-xl border flex flex-col items-center gap-1 ${role === 'child' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400' : 'border-slate-700 text-slate-300'}`}><Baby size={16} /><span className="text-[11px]">Child</span></button>
+            <button onClick={() => setRole('teen')} data-testid="family-role-teen" className={`py-3 rounded-xl border flex flex-col items-center gap-1 ${role === 'teen' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-slate-700 text-slate-300'}`}><Users size={16} /><span className="text-[11px]">Teen</span></button>
+            <button onClick={() => setRole('child')} data-testid="family-role-child" className={`py-3 rounded-xl border flex flex-col items-center gap-1 ${role === 'child' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-slate-700 text-slate-300'}`}><Baby size={16} /><span className="text-[11px]">Child</span></button>
           </div>
         </>
       )}
@@ -137,12 +137,12 @@ const ParentView = ({ code, members, onRefresh, loading, onDone }) => {
   return (
     <div className="space-y-4">
       <SosBtn />
-      <div className="rounded-2xl bg-slate-800/60 border border-slate-700 p-4 flex items-center justify-between" data-testid="family-code-card">
+      <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-4 flex items-center justify-between" data-testid="family-code-card">
         <div>
           <p className="text-slate-400 text-xs">Family code (share with members)</p>
           <p className="text-white text-2xl font-black tracking-widest" data-testid="family-code">{code}</p>
         </div>
-        <button onClick={() => { navigator.clipboard?.writeText(code); toast.success('Code copied'); }} className="text-cyan-400 p-2"><Copy size={20} /></button>
+        <button onClick={() => { navigator.clipboard?.writeText(code); toast.success('Code copied'); }} className="text-blue-400 p-2"><Copy size={20} /></button>
       </div>
 
       <div className="flex items-center justify-between">
@@ -156,9 +156,9 @@ const ParentView = ({ code, members, onRefresh, loading, onDone }) => {
 
       <div className="space-y-2" data-testid="family-members">
         {members.map((m, i) => (
-          <div key={i} className="bg-slate-800/60 border border-slate-700 rounded-xl p-3.5 flex items-center gap-3" data-testid="family-member">
+          <div key={i} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 flex items-center gap-3" data-testid="family-member">
             <div className="w-10 h-10 rounded-xl bg-slate-700/60 flex items-center justify-center">
-              {m.member_role === 'parent' ? <Crown size={18} className="text-amber-400" /> : <Baby size={18} className="text-cyan-400" />}
+              {m.member_role === 'parent' ? <Crown size={18} className="text-amber-400" /> : <Baby size={18} className="text-blue-400" />}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white font-medium">{m.name}{m.is_me ? ' (you)' : ''}</p>
@@ -171,7 +171,7 @@ const ParentView = ({ code, members, onRefresh, loading, onDone }) => {
             </div>
             {m.last_location && (
               <a href={`https://www.openstreetmap.org/?mlat=${m.last_location.lat}&mlon=${m.last_location.lng}#map=15/${m.last_location.lat}/${m.last_location.lng}`}
-                target="_blank" rel="noreferrer" className="text-cyan-400"><MapPin size={18} /></a>
+                target="_blank" rel="noreferrer" className="text-blue-400"><MapPin size={18} /></a>
             )}
           </div>
         ))}

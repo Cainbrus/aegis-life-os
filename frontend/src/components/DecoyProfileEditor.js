@@ -63,7 +63,7 @@ const DecoyProfileEditor = () => {
       </div>
 
       <button onClick={() => setP({ ...GENERIC })} data-testid="decoy-quickfill"
-        className="w-full py-3 rounded-xl bg-slate-800 border border-slate-700 text-cyan-400 font-medium flex items-center justify-center gap-2 hover:bg-slate-700/60">
+        className="w-full py-3 rounded-xl bg-slate-800 border border-slate-700 text-blue-400 font-medium flex items-center justify-center gap-2 hover:bg-slate-700/60">
         <Wand2 size={18} /> Quick fill (generic harmless content)
       </button>
 
@@ -72,16 +72,16 @@ const DecoyProfileEditor = () => {
       <div>
         <label className="text-slate-400 text-xs mb-1 block">Fake contacts (one per line)</label>
         <textarea value={p.contacts.join('\n')} onChange={(e) => setContacts(e.target.value)} rows={5} data-testid="decoy-contacts"
-          className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white outline-none focus:border-purple-500" />
+          className="w-full px-4 py-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white outline-none focus:border-purple-500" />
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between"><label className="text-slate-400 text-xs">Fake messages</label>
-          <button onClick={() => setP({ ...p, messages: [...p.messages, { from: '', text: '', time: 'now' }] })} className="text-cyan-400 text-xs flex items-center gap-1"><Plus size={13} /> Add</button></div>
+          <button onClick={() => setP({ ...p, messages: [...p.messages, { from: '', text: '', time: 'now' }] })} className="text-blue-400 text-xs flex items-center gap-1"><Plus size={13} /> Add</button></div>
         {p.messages.map((m, i) => (
           <div key={i} className="flex gap-2" data-testid="decoy-msg-row">
-            <input value={m.from} onChange={(e) => setMsg(i, 'from', e.target.value)} placeholder="From" className="w-24 px-3 py-2 rounded-lg bg-slate-900 border border-slate-600 text-white text-sm outline-none" />
-            <input value={m.text} onChange={(e) => setMsg(i, 'text', e.target.value)} placeholder="Message" className="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-600 text-white text-sm outline-none" />
+            <input value={m.from} onChange={(e) => setMsg(i, 'from', e.target.value)} placeholder="From" className="w-24 px-3 py-2 rounded-lg bg-[#0e1626] border border-slate-600 text-white text-sm outline-none" />
+            <input value={m.text} onChange={(e) => setMsg(i, 'text', e.target.value)} placeholder="Message" className="flex-1 px-3 py-2 rounded-lg bg-[#0e1626] border border-slate-600 text-white text-sm outline-none" />
             <button onClick={() => setP({ ...p, messages: p.messages.filter((_, idx) => idx !== i) })} className="text-slate-500"><X size={16} /></button>
           </div>
         ))}
@@ -89,12 +89,12 @@ const DecoyProfileEditor = () => {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between"><label className="text-slate-400 text-xs">Fake notes</label>
-          <button onClick={() => setP({ ...p, notes: [...p.notes, { title: '', body: '' }] })} className="text-cyan-400 text-xs flex items-center gap-1"><Plus size={13} /> Add</button></div>
+          <button onClick={() => setP({ ...p, notes: [...p.notes, { title: '', body: '' }] })} className="text-blue-400 text-xs flex items-center gap-1"><Plus size={13} /> Add</button></div>
         {p.notes.map((n, i) => (
           <div key={i} className="space-y-1" data-testid="decoy-note-row">
-            <input value={n.title} onChange={(e) => setNote(i, 'title', e.target.value)} placeholder="Title" className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-600 text-white text-sm outline-none" />
+            <input value={n.title} onChange={(e) => setNote(i, 'title', e.target.value)} placeholder="Title" className="w-full px-3 py-2 rounded-lg bg-[#0e1626] border border-slate-600 text-white text-sm outline-none" />
             <div className="flex gap-2">
-              <input value={n.body} onChange={(e) => setNote(i, 'body', e.target.value)} placeholder="Body" className="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-600 text-white text-sm outline-none" />
+              <input value={n.body} onChange={(e) => setNote(i, 'body', e.target.value)} placeholder="Body" className="flex-1 px-3 py-2 rounded-lg bg-[#0e1626] border border-slate-600 text-white text-sm outline-none" />
               <button onClick={() => setP({ ...p, notes: p.notes.filter((_, idx) => idx !== i) })} className="text-slate-500"><X size={16} /></button>
             </div>
           </div>
@@ -114,7 +114,7 @@ const Field = ({ label, value, onChange, testid }) => (
   <div>
     <label className="text-slate-400 text-xs mb-1 block">{label}</label>
     <input value={value} onChange={(e) => onChange(e.target.value)} data-testid={testid}
-      className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white outline-none focus:border-purple-500" />
+      className="w-full px-4 py-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white outline-none focus:border-purple-500" />
   </div>
 );
 

@@ -194,7 +194,7 @@ function App() {
 
   // --- First-run setup gate (no default codes exist) ---
   if (configured === null) {
-    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500" data-testid="app-loading">Loading…</div>;
+    return <div className="min-h-screen bg-[#0B1121] flex items-center justify-center text-slate-500" data-testid="app-loading">Loading…</div>;
   }
   if (configured === false) {
     return (
@@ -218,7 +218,7 @@ function App() {
               <p className="text-slate-400 text-sm mb-3">Enter your access code to return to Digital Mate.</p>
               <input type="password" inputMode="numeric" value={exitCode} onChange={(e) => setExitCode(e.target.value)}
                 placeholder="Access code" data-testid="decoy-exit-input"
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-600 text-white text-center tracking-widest focus:border-cyan-500 outline-none" />
+                className="w-full px-4 py-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white text-center tracking-widest focus:border-blue-500 outline-none" />
               <button onClick={async () => {
                 const r = await telemetry.verifyAccess(exitCode);
                 if (r && r.verified) {
@@ -226,7 +226,7 @@ function App() {
                   setForceDecoy(false); setDecoySuppressed(true); setDecoyExit(false); setExitCode('');
                   toast.success('Welcome back');
                 } else toast.error('Incorrect code');
-              }} data-testid="decoy-exit-confirm" className="w-full mt-4 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold">Unlock</button>
+              }} data-testid="decoy-exit-confirm" className="w-full mt-4 py-3 rounded-xl bg-blue-500 text-slate-900 font-bold">Unlock</button>
               <button onClick={() => { setDecoyExit(false); setExitCode(''); }} className="w-full mt-2 py-2 text-slate-400 text-sm">Cancel</button>
             </div>
           </div>
@@ -247,7 +247,7 @@ function App() {
 
   // --- Main security app ---
   return (
-    <div className="min-h-screen bg-slate-950" data-testid="app-root">
+    <div className="min-h-screen bg-[#0B1121]" data-testid="app-root">
       <Toaster position="top-center" theme="dark" />
 
       {tab === 'home' && (
@@ -282,7 +282,7 @@ function App() {
           const active = tab === n.id || (['owner', 'privacy', 'family', 'status', 'vault', 'profiles', 'decoy'].includes(tab) && n.id === 'home');
           return (
             <button key={n.id} onClick={() => go(n.id)} data-testid={`nav-${n.id}`}
-              className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${active ? 'text-cyan-400' : 'text-slate-500'}`}>
+              className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${active ? 'text-blue-400' : 'text-slate-500'}`}>
               <Icon size={22} />
               <span className="text-[10px] font-medium">{n.label}</span>
             </button>
@@ -298,7 +298,7 @@ function App() {
 }
 
 const ScreenWrap = ({ children, onBack }) => (
-  <div className="min-h-screen bg-slate-950 pb-28 overflow-y-auto">
+  <div className="min-h-screen bg-[#0B1121] pb-28 overflow-y-auto">
     <button onClick={onBack} className="absolute top-4 right-4 z-10 text-slate-400 hover:text-white p-2" data-testid="screen-back-btn"><X size={22} /></button>
     {children}
   </div>
@@ -320,7 +320,7 @@ const SettingsPanel = ({ onClose, onWebsite, onProfiles, onFamily }) => {
     setTimeout(() => nativeIsAdminActive().then(setAdminActive), 1500);
   };
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950 p-5 overflow-y-auto" data-testid="settings-panel">
+    <div className="fixed inset-0 z-50 bg-[#0B1121] p-5 overflow-y-auto" data-testid="settings-panel">
       <div className="flex items-center justify-between mb-6 pt-2">
         <h2 className="text-2xl font-bold text-white">Settings</h2>
         <button onClick={onClose} className="text-slate-400 hover:text-white p-2" data-testid="settings-close"><X size={24} /></button>
@@ -330,24 +330,24 @@ const SettingsPanel = ({ onClose, onWebsite, onProfiles, onFamily }) => {
         <Row label="Owner recovery code" value="•••••" />
         {isNative() && (
           <button onClick={enableProtection} data-testid="enable-protection-btn"
-            className={`w-full text-left border rounded-xl p-4 font-medium transition-colors ${adminActive ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-slate-800/60 border-slate-700 text-cyan-400 hover:bg-slate-800'}`}>
+            className={`w-full text-left border rounded-xl p-4 font-medium transition-colors ${adminActive ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-slate-800/60 border-slate-700 text-blue-400 hover:bg-slate-800'}`}>
             {adminActive ? 'Device protection enabled ✓' : 'Enable device protection (remote lock/wipe)'}
           </button>
         )}
         <button onClick={reset} disabled={resetting} data-testid="reset-baseline-btn"
-          className="w-full text-left bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-amber-400 font-medium hover:bg-slate-800 transition-colors disabled:opacity-50">
+          className="w-full text-left bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 text-amber-400 font-medium hover:bg-slate-800 transition-colors disabled:opacity-50">
           {resetting ? 'Resetting…' : 'Reset owner recognition'}
         </button>
         <button onClick={onProfiles} data-testid="open-profiles-btn"
-          className="w-full text-left bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-cyan-400 font-medium hover:bg-slate-800 transition-colors">
+          className="w-full text-left bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 text-blue-400 font-medium hover:bg-slate-800 transition-colors">
           Who can unlock this phone (access profiles)
         </button>
         <button onClick={onFamily} data-testid="open-family-btn"
-          className="w-full text-left bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-violet-400 font-medium hover:bg-slate-800 transition-colors">
+          className="w-full text-left bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 text-violet-400 font-medium hover:bg-slate-800 transition-colors">
           Family tracking &amp; sharing
         </button>
         <button onClick={onWebsite} data-testid="open-website-btn"
-          className="w-full text-left bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-cyan-400 font-medium hover:bg-slate-800 transition-colors">
+          className="w-full text-left bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 text-blue-400 font-medium hover:bg-slate-800 transition-colors">
           View website &amp; plans
         </button>
       </div>
@@ -357,7 +357,7 @@ const SettingsPanel = ({ onClose, onWebsite, onProfiles, onFamily }) => {
 };
 
 const Row = ({ label, value }) => (
-  <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 flex justify-between">
+  <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex justify-between">
     <span className="text-slate-300">{label}</span>
     <span className="text-slate-500 font-mono text-sm">{value}</span>
   </div>
