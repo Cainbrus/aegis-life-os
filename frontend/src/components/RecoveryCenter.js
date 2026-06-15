@@ -57,7 +57,7 @@ const RecoveryCenter = () => {
     setBusy(true);
     try {
       await axios.post(`${API}/security/recovery/wipe`, { device_id: telemetry.deviceId, owner_code: code, confirm: true });
-      toast.success('Remote wipe completed');
+      toast.success('Digital Mate data wiped');
       setWipeStep(0); setCode('');
     } catch (e) {
       toast.error(e?.response?.status === 403 ? 'Wrong owner code' : 'Wipe failed');
@@ -115,7 +115,7 @@ const RecoveryCenter = () => {
         )}
         <button onClick={() => setWipeStep(1)} data-testid="remote-wipe-btn"
           className="py-4 rounded-2xl bg-red-500/15 border border-red-500/40 text-red-400 font-semibold flex flex-col items-center gap-1.5 hover:bg-red-500/25 transition-colors">
-          <Trash2 size={22} /> Remote Wipe
+          <Trash2 size={22} /> Wipe DM Data
         </button>
       </div>
 
@@ -131,11 +131,11 @@ const RecoveryCenter = () => {
 
       {/* Wipe flow (safe, 2-step) */}
       {wipeStep > 0 && (
-        <Modal onClose={() => { setWipeStep(0); setCode(''); }} title="Remote wipe" testid="wipe-modal">
+        <Modal onClose={() => { setWipeStep(0); setCode(''); }} title="Wipe Digital Mate protected data" testid="wipe-modal">
           {wipeStep === 1 && (
             <>
-              <div className="flex items-center gap-2 text-red-400 mb-3"><ShieldAlert size={18} /> <span className="font-semibold">This erases your vault</span></div>
-              <p className="text-slate-400 text-sm mb-3">Enter your Emergency Wipe code to continue.</p>
+              <div className="flex items-center gap-2 text-red-400 mb-3"><ShieldAlert size={18} /> <span className="font-semibold">Erase Digital Mate data</span></div>
+              <p className="text-slate-400 text-sm mb-3">This wipes your hidden vault, evidence logs, decoy profiles, private files and recovery data. It does not touch the rest of your phone. Enter your Wipe (or Recovery) code to continue.</p>
               <CodeInput value={code} onChange={setCode} testid="wipe-code-input" />
               <button onClick={() => setWipeStep(2)} disabled={code.length < 4} data-testid="wipe-next-btn"
                 className="w-full mt-4 py-3 rounded-xl bg-slate-700 text-white font-semibold disabled:opacity-50">Continue</button>
@@ -144,9 +144,9 @@ const RecoveryCenter = () => {
           {wipeStep === 2 && (
             <>
               <div className="flex items-center gap-2 text-red-400 mb-3"><ShieldAlert size={18} /> <span className="font-semibold">Final confirmation</span></div>
-              <p className="text-slate-300 text-sm mb-4">This permanently wipes all vault files on this device. This cannot be undone.</p>
+              <p className="text-slate-300 text-sm mb-4">This permanently wipes Digital Mate's protected data (vault, evidence, decoy, recovery) on this device. This cannot be undone.</p>
               <button onClick={wipe} disabled={busy} data-testid="wipe-confirm-btn"
-                className="w-full py-3 rounded-xl bg-red-500 text-white font-bold disabled:opacity-50">Yes, wipe my device now</button>
+                className="w-full py-3 rounded-xl bg-red-500 text-white font-bold disabled:opacity-50">Yes, wipe Digital Mate data</button>
               <button onClick={() => { setWipeStep(0); setCode(''); }} className="w-full mt-2 py-2 text-slate-400 text-sm">Cancel</button>
             </>
           )}

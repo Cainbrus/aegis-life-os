@@ -32,6 +32,13 @@ const FAKE_NOTES_DEFAULT = [
   { t: 'Wifi', b: 'guest network: welcome123' },
   { t: 'Ideas', b: 'weekend trip - book hotel' },
 ];
+const FAKE_CALLS = [
+  { name: 'Mum', dir: 'Incoming', when: 'Today', time: '9:14' },
+  { name: 'Jordan', dir: 'Outgoing', when: 'Today', time: '8:02' },
+  { name: 'Work', dir: 'Missed', when: 'Yesterday', time: '17:40' },
+  { name: 'Sam Reed', dir: 'Incoming', when: 'Yesterday', time: '12:11' },
+  { name: 'Taylor', dir: 'Outgoing', when: 'Mon', time: '19:30' },
+];
 
 const DecoyMode = ({ onOwnerExit, profile = null, preview = false }) => {
   const [view, setView] = useState('home');
@@ -132,7 +139,10 @@ const DecoyMode = ({ onOwnerExit, profile = null, preview = false }) => {
               ))}
             </div>
           )}
-          {['phone', 'camera', 'weather', 'settings'].includes(view) && (
+          {view === 'phone' && FAKE_CALLS.map((c, i) => (
+            <Row key={i} title={c.name} sub={`${c.dir} · ${c.when}`} right={c.time} onClick={() => log('viewed_call', c.name)} />
+          ))}
+          {['camera', 'weather', 'settings'].includes(view) && (
             <div className="p-10 text-center text-slate-500">
               <p className="text-sm">Nothing to show right now.</p>
             </div>

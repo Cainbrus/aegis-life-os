@@ -1270,23 +1270,28 @@ async def recovery_unlock(req: RecoveryAction):
 
 @router.post("/recovery/wipe")
 async def recovery_wipe(req: RecoveryAction):
-    """Safe, wipe-code-verified, confirmed remote wipe of app data/vault."""
+    """Stage 1: safely wipe DIGITAL MATE-protected data only (vault, evidence, decoy profiles,
+    private files, recovery data). Device-level wipe requires native Device Admin (Stage 2)."""
     if not await _verify_wipe(req.device_id, req.owner_code):
         raise HTTPException(status_code=403, detail="Owner verification required")
     if not req.confirm:
         raise HTTPException(status_code=400, detail="Confirmation required to wipe")
 
-    # Wipe app-scoped sensitive data for this device.
-    await db.vault_items.delete_many({"device_id": req.device_id})
+    # Wipe Digital Mate's own data for this device.
+    await db.vault_items.delete_many({"device_id": req.device_id})           # hidden vault + private files
+    await db.security_events.delete_many({"device_id": req.device_id})       # evidence logs
+    await db.decoy_profiles.delete_many({"device_id": req.device_id})        # decoy profiles
+    await db.behavior_samples.delete_many({"device_id": req.device_id})      # recognition data
+    await db.owner_alerts.delete_many({"device_id": req.device_id})
     await db.device_state.update_one(
         {"device_id": req.device_id},
-        {"$set": {"wiped": True, "wiped_at": _now(), "trap_active": False,
-                  "device_id": req.device_id}},
+        {"$set": {"wiped": True, "wiped_at": _now(), "trap_active": False, "device_id": req.device_id},
+         "$unset": {"last_location": "", "location_history": ""}},        # recovery/location data
         upsert=True,
     )
-    await _log_event(req.device_id, "recovery", "critical", "Remote wipe executed",
-                     "Owner-verified remote wipe of app vault completed.")
-    return {"ok": True, "wiped": True}
+    await _log_event(req.device_id, "recovery", "critical", "Digital Mate data wiped",
+                     "Owner-verified wipe of Digital Mate protected data (vault, evidence, decoy, recovery).")
+    return {"ok": True, "wiped": True, "scope": "digital_mate_data"}
 
 
 # ============================ Emergency Owner Command ============================

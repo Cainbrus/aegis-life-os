@@ -186,7 +186,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
               onClick={onLaunchApp}
               className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl font-bold text-lg text-white hover:opacity-90 transition-all shadow-lg shadow-cyan-500/30"
             >
-              Try the Demo →
+              Request Beta Access →
             </button>
             <button
               onClick={() => setCurrentPage('features')}
@@ -279,7 +279,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
             onClick={onLaunchApp}
             className="px-10 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl font-bold text-xl text-white hover:opacity-90 transition-all shadow-lg"
           >
-            Launch Demo →
+            Request Beta Access →
           </button>
         </div>
       </section>
@@ -582,20 +582,20 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
 
           {/* Team */}
           <div className="bg-slate-800/50 rounded-2xl p-8 border border-cyan-500/30 mb-12">
-            <h2 className="text-2xl font-bold text-white mb-6">The Team</h2>
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-              <div className="w-32 h-32 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center text-4xl font-black text-white">
-                CB
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-cyan-400">Cain Brunjes</h3>
-                <p className="text-slate-400 mb-3">Founder & CEO</p>
-                <p className="text-slate-300">
-                  Building AEGIS because it needs to exist. Focused on creating technology that actually 
-                  protects people instead of just pretending to.
-                </p>
-                <p className="text-slate-400 mt-4">📞 0457374662</p>
-              </div>
+            <h2 className="text-2xl font-bold text-white mb-4">Contact the Digital Mate Team</h2>
+            <p className="text-slate-300 mb-4">
+              Digital Mate is currently in early development. For updates, investor interest,
+              beta testing, or more information, contact the Digital Mate team by email.
+            </p>
+            <a href="mailto:team@digitalmate.app" className="inline-block px-6 py-3 rounded-xl bg-cyan-500 text-slate-900 font-bold">
+              Email the team
+            </a>
+          </div>
+          <div className="hidden">
+            <div className="w-32 h-32"></div>
+            <div>
+              <h3 className="text-xl font-bold text-cyan-400">Digital Mate Team</h3>
+              <p className="text-slate-400 mb-3">Digital Mate Team</p>
             </div>
           </div>
 
@@ -617,7 +617,7 @@ const DigitalMateWebsite = ({ onLaunchApp }) => {
     { id: 'pitch_deck', label: 'Pitch Deck & Overview', icon: '📊' },
     { id: 'financials', label: 'Financial Projections', icon: '💰' },
     { id: 'demo', label: 'Product Demo', icon: '🎬' },
-    { id: 'team_meeting', label: 'Meet the Founder', icon: '👤' },
+    { id: 'team_meeting', label: 'Contact the Team', icon: '👤' },
     { id: 'due_diligence', label: 'Due Diligence Materials', icon: '📋' },
     { id: 'term_sheet', label: 'Investment Terms', icon: '📝' },
   ];
@@ -656,14 +656,13 @@ KEY HIGHLIGHTS:
 NEXT STEPS:
 1. Review the attached materials
 2. Try our live demo: [Demo Link]
-3. Schedule a call with Cain: calendly.com/digitalmate
+3. We will reply by email
 
 Looking forward to discussing how Digital Mate will revolutionize personal security.
 
 Best regards,
-Cain Brunjes
-Founder & CEO, Digital Mate
-📞 0457374662`
+the Digital Mate Team
+Digital Mate Team`
       },
       financials: {
         subject: 'Digital Mate - Financial Model & Projections',
@@ -691,10 +690,10 @@ USE OF FUNDS ($500K):
 
 Full financial model and assumptions attached.
 
-Schedule a deep-dive call: calendly.com/digitalmate
+Schedule a deep-dive call: 
 
 Best regards,
-Cain Brunjes`
+the Digital Mate Team`
       },
       demo: {
         subject: 'Digital Mate - Live Demo Access',
@@ -705,7 +704,7 @@ Cain Brunjes`
 
 DEMO HIGHLIGHTS TO TRY:
 1. Trap Mode™ - Enter wrong pattern 3x to see decoy activation
-2. Dial-to-Unlock Vault - Open Phone, dial 8675309, press Call
+2. Hidden access via your chosen cover app + access code
 3. Intruder Photo Capture - See evidence collection in real-time
 4. Behavioral Guard - Watch how we detect suspicious behavior
 
@@ -714,16 +713,16 @@ PATTERNS TO TEST:
 • Duress: 2-5-8 (fake data + silent alert)
 • Wrong: Any other (triggers Trap Mode)
 
-VAULT CODE: 8675309 (dial on phone app)
+Access is set by the owner during setup (no default codes).
 
 Want a guided walkthrough? Let's schedule a call!
-calendly.com/digitalmate
+
 
 Best regards,
-Cain Brunjes`
+the Digital Mate Team`
       },
       team_meeting: {
-        subject: 'Digital Mate - Meeting with Cain Brunjes',
+        subject: 'Digital Mate - Meeting request — Digital Mate',
         content: `Thank you for wanting to connect!
 
 I'd love to share the Digital Mate vision with you personally.
@@ -737,16 +736,16 @@ AVAILABLE FOR:
 • In-person meeting (Australia-based, happy to video call globally)
 
 SCHEDULE DIRECTLY:
-calendly.com/digitalmate
 
-Or call me: 0457374662
+
+
 Best times: 9am-6pm AEST, weekdays
 
 Looking forward to meeting you!
 
 Best regards,
-Cain Brunjes
-Founder & CEO, Digital Mate`
+the Digital Mate Team
+Digital Mate Team`
       },
       due_diligence: {
         subject: 'Digital Mate - Due Diligence Package',
@@ -786,10 +785,10 @@ DUE DILIGENCE MATERIALS:
 All materials will be shared via secure data room upon signing NDA.
 
 Ready to proceed? Let's schedule a call.
-calendly.com/digitalmate
+
 
 Best regards,
-Cain Brunjes`
+the Digital Mate Team`
       },
       term_sheet: {
         subject: 'Digital Mate - Investment Terms',
@@ -814,18 +813,17 @@ EXPECTED MILESTONES (18 months):
 INVESTOR BENEFITS:
 • Early entry at attractive valuation
 • Board observer seat (for $100K+)
-• Direct founder access
+• Direct team support
 • Strategic input opportunity
 
 MINIMUM INVESTMENT: $25,000
 
 Ready to discuss terms? Let's schedule a call to go through the details.
-calendly.com/digitalmate
+
 
 Best regards,
-Cain Brunjes
-Founder & CEO, Digital Mate
-📞 0457374662`
+the Digital Mate Team
+Digital Mate Team`
       }
     };
     return replies[inquiryType] || replies.pitch_deck;
@@ -931,7 +929,7 @@ Founder & CEO, Digital Mate
               {
                 icon: '👨‍💼',
                 title: 'Passionate Founder',
-                desc: 'Cain built this because he needed it. That authenticity drives product decisions and user trust.'
+                desc: 'Digital Mate was built by people who needed it. That authenticity drives product decisions and user trust.'
               },
             ].map((item, i) => (
               <div key={i} className="bg-slate-900/50 rounded-2xl p-6 border border-slate-700">
@@ -1101,16 +1099,16 @@ Founder & CEO, Digital Mate
           <p className="text-slate-300 mb-8">Join us in building the future of personal digital security.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => window.open('tel:0457374662')}
+              onClick={() => window.open('mailto:team@digitalmate.app')}
               className="px-8 py-4 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-100 transition-all"
             >
-              📞 Call Now: 0457374662
+              ✉ Email the team
             </button>
             <button
               onClick={onLaunchApp}
               className="px-8 py-4 border-2 border-white/50 rounded-xl font-bold text-white hover:bg-white/10 transition-all"
             >
-              Try the Demo
+              Open Digital Mate
             </button>
           </div>
         </div>
@@ -1137,14 +1135,14 @@ Founder & CEO, Digital Mate
                 <div className="flex items-start space-x-4">
                   <div className="text-2xl">👤</div>
                   <div>
-                    <div className="text-white font-semibold">Cain Brunjes</div>
-                    <div className="text-slate-400">Founder & CEO</div>
+                    <div className="text-white font-semibold">the Digital Mate Team</div>
+                    <div className="text-slate-400">Digital Mate Team</div>
                   </div>
                 </div>
                 <div className="flex items-start space-x-4">
                   <div className="text-2xl">📞</div>
                   <div>
-                    <div className="text-white font-semibold">0457374662</div>
+                    <div className="text-white font-semibold">team@digitalmate.app</div>
                     <div className="text-slate-400">Phone</div>
                   </div>
                 </div>
@@ -1336,7 +1334,7 @@ Founder & CEO, Digital Mate
               </p>
               <div className="space-y-2">
                 <p><span className="text-cyan-400">Email:</span> privacy@digitalmate.app</p>
-                <p><span className="text-cyan-400">Phone:</span> 0457374662</p>
+                <p><span className="text-cyan-400">Email:</span> team@digitalmate.app</p>
                 <p><span className="text-cyan-400">Location:</span> Australia</p>
               </div>
             </div>
