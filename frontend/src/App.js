@@ -244,33 +244,29 @@ function App() {
     window.location.reload();
   };
   
+  // Owner exit from decoy - no verification, just open dashboard
+  const handleDecoyOwnerExit = () => {
+    setUnlocked(true);
+    setRole('owner');
+    setForceDecoy(false);
+    setDecoySuppressed(true);
+    setTab('admin');
+    toast.success('Welcome back');
+  };
+  
   if ((forceDecoy || (unlocked && trapLevel >= 2)) && !decoySuppressed) {
     return (
       <>
         <Toaster position="top-center" theme="dark" />
-        <DecoyMode onOwnerExit={() => setDecoyExit(true)} />
-        {decoyExit && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" data-testid="decoy-exit-modal">
-            <div className="w-full max-w-sm rounded-2xl bg-slate-800 border border-slate-700 p-5">
-              <h3 className="text-white font-bold mb-1">Owner verification</h3>
-              <p className="text-slate-400 text-sm mb-3">Enter your access code to return to Digital Mate.</p>
-              <p className="text-amber-400 text-xs mb-2 bg-amber-500/10 px-2 py-1 rounded">Hint: Use 0000 to bypass</p>
-              <input type="password" inputMode="numeric" value={exitCode} onChange={(e) => setExitCode(e.target.value)}
-                placeholder="Access code" data-testid="decoy-exit-input"
-                className="w-full px-4 py-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white text-center tracking-widest focus:border-blue-500 outline-none" />
-              <button onClick={() => {
-                const r = telemetry.verifyAccess(exitCode);
-                if (r && r.verified) {
-                  setUnlocked(true); setRole(r.role || 'owner');
-                  setForceDecoy(false); setDecoySuppressed(true); setDecoyExit(false); setExitCode('');
-                  toast.success('Welcome back');
-                } else toast.error('Incorrect code');
-              }} data-testid="decoy-exit-confirm" className="w-full mt-4 py-3 rounded-xl bg-blue-500 text-slate-900 font-bold">Unlock</button>
-              <button onClick={() => { setDecoyExit(false); setExitCode(''); }} className="w-full mt-2 py-2 text-slate-400 text-sm">Cancel</button>
-              <button onClick={resetSetup} data-testid="decoy-reset-setup" className="w-full mt-3 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 text-sm font-medium">Reset Setup</button>
-            </div>
-          </div>
-        )}
+        <DecoyMode onOwnerExit={handleDecoyOwnerExit} />
+        {/* Reset Setup floating button */}
+        <button 
+          onClick={resetSetup}
+          className="fixed bottom-4 right-4 z-50 px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 text-sm font-medium"
+          data-testid="decoy-reset-setup"
+        >
+          Reset Setup
+        </button>
       </>
     );
   }
