@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Toaster, toast } from 'sonner';
-import { Shield, Compass, FileClock, Bot, X } from 'lucide-react';
+import { Shield, Compass, FileClock, Bot, X, LayoutDashboard } from 'lucide-react';
 
 import SecurityDashboard from './components/SecurityDashboard';
+import AdminDashboard from './components/AdminDashboard';
 import OwnerRecognition from './components/OwnerRecognition';
 import EvidenceCenter from './components/EvidenceCenter';
 import RecoveryCenter from './components/RecoveryCenter';
@@ -27,6 +28,7 @@ import './App.css';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const NAV = [
+  { id: 'admin', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'home', label: 'Home', icon: Shield },
   { id: 'recovery', label: 'Recovery', icon: Compass },
   { id: 'evidence', label: 'Evidence', icon: FileClock },
@@ -36,7 +38,7 @@ const NAV = [
 function App() {
   // 'website' (public landing) or 'app' (security app)
   const [screen, setScreen] = useState('website');
-  const [tab, setTab] = useState('home');
+  const [tab, setTab] = useState('admin');
   const [showSettings, setShowSettings] = useState(false);
   const [configured, setConfigured] = useState(null); // null=checking, true, false
   const [coverApp, setCoverApp] = useState('calculator');
@@ -200,12 +202,23 @@ function App() {
     return (
       <>
         <Toaster position="top-center" theme="dark" />
-        <SetupWizard onDone={() => { setConfigured(true); setUnlocked(false); }} />
+        <SetupWizard onDone={(action) => { 
+          setConfigured(true); 
+          if (action === 'dashboard') {
+            setUnlocked(true);
+            setTab('admin');
+          } else {
+            // User chose to return to phone - show cover on next open
+            setUnlocked(false); 
+          }
+        }} />
       </>
     );
   }
 
   // --- Decoy / Fake Phone: low trust OR too many wrong codes -> silently show the fake phone ---
+  const isDev = process.env.NODE_ENV !== 'production' || window.location.hostname.includes('preview');
+  
   if ((forceDecoy || (unlocked && trapLevel >= 2)) && !decoySuppressed) {
     return (
       <>
@@ -216,6 +229,7 @@ function App() {
             <div className="w-full max-w-sm rounded-2xl bg-slate-800 border border-slate-700 p-5">
               <h3 className="text-white font-bold mb-1">Owner verification</h3>
               <p className="text-slate-400 text-sm mb-3">Enter your access code to return to Digital Mate.</p>
+              {isDev && <p className="text-amber-400 text-xs mb-2 bg-amber-500/10 px-2 py-1 rounded">DEV: Use 0000 to bypass</p>}
               <input type="password" inputMode="numeric" value={exitCode} onChange={(e) => setExitCode(e.target.value)}
                 placeholder="Access code" data-testid="decoy-exit-input"
                 className="w-full px-4 py-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white text-center tracking-widest focus:border-blue-500 outline-none" />
@@ -250,23 +264,28 @@ function App() {
     <div className="min-h-screen bg-[#0B1121]" data-testid="app-root">
       <Toaster position="top-center" theme="dark" />
 
+      {tab === 'admin' && (
+        <AdminDashboard 
+          onNavigate={go}
+        />
+      )}
       {tab === 'home' && (
         <SecurityDashboard
           role={role}
           onNavigate={go}
           onOpenSettings={() => setShowSettings(true)}
           onPanic={handlePanic}
-          onLock={() => { setUnlocked(false); setRole('owner'); setTab('home'); }}
+          onLock={() => { setUnlocked(false); setRole('owner'); setTab('admin'); }}
           onSecretDemo={() => toast.info('Developer mode is disabled in this build')}
         />
       )}
-      {tab === 'owner' && <ScreenWrap onBack={() => go('home')}><OwnerRecognition /></ScreenWrap>}
-      {tab === 'privacy' && <ScreenWrap onBack={() => go('home')}><PrivacyScan /></ScreenWrap>}
-      {tab === 'status' && <ScreenWrap onBack={() => go('home')}><SecurityChecklist onNavigate={go} /></ScreenWrap>}
-      {tab === 'vault' && <ScreenWrap onBack={() => go('home')}><VaultScreen /></ScreenWrap>}
-      {tab === 'decoy' && <ScreenWrap onBack={() => go('home')}><DecoyProfileEditor /></ScreenWrap>}
-      {tab === 'family' && <ScreenWrap onBack={() => go('home')}><FamilyTracking /></ScreenWrap>}
-      {tab === 'profiles' && <ScreenWrap onBack={() => go('home')}><FamilyManager /></ScreenWrap>}
+      {tab === 'owner' && <ScreenWrap onBack={() => go('admin')}><OwnerRecognition /></ScreenWrap>}
+      {tab === 'privacy' && <ScreenWrap onBack={() => go('admin')}><PrivacyScan /></ScreenWrap>}
+      {tab === 'status' && <ScreenWrap onBack={() => go('admin')}><SecurityChecklist onNavigate={go} /></ScreenWrap>}
+      {tab === 'vault' && <ScreenWrap onBack={() => go('admin')}><VaultScreen /></ScreenWrap>}
+      {tab === 'decoy' && <ScreenWrap onBack={() => go('admin')}><DecoyProfileEditor /></ScreenWrap>}
+      {tab === 'family' && <ScreenWrap onBack={() => go('admin')}><FamilyTracking /></ScreenWrap>}
+      {tab === 'profiles' && <ScreenWrap onBack={() => go('admin')}><FamilyManager /></ScreenWrap>}
       {tab === 'recovery' && <RecoveryCenter />}
       {tab === 'evidence' && <EvidenceCenter />}
       {tab === 'mate' && (
@@ -275,11 +294,11 @@ function App() {
         </div>
       )}
 
-      {/* Bottom nav — limited/guest profiles only see Home + Mate */}
+      {/* Bottom nav — limited/guest profiles only see Dashboard + Mate */}
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 flex justify-around py-2 z-[10000]" data-testid="bottom-nav">
-        {NAV.filter((n) => (role === 'owner' || role === 'trusted') || ['home', 'mate'].includes(n.id)).map((n) => {
+        {NAV.filter((n) => (role === 'owner' || role === 'trusted') || ['admin', 'mate'].includes(n.id)).map((n) => {
           const Icon = n.icon;
-          const active = tab === n.id || (['owner', 'privacy', 'family', 'status', 'vault', 'profiles', 'decoy'].includes(tab) && n.id === 'home');
+          const active = tab === n.id || (['owner', 'privacy', 'family', 'status', 'vault', 'profiles', 'decoy'].includes(tab) && n.id === 'admin');
           return (
             <button key={n.id} onClick={() => go(n.id)} data-testid={`nav-${n.id}`}
               className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${active ? 'text-blue-400' : 'text-slate-500'}`}>
@@ -304,15 +323,27 @@ const ScreenWrap = ({ children, onBack }) => (
   </div>
 );
 
-const SettingsPanel = ({ onClose, onWebsite, onProfiles, onFamily }) => {
+const SettingsPanel = ({ onClose, onWebsite, onProfiles, onFamily, onResetSetup }) => {
   const [resetting, setResetting] = useState(false);
   const [adminActive, setAdminActive] = useState(false);
+  const isDev = process.env.NODE_ENV !== 'production' || window.location.hostname.includes('preview');
   useEffect(() => { if (isNative()) nativeIsAdminActive().then(setAdminActive); }, []);
   const reset = async () => {
     setResetting(true);
     await axios.post(`${API}/security/baseline/reset`, { device_id: telemetry.deviceId });
     toast.success('Owner recognition reset — re-learning your behaviour');
     setResetting(false);
+  };
+  const resetSetup = () => {
+    if (window.confirm('This will clear all codes and settings. You will need to set up Digital Mate again. Continue?')) {
+      localStorage.removeItem('dm_access_hash');
+      localStorage.removeItem('dm_recovery_hash');
+      localStorage.removeItem('dm_cover_app');
+      localStorage.removeItem('dm_configured');
+      localStorage.removeItem('dm_device_id');
+      toast.success('Setup cleared — reloading...');
+      setTimeout(() => window.location.reload(), 1000);
+    }
   };
   const enableProtection = async () => {
     await nativeRequestAdmin();
@@ -350,6 +381,12 @@ const SettingsPanel = ({ onClose, onWebsite, onProfiles, onFamily }) => {
           className="w-full text-left bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 text-blue-400 font-medium hover:bg-slate-800 transition-colors">
           View website &amp; plans
         </button>
+        {isDev && (
+          <button onClick={resetSetup} data-testid="reset-setup-btn"
+            className="w-full text-left bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 font-medium hover:bg-red-500/20 transition-colors">
+            🔧 Reset Setup (DEV)
+          </button>
+        )}
       </div>
       <p className="text-slate-600 text-xs text-center mt-8">Digital Mate · Security &amp; recovery</p>
     </div>

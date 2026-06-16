@@ -7,6 +7,7 @@ import telemetry from '../services/TelemetryService';
 // Looks like an ordinary phone with believable but FAKE data. The real owner's data stays hidden.
 // Every interaction is logged as evidence; a front-camera photo + location are captured on entry.
 // No warnings are ever shown to the intruder.
+// Owner exit: 1) Tap status-bar time 5x quickly, OR 2) Long-press the power area (top-right)
 
 const FAKE_APPS = [
   { id: 'messages', name: 'Messages', icon: MessageSquare, color: 'from-green-500 to-emerald-600' },
@@ -45,6 +46,7 @@ const DecoyMode = ({ onOwnerExit, profile = null, preview = false }) => {
   const [time, setTime] = useState(new Date());
   const [secretTaps, setSecretTaps] = useState(0);
   const [data, setData] = useState(profile);
+  const [longPressTimer, setLongPressTimer] = useState(null);
   const captured = useRef(false);
 
   useEffect(() => {
@@ -77,9 +79,29 @@ const DecoyMode = ({ onOwnerExit, profile = null, preview = false }) => {
 
   // Hidden owner exit: tap the status-bar time 5x quickly
   const tapTime = () => {
-    const n = secretTaps + 1; setSecretTaps(n);
-    if (n >= 5) { setSecretTaps(0); onOwnerExit?.(); }
-    setTimeout(() => setSecretTaps(0), 2500);
+    const newCount = secretTaps + 1;
+    if (newCount >= 5) {
+      setSecretTaps(0);
+      onOwnerExit?.();
+    } else {
+      setSecretTaps(newCount);
+      setTimeout(() => setSecretTaps(0), 2500);
+    }
+  };
+
+  // Owner exit: long-press the battery/signal area (3 seconds)
+  const handleLongPressStart = () => {
+    const timer = setTimeout(() => {
+      onOwnerExit?.();
+    }, 3000);
+    setLongPressTimer(timer);
+  };
+  
+  const handleLongPressEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
   };
 
   return (
@@ -89,7 +111,17 @@ const DecoyMode = ({ onOwnerExit, profile = null, preview = false }) => {
         <span onClick={tapTime} className="select-none cursor-default" data-testid="decoy-statusbar-time">
           {time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
         </span>
-        <span>5G  ▦  82%</span>
+        <span 
+          onMouseDown={handleLongPressStart}
+          onMouseUp={handleLongPressEnd}
+          onMouseLeave={handleLongPressEnd}
+          onTouchStart={handleLongPressStart}
+          onTouchEnd={handleLongPressEnd}
+          className="select-none cursor-default"
+          data-testid="decoy-statusbar-battery"
+        >
+          5G  ▦  82%
+        </span>
       </div>
 
       {view === 'home' && (

@@ -53,6 +53,13 @@ const SetupWizard = ({ onDone }) => {
       const c = contact.trim();
       const extra = c ? (c.includes('@') ? { recovery_email: c } : { trusted_numbers: [c] }) : {};
       await telemetry.submitSetup({ owner_name: name || 'Owner', cover_app: cover, access_code: access, recovery_code: recovery, ...extra });
+      
+      // Save codes to localStorage for offline verification
+      localStorage.setItem('dm_access_hash', btoa(access));
+      localStorage.setItem('dm_recovery_hash', btoa(recovery));
+      localStorage.setItem('dm_cover_app', cover);
+      localStorage.setItem('dm_configured', 'true');
+      
       setDone(true);
     } catch (e) {
       toast.error(e?.response?.data?.detail || 'Setup failed');
@@ -66,11 +73,26 @@ const SetupWizard = ({ onDone }) => {
     <div className="min-h-screen bg-gradient-to-b from-[#0B1121] via-[#0d1526] to-[#0B1121] p-6 flex flex-col items-center justify-center text-center" data-testid="setup-complete">
       <img src={`${process.env.PUBLIC_URL}/brand/shield-emblem.png`} alt="Digital Mate" className="w-28 h-28 object-contain mb-4 drop-shadow-[0_0_30px_rgba(37,99,235,0.5)]" />
       <h1 className="text-2xl font-black text-white">You are protected</h1>
-      <p className="text-emerald-400 font-semibold mt-1">Digital Mate is now protecting your phone.</p>
-      <p className="text-slate-400 text-sm mt-3 max-w-xs">It quietly learns how you use your phone and steps in if someone else takes it. Enter your access code on the {cover} to open it.</p>
+      <p className="text-emerald-400 font-semibold mt-1">Digital Mate is now active in the background.</p>
+      <p className="text-slate-400 text-sm mt-3 max-w-xs">Return to your phone and use it normally. Digital Mate will quietly learn your behaviour and protect you.</p>
+      
+      <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-white/10 max-w-xs">
+        <p className="text-blue-400 font-semibold text-sm mb-2">To access Digital Mate:</p>
+        <p className="text-slate-300 text-sm">Open the <span className="text-white font-bold">{cover}</span> app and enter your access code.</p>
+      </div>
+      
       <p className="text-blue-400/80 text-xs mt-4 tracking-wide">Your Digital Bodyguard. Your Trusted Mate.</p>
-      <button onClick={() => onDone?.()} data-testid="setup-complete-btn"
-        className="mt-7 px-8 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-[0_0_15px_rgba(37,99,235,0.35)]">Open Digital Mate</button>
+      
+      <div className="mt-7 space-y-3 w-full max-w-xs">
+        <button onClick={() => onDone?.('dashboard')} data-testid="setup-open-dashboard"
+          className="w-full px-8 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-[0_0_15px_rgba(37,99,235,0.35)]">Open Dashboard</button>
+        <button onClick={() => {
+          // Signal to minimize/close the app - in a real native app this would call App.minimizeApp()
+          onDone?.('close');
+          window.close(); // Attempt to close (works in some contexts)
+        }} data-testid="setup-close-btn"
+          className="w-full px-8 py-3 rounded-2xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold">Return to Phone</button>
+      </div>
     </div>
   );
 

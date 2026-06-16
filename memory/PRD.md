@@ -181,3 +181,31 @@ Files: `android/app/src/main/java/com/digitalmate/app/*.kt` + manifest + `res/xm
 ## Status
 - Phase: Stage 1 MVP (security-focused) — working & tested
 - Last Updated: December 2025
+
+## Recent Updates (Dec 15, 2025)
+### Fixed App Flow
+- **Setup Complete** now shows two buttons: "Open Dashboard" and "Return to Phone"
+- "Return to Phone" closes the setup and shows the cover app (Calculator/Clock/Notes)
+- App runs in background after setup (no longer auto-opens fake phone)
+
+### New Admin Dashboard
+Added Admin Dashboard as the primary landing screen with:
+- Protection Status (Active/Inactive)
+- Learned Behaviour % (owner recognition progress)
+- Last Unlock (most recent verified access)
+- Intruder Photos (count of captured photos)
+- GPS Events (location tracking events)
+- Decoy Activations (times fake phone was triggered)
+- Current Trust Score (real-time owner confidence)
+- Quick Actions (Evidence, Decoy, Recovery, Status)
+
+### Correct App Flow
+1. **Setup** → User defines codes → "Return to Phone"
+2. **Cover App** (Calculator/Clock/Notes) → Background protection active
+3. **Unlock** → Enter Access Code + "=" → Opens Admin Dashboard
+4. **Wrong Code 5x** → Decoy (Fake Phone) activated
+5. **Decoy Exit** → Tap status bar time 5x OR long-press battery 3s → Verification modal
+
+### LocalStorage
+Codes now saved to localStorage during setup:
+- `dm_access_hash`, `dm_recovery_hash`, `dm_cover_app`, `dm_configured`

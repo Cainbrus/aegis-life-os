@@ -1,11 +1,17 @@
 # Digital Mate — Test Credentials
 
-## IMPORTANT: No default codes. Three separate owner-defined codes.
+## IMPORTANT: No default codes. Codes are owner-defined during Setup.
 Each owner sets their OWN codes during first-run Setup. There are NO hardcoded codes.
-- **Access code** — opens the dashboard from the cover app
+- **Access code** — opens the Admin Dashboard from the cover app (Calculator/Clock/Notes)
 - **Recovery code** — starts Lost-Phone / Recovery mode (lock, GPS, evidence)
-- **Wipe code** — last-resort remote wipe only
-All three must be different. Codes (and recovery phrase / panic pattern) are bcrypt-hashed.
+- **Wipe code** — last-resort remote wipe only (optional, set later in Settings)
+All codes must be different. Codes are bcrypt-hashed.
+
+## App Flow (After Setup)
+1. Setup Complete → "Return to Phone" → App runs in background
+2. Open Calculator cover → Enter Access Code + "=" → Opens Admin Dashboard
+3. Wrong code 5x → Shows Decoy (Fake Phone)
+4. Decoy escape: Tap status bar time 5x OR long-press battery 3s → Verification modal
 
 ## Pre-configured test device
 `device_id = dm-cover-test` (cover = calculator)
@@ -17,7 +23,7 @@ All three must be different. Codes (and recovery phrase / panic pattern) are bcr
 - Trusted number: `+15550009`
 
 Frontend: set localStorage `dm_device_id='dm-cover-test'` **before** navigation (addInitScript),
-then Launch App → Calculator cover → type `2580` then `=` → dashboard.
+then Launch App → Calculator cover → type `2580` then `=` → Admin Dashboard.
 
 ## Configure a fresh device (curl)
 ```
@@ -33,6 +39,13 @@ POST /api/security/setup
 - recovery/unlock, trap/deactivate, emergency/verify, profiles/add: **Recovery**
 - recovery/wipe (+ confirm:true): **Wipe**
 - recovery/trigger {secret}: recovery **phrase** | **panic pattern** | **recovery code**
+
+## LocalStorage (saved during setup)
+- `dm_access_hash`: Base64 encoded access code
+- `dm_recovery_hash`: Base64 encoded recovery code
+- `dm_cover_app`: Selected cover app type
+- `dm_configured`: 'true' when setup complete
+- `dm_device_id`: Unique device identifier
 
 ## Multiple owner profiles (Trusted Family)
 `POST /profiles/add { device_id, name, access_code, role, recovery_code }` (recovery code required).
