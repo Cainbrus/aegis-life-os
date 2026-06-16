@@ -232,7 +232,8 @@ function App() {
     );
   }
 
-  // --- Decoy / Fake Phone: low trust OR too many wrong codes -> silently show the fake phone ---
+  // --- Decoy / Fake Phone: ONLY show when forceDecoy is explicitly true (wrong codes entered) ---
+  // Never show decoy automatically based on trapLevel - only on explicit wrong code trigger
   const resetSetup = () => {
     localStorage.removeItem('dm_access_code');
     localStorage.removeItem('dm_recovery_code');
@@ -253,8 +254,15 @@ function App() {
     setTab('admin');
     toast.success('Welcome back');
   };
+
+  // Test decoy button handler (for Admin Dashboard)
+  const handleTestDecoy = () => {
+    setForceDecoy(true);
+    setDecoySuppressed(false);
+  };
   
-  if ((forceDecoy || (unlocked && trapLevel >= 2)) && !decoySuppressed) {
+  // DECOY: Only show if forceDecoy is explicitly set (from wrong codes or test button)
+  if (forceDecoy && !decoySuppressed) {
     return (
       <>
         <Toaster position="top-center" theme="dark" />
@@ -289,6 +297,8 @@ function App() {
       {tab === 'admin' && (
         <AdminDashboard 
           onNavigate={go}
+          onTestDecoy={handleTestDecoy}
+          onResetSetup={resetSetup}
         />
       )}
       {tab === 'home' && (

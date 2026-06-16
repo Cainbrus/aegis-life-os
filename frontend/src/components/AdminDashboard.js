@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Shield, Brain, Clock, Camera, MapPin, Ghost, RefreshCw, ChevronRight, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Shield, Brain, Clock, Camera, MapPin, Ghost, RefreshCw, ChevronRight, AlertTriangle, CheckCircle, RotateCcw, Smartphone } from 'lucide-react';
 import telemetry from '../services/TelemetryService';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const AdminDashboard = ({ onNavigate }) => {
+const AdminDashboard = ({ onNavigate, onTestDecoy, onResetSetup }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -234,6 +234,27 @@ const AdminDashboard = ({ onNavigate }) => {
           />
         </div>
       </div>
+
+      {/* Dev/Test Actions */}
+      <div className="px-5 mt-6 pb-8">
+        <h3 className="text-slate-400 text-sm font-medium mb-3">Testing</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <QuickAction
+            label="Test Decoy"
+            icon={Smartphone}
+            onClick={onTestDecoy}
+            testId="test-decoy-btn"
+            variant="warning"
+          />
+          <QuickAction
+            label="Reset Setup"
+            icon={RotateCcw}
+            onClick={onResetSetup}
+            testId="reset-setup-btn"
+            variant="danger"
+          />
+        </div>
+      </div>
     </div>
   );
 };
@@ -264,15 +285,24 @@ const StatCard = ({ icon: Icon, iconColor, iconBg, title, value, subtitle, onCli
   </button>
 );
 
-const QuickAction = ({ label, icon: Icon, onClick, testId }) => (
-  <button
-    onClick={onClick}
-    className="flex items-center gap-2 p-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
-    data-testid={testId}
-  >
-    <Icon size={18} />
-    <span className="text-sm font-medium">{label}</span>
-  </button>
-);
+const QuickAction = ({ label, icon: Icon, onClick, testId, variant }) => {
+  const baseClass = "flex items-center gap-2 p-3 rounded-xl border transition-colors";
+  const variantClass = variant === 'danger' 
+    ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+    : variant === 'warning'
+    ? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
+    : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white";
+  
+  return (
+    <button
+      onClick={onClick}
+      className={`${baseClass} ${variantClass}`}
+      data-testid={testId}
+    >
+      <Icon size={18} />
+      <span className="text-sm font-medium">{label}</span>
+    </button>
+  );
+};
 
 export default AdminDashboard;
