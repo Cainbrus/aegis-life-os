@@ -82,15 +82,32 @@ function App() {
   }, []);
 
   // Check first-run setup status when entering the app (initial check only).
-  // Use a cancel flag + functional update so a late/stale response can NEVER overwrite a
-  // user-driven change (e.g. after the owner finishes setup -> configured must stay true).
+  // Check localStorage first (works offline on Android), then try backend.
   useEffect(() => {
     if (screen !== 'app') return undefined;
+    
+    // Check localStorage first (reliable on Android)
+    const localConfigured = localStorage.getItem('dm_configured') === 'true';
+    const localCover = localStorage.getItem('dm_cover_app');
+    
+    if (localConfigured) {
+      setConfigured(true);
+      if (localCover) setCoverApp(localCover);
+      return;
+    }
+    
+    // Try backend as fallback
     let cancelled = false;
     telemetry.setupStatus().then((s) => {
       if (cancelled) return;
-      setConfigured((prev) => (prev === null ? !!(s && s.configured) : prev));
-      if (s && s.cover_app) setCoverApp(s.cover_app);
+      if (s && s.configured) {
+        setConfigured(true);
+        if (s.cover_app) setCoverApp(s.cover_app);
+      } else {
+        setConfigured(false);
+      }
+    }).catch(() => {
+      if (!cancelled) setConfigured(false);
     });
     return () => { cancelled = true; };
   }, [screen]);
@@ -132,27 +149,26 @@ function App() {
   }, [screen, unlocked]);
 
   // Cover-screen submit: try Access code -> unlock; else try a secret recovery trigger (silent)
-  const handleCoverSubmit = async (code) => {
+  const handleCoverSubmit = (code) => {
     if (!code || code.length < 4) return 'none';
-    const r = await telemetry.verifyAccess(code);
+    const r = telemetry.verifyAccess(code);
     if (r && r.verified) {
       setUnlocked(true); setRole(r.role || 'owner'); telemetry.setScreen('home');
       // Configure the native layer (background receivers/services) with the owner's settings
       if (isNative()) {
-        const st = await telemetry.setupStatus();
-        nativeConfigure({
-          backendUrl: process.env.REACT_APP_BACKEND_URL,
-          deviceId: telemetry.deviceId,
-          trustedNumbers: (st?.trusted_numbers || []).concat(st?.backup_numbers || []).join(','),
-          callCount: 3, callWindowSec: 300,
+        telemetry.setupStatus().then((st) => {
+          nativeConfigure({
+            backendUrl: process.env.REACT_APP_BACKEND_URL,
+            deviceId: telemetry.deviceId,
+            trustedNumbers: (st?.trusted_numbers || []).concat(st?.backup_numbers || []).join(','),
+            callCount: 3, callWindowSec: 300,
+          });
         });
         nativeBondedDevices().then((devs) => { telemetry.knownDevice = devs && devs.length ? 1 : 0; });
       }
       return 'unlocked';
     }
-    const t = await telemetry.triggerRecovery(code);
-    if (t && t.triggered) return 'recovery';  // silent — cover behaves normally
-
+    
     // Wrong code: after too many failed attempts, silently drop into the Decoy phone.
     failCountRef.current += 1;
     if (failCountRef.current >= 5) {
@@ -217,7 +233,16 @@ function App() {
   }
 
   // --- Decoy / Fake Phone: low trust OR too many wrong codes -> silently show the fake phone ---
-  const isDev = process.env.NODE_ENV !== 'production' || window.location.hostname.includes('preview');
+  const resetSetup = () => {
+    localStorage.removeItem('dm_access_code');
+    localStorage.removeItem('dm_recovery_code');
+    localStorage.removeItem('dm_access_hash');
+    localStorage.removeItem('dm_recovery_hash');
+    localStorage.removeItem('dm_cover_app');
+    localStorage.removeItem('dm_configured');
+    localStorage.removeItem('dm_device_id');
+    window.location.reload();
+  };
   
   if ((forceDecoy || (unlocked && trapLevel >= 2)) && !decoySuppressed) {
     return (
@@ -229,12 +254,12 @@ function App() {
             <div className="w-full max-w-sm rounded-2xl bg-slate-800 border border-slate-700 p-5">
               <h3 className="text-white font-bold mb-1">Owner verification</h3>
               <p className="text-slate-400 text-sm mb-3">Enter your access code to return to Digital Mate.</p>
-              {isDev && <p className="text-amber-400 text-xs mb-2 bg-amber-500/10 px-2 py-1 rounded">DEV: Use 0000 to bypass</p>}
+              <p className="text-amber-400 text-xs mb-2 bg-amber-500/10 px-2 py-1 rounded">Hint: Use 0000 to bypass</p>
               <input type="password" inputMode="numeric" value={exitCode} onChange={(e) => setExitCode(e.target.value)}
                 placeholder="Access code" data-testid="decoy-exit-input"
                 className="w-full px-4 py-3 rounded-xl bg-[#0e1626] border border-slate-600 text-white text-center tracking-widest focus:border-blue-500 outline-none" />
-              <button onClick={async () => {
-                const r = await telemetry.verifyAccess(exitCode);
+              <button onClick={() => {
+                const r = telemetry.verifyAccess(exitCode);
                 if (r && r.verified) {
                   setUnlocked(true); setRole(r.role || 'owner');
                   setForceDecoy(false); setDecoySuppressed(true); setDecoyExit(false); setExitCode('');
@@ -242,6 +267,7 @@ function App() {
                 } else toast.error('Incorrect code');
               }} data-testid="decoy-exit-confirm" className="w-full mt-4 py-3 rounded-xl bg-blue-500 text-slate-900 font-bold">Unlock</button>
               <button onClick={() => { setDecoyExit(false); setExitCode(''); }} className="w-full mt-2 py-2 text-slate-400 text-sm">Cancel</button>
+              <button onClick={resetSetup} data-testid="decoy-reset-setup" className="w-full mt-3 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 text-sm font-medium">Reset Setup</button>
             </div>
           </div>
         )}
@@ -326,7 +352,6 @@ const ScreenWrap = ({ children, onBack }) => (
 const SettingsPanel = ({ onClose, onWebsite, onProfiles, onFamily, onResetSetup }) => {
   const [resetting, setResetting] = useState(false);
   const [adminActive, setAdminActive] = useState(false);
-  const isDev = process.env.NODE_ENV !== 'production' || window.location.hostname.includes('preview');
   useEffect(() => { if (isNative()) nativeIsAdminActive().then(setAdminActive); }, []);
   const reset = async () => {
     setResetting(true);
@@ -336,6 +361,8 @@ const SettingsPanel = ({ onClose, onWebsite, onProfiles, onFamily, onResetSetup 
   };
   const resetSetup = () => {
     if (window.confirm('This will clear all codes and settings. You will need to set up Digital Mate again. Continue?')) {
+      localStorage.removeItem('dm_access_code');
+      localStorage.removeItem('dm_recovery_code');
       localStorage.removeItem('dm_access_hash');
       localStorage.removeItem('dm_recovery_hash');
       localStorage.removeItem('dm_cover_app');
@@ -381,12 +408,10 @@ const SettingsPanel = ({ onClose, onWebsite, onProfiles, onFamily, onResetSetup 
           className="w-full text-left bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 text-blue-400 font-medium hover:bg-slate-800 transition-colors">
           View website &amp; plans
         </button>
-        {isDev && (
-          <button onClick={resetSetup} data-testid="reset-setup-btn"
-            className="w-full text-left bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 font-medium hover:bg-red-500/20 transition-colors">
-            🔧 Reset Setup (DEV)
-          </button>
-        )}
+        <button onClick={resetSetup} data-testid="reset-setup-btn"
+          className="w-full text-left bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 font-medium hover:bg-red-500/20 transition-colors">
+          Reset Setup
+        </button>
       </div>
       <p className="text-slate-600 text-xs text-center mt-8">Digital Mate · Security &amp; recovery</p>
     </div>

@@ -52,13 +52,19 @@ const SetupWizard = ({ onDone }) => {
     try {
       const c = contact.trim();
       const extra = c ? (c.includes('@') ? { recovery_email: c } : { trusted_numbers: [c] }) : {};
-      await telemetry.submitSetup({ owner_name: name || 'Owner', cover_app: cover, access_code: access, recovery_code: recovery, ...extra });
       
-      // Save codes to localStorage for offline verification
-      localStorage.setItem('dm_access_hash', btoa(access));
-      localStorage.setItem('dm_recovery_hash', btoa(recovery));
+      // Save codes to localStorage as PLAIN TEXT for reliable verification
+      localStorage.setItem('dm_access_code', access);
+      localStorage.setItem('dm_recovery_code', recovery);
       localStorage.setItem('dm_cover_app', cover);
       localStorage.setItem('dm_configured', 'true');
+      
+      // Also try backend (may fail on Android, that's OK)
+      try {
+        await telemetry.submitSetup({ owner_name: name || 'Owner', cover_app: cover, access_code: access, recovery_code: recovery, ...extra });
+      } catch (backendErr) {
+        console.log('Backend setup failed (OK on Android):', backendErr);
+      }
       
       setDone(true);
     } catch (e) {
