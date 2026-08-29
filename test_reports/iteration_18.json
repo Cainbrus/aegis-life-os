@@ -1,0 +1,34 @@
+{
+  "summary": "Iteration 18 regression after code-review cleanup: 10/10 backend tests PASS and all frontend regression targets PASS. Backend: setup, verify-access (correct+wrong), family/create -> 6-char uppercase alnum code (secrets.choice OK), telemetry+status returns numeric trust_score & int trap_level (dead-var removal OK), privacy-scan OK, ai-insights OK, vault add/list/item/delete round-trip OK, /api/intelligence/briefing GET 200 (renamed get_intelligence_briefing routes cleanly), /api/voice/process POST no 500 (renamed process_voice_command_alt routes cleanly). Frontend: safeEval calculator works as a real calculator (2+3*4=14 respecting precedence, 10/2=5); typing access code 2580 then '=' opens admin-dashboard; Admin Dashboard shows test-decoy-btn and reset-setup-btn; Test Decoy opens decoy-mode; decoy-statusbar-time and decoy-reset-setup are present; tapping decoy-statusbar-time 5x returns to Admin Dashboard (matches task spec).",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter18_regression.py",
+    "/app/test_reports/pytest/iter18_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "CoverScreen.js safeEval(): recursive-descent parser correctly handles precedence, unary +/-, parentheses, and returns '' on invalid input. Guards division by zero (returns NaN -> ''). Sanitises input via regex whitelist [0-9+\\-*/.()]. Solid replacement for eval(). Small nit: does not surface a helpful message for expressions like '5+' (returns 'Error') — acceptable for a stealth calculator.",
+    "security_engine.py _family_code() now uses secrets.choice over an [A-Z0-9] alphabet, yielding a 6-char uppercase alnum code — cryptographically stronger and API-compatible with the previous format. Verified by regex fullmatch in test.",
+    "server.py rename to process_voice_command_alt (POST /voice/process) and get_intelligence_briefing (GET /intelligence/briefing) both keep their routes intact. Confirmed via HTTP calls: briefing returns 200 dict; voice/process returns non-5xx.",
+    "server.py bare-excepts narrowed to (JSONDecodeError, ValueError, TypeError) — good defensive change; no regression seen in the tested endpoints.",
+    "TelemetryService.verifyAccess (used by cover) is synchronous and no longer console.logs codes — good. dm_access_code/dm_recovery_code are still stored in plain text in localStorage (not just base64 hashes); this is a documented tradeoff in the single-device model but worth revisiting for Stage-2 hardening (encrypt via SubtleCrypto or drop the raw copies)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter18_regression.py"
+  ],
+  "success_rate": {
+    "backend": "100% (10/10 iter18 + prior regressions)",
+    "frontend": "100% on tested regression flows"
+  },
+  "test_credentials": "Backend created TEST_iter18_<ts> devices via /api/security/setup (access=2580, recovery=rec18, wipe=wipe18). Frontend used pre-configured device dm-cover-test with access 2580 / recovery rec999 from /app/memory/test_credentials.md.",
+  "seed_data_creation": "pytest creates TEST_iter18_* devices with one TEST_iter18_note vault item (created + deleted in the round-trip test).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend regression: pytest /app/backend/tests/test_iter18_regression.py (10 tests). Note the app has two URL modes: (1) landing website shown when screen=='website' (default). Click 'Request Beta Access' to enter the app. Set localStorage before navigation via addInitScript: dm_device_id, dm_configured='true', dm_access_code, dm_recovery_code, dm_cover_app. (2) Once in cover mode, use data-testids: calc-key-0..9, calc-key-+/-/mul/div, calc-key-equals, calc-key-C, calc-display. Access-code unlock reaches admin-dashboard which exposes test-decoy-btn and reset-setup-btn. Status-bar-time 5x tap on decoy-mode returns straight to admin-dashboard (session already unlocked); this differs from a fresh-device wrong-code-5x flow which opens decoy-exit-modal requiring decoy-exit-input + decoy-exit-confirm as documented in iteration_17. Wrong-code 5x -> decoy was previously verified in iteration_17; not re-run here because after the first unlock the same dm-cover-test session persists as unlocked via App.js state.",
+  "rca of the issue": "n/a — no regressions found after the code-review cleanup. The eval->safeEval swap, random->secrets swap, dead-variable removal, bare-except narrowing, and function renames all preserve behavior."
+}

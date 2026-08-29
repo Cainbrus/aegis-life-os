@@ -334,23 +334,19 @@ class TelemetryService {
     
     // 1. Check access code first
     if (storedAccessCode && code === storedAccessCode) {
-      console.log('[VERIFIED] Access code matched');
       return { verified: true, role: 'owner', profile: 'Owner' };
     }
     
     // 2. Check recovery code second
     if (storedRecoveryCode && code === storedRecoveryCode) {
-      console.log('[VERIFIED] Recovery code matched');
       return { verified: true, role: 'owner', profile: 'Owner' };
     }
     
     // 3. Dev bypass last (always available)
     if (code === '0000') {
-      console.log('[VERIFIED] Dev bypass code');
       return { verified: true, role: 'owner', profile: 'Developer' };
     }
     
-    console.log('[REJECTED] Code did not match. Stored access:', storedAccessCode, 'Stored recovery:', storedRecoveryCode, 'Entered:', code);
     return { verified: false };
   }
 

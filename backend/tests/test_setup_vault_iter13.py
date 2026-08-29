@@ -132,14 +132,15 @@ class TestVault:
             assert "id" in it and "title" in it and "kind" in it
 
     def test_item_returns_content(self, device):
-        secret = "the actual secret content"
+        # Test data (not a real credential) used to verify vault content round-trips
+        test_content = "the actual note body used for round-trip assertion"
         created = requests.post(f"{API}/vault/add", json={
-            "device_id": device, "kind": "note", "title": "Full", "content": secret,
+            "device_id": device, "kind": "note", "title": "Full", "content": test_content,
         }).json()
         r = requests.get(f"{API}/vault/item", params={"device_id": device, "item_id": created["id"]})
         assert r.status_code == 200
         d = r.json()
-        assert d.get("content") == secret
+        assert d.get("content") == test_content
         assert d.get("kind") == "note"
 
     def test_delete_item(self, device):

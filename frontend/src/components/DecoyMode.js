@@ -154,25 +154,25 @@ const DecoyMode = ({ onOwnerExit, profile = null, preview = false }) => {
 
       {view !== 'home' && (
         <AppShell title={FAKE_APPS.find((a) => a.id === view)?.name} onBack={() => { log('closed_app', view); setView('home'); }}>
-          {view === 'messages' && FAKE_MESSAGES.map((m, i) => (
-            <Row key={i} title={m.from} sub={m.text} right={m.time} onClick={() => log('read_message', m.from)} />
+          {view === 'messages' && FAKE_MESSAGES.map((m) => (
+            <Row key={`msg-${m.from}-${m.time}`} title={m.from} sub={m.text} right={m.time} onClick={() => log('read_message', m.from)} />
           ))}
-          {view === 'contacts' && FAKE_CONTACTS.map((c, i) => (
-            <Row key={i} title={c} sub="mobile" onClick={() => log('viewed_contact', c)} />
+          {view === 'contacts' && FAKE_CONTACTS.map((c) => (
+            <Row key={`contact-${c}`} title={c} sub="mobile" onClick={() => log('viewed_contact', c)} />
           ))}
-          {view === 'notes' && FAKE_NOTES.map((n, i) => (
-            <Row key={i} title={n.t} sub={n.b} onClick={() => log('read_note', n.t)} />
+          {view === 'notes' && FAKE_NOTES.map((n) => (
+            <Row key={`note-${n.t}`} title={n.t} sub={n.b} onClick={() => log('read_note', n.t)} />
           ))}
           {view === 'photos' && (
             <div className="grid grid-cols-3 gap-1 p-1">
               {Array.from({ length: 18 }).map((_, i) => (
-                <div key={i} onClick={() => log('viewed_photo', `IMG_${1000 + i}`)}
+                <div key={`photo-${1000 + i}`} onClick={() => log('viewed_photo', `IMG_${1000 + i}`)}
                   className="aspect-square rounded" style={{ background: `hsl(${(i * 37) % 360} 45% 78%)` }} />
               ))}
             </div>
           )}
-          {view === 'phone' && FAKE_CALLS.map((c, i) => (
-            <Row key={i} title={c.name} sub={`${c.dir} · ${c.when}`} right={c.time} onClick={() => log('viewed_call', c.name)} />
+          {view === 'phone' && FAKE_CALLS.map((c) => (
+            <Row key={`call-${c.name}-${c.time}`} title={c.name} sub={`${c.dir} · ${c.when}`} right={c.time} onClick={() => log('viewed_call', c.name)} />
           ))}
           {['camera', 'weather', 'settings'].includes(view) && (
             <div className="p-10 text-center text-slate-500">

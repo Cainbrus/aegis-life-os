@@ -2148,7 +2148,7 @@ Provide your analysis in JSON format."""
             
             try:
                 analysis = json.loads(response)
-            except:
+            except (json.JSONDecodeError, ValueError, TypeError):
                 analysis = {
                     "sensitivity_score": 0.3,
                     "category": "general",
@@ -2410,7 +2410,7 @@ Return as JSON."""
             
             try:
                 briefing = json.loads(response)
-            except:
+            except (json.JSONDecodeError, ValueError, TypeError):
                 briefing = {
                     "briefing_type": briefing_type,
                     "title": f"{greeting}! Here's your update",
@@ -2465,7 +2465,7 @@ Return as JSON:
             
             try:
                 plan = json.loads(response)
-            except:
+            except (json.JSONDecodeError, ValueError, TypeError):
                 plan = {
                     "understood_goal": goal_text,
                     "intents": ["process request"],
@@ -2484,7 +2484,7 @@ Return as JSON:
 proactive_intelligence = ProactiveIntelligenceEngine()
 
 @api_router.get("/intelligence/briefing")
-async def get_proactive_briefing():
+async def get_intelligence_briefing():
     """Get a contextual proactive briefing"""
     if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
         # Return a simple briefing for non-owner
@@ -2752,8 +2752,10 @@ RESPONSE FORMAT (JSON):
         except Exception as e:
             logger.error(f"Voice processor initialization error: {e}")
     
-    async def process_command(self, command_text: str, context: Dict[str, Any] = {}) -> Dict[str, Any]:
+    async def process_command(self, command_text: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
         """Process a voice command"""
+        if context is None:
+            context = {}
         try:
             # Check for duress phrases first
             command_lower = command_text.lower()
@@ -2785,7 +2787,7 @@ Parse the command and provide appropriate response as JSON."""
             
             try:
                 result = json.loads(response)
-            except:
+            except (json.JSONDecodeError, ValueError, TypeError):
                 result = {
                     "understood_command": command_text,
                     "intent": "unknown",
@@ -2840,7 +2842,7 @@ Parse the command and provide appropriate response as JSON."""
 voice_processor = VoiceCommandProcessor()
 
 @api_router.post("/voice/process")
-async def process_voice_command(data: Dict[str, Any]):
+async def process_voice_command_alt(data: Dict[str, Any]):
     """Process a voice command"""
     try:
         command_text = data.get("command", "")
@@ -3180,7 +3182,7 @@ async def create_notification(notification_data: Dict[str, Any]):
     }
     
     await db.aegis_notifications.insert_one(notification)
-    return notification
+    return {k: v for k, v in notification.items() if k != "_id"}
 
 @api_router.get("/notifications/pending")
 async def get_pending_notifications():
@@ -3393,7 +3395,7 @@ async def create_calendar_event(event: Dict[str, Any]):
         if event_record["reminder"] and event_record["time"]:
             logger.info(f"Calendar event created: {event_record['title']} on {event_record['date']}")
         
-        return {"success": True, "event": event_record}
+        return {"success": True, "event": {k: v for k, v in event_record.items() if k != "_id"}}
         
     except Exception as e:
         logger.error(f"Create event error: {e}")

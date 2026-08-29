@@ -1,5 +1,53 @@
 import React, { useState, useEffect } from 'react';
 
+// Safe arithmetic evaluator (replaces eval()). Supports + - * / , parentheses and
+// decimals via a recursive-descent parser. Never executes arbitrary code.
+const safeEval = (input) => {
+  const s = (input || '').replace(/[^0-9+\-*/.()]/g, '');
+  if (!s) return '';
+  let pos = 0;
+  const peek = () => s[pos];
+  const parseExpr = () => {
+    let value = parseTerm();
+    while (peek() === '+' || peek() === '-') {
+      const op = s[pos++];
+      const rhs = parseTerm();
+      value = op === '+' ? value + rhs : value - rhs;
+    }
+    return value;
+  };
+  const parseTerm = () => {
+    let value = parseFactor();
+    while (peek() === '*' || peek() === '/') {
+      const op = s[pos++];
+      const rhs = parseFactor();
+      value = op === '*' ? value * rhs : (rhs === 0 ? NaN : value / rhs);
+    }
+    return value;
+  };
+  const parseFactor = () => {
+    if (peek() === '+') { pos++; return parseFactor(); }
+    if (peek() === '-') { pos++; return -parseFactor(); }
+    if (peek() === '(') {
+      pos++;
+      const value = parseExpr();
+      if (peek() === ')') pos++;
+      return value;
+    }
+    const start = pos;
+    while (pos < s.length && /[0-9.]/.test(s[pos])) pos++;
+    const num = parseFloat(s.slice(start, pos));
+    return Number.isNaN(num) ? NaN : num;
+  };
+  try {
+    const r = parseExpr();
+    if (r === undefined || Number.isNaN(r) || !Number.isFinite(r)) return '';
+    return String(Math.round(r * 1e10) / 1e10);
+  } catch {
+    return '';
+  }
+};
+
 // Stealth cover. Looks like an ordinary app. Entering the owner's Access code opens the
 // dashboard; entering the Panic pattern / Recovery phrase silently triggers recovery.
 // onSubmit(code) returns one of: 'unlocked' | 'recovery' | 'none' (handled by App).
@@ -20,12 +68,10 @@ const CalculatorCover = ({ onSubmit }) => {
       // Try the typed sequence as an access/recovery secret first.
       const res = await onSubmit(expr.replace(/[^0-9a-zA-Z]/g, ''));
       if (res === 'unlocked') return;
-      // Otherwise behave like a normal calculator.
-      try {
-        // eslint-disable-next-line no-eval
-        const val = String(eval(expr.replace(/[^0-9+\-*/.]/g, '')) ?? '');
-        setDisplay(val || '0'); setExpr(val);
-      } catch { setDisplay('Error'); setExpr(''); }
+      // Otherwise behave like a normal calculator (safe parser, no eval).
+      const val = safeEval(expr);
+      if (val === '') { setDisplay('Error'); setExpr(''); }
+      else { setDisplay(val); setExpr(val); }
       return;
     }
     const ne = expr + k;

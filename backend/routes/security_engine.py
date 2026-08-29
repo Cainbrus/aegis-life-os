@@ -358,7 +358,6 @@ def _app_usage_familiarity(profile: dict, screen: Optional[str]) -> Optional[flo
     counts = (profile or {}).get("screen_counts") or {}
     if not screen or not counts:
         return None
-    total = sum(counts.values()) or 1
     mx = max(counts.values()) or 1
     c = counts.get(screen, 0)
     # familiar screens score high; rarely/never-used screens score low
@@ -677,8 +676,9 @@ class FamilyJoinIn(BaseModel):
 
 
 def _family_code():
-    import random, string
-    return "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    import secrets, string
+    alphabet = string.ascii_uppercase + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(6))
 
 
 async def _my_membership(device_id: str):

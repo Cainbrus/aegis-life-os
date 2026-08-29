@@ -182,6 +182,15 @@ Files: `android/app/src/main/java/com/digitalmate/app/*.kt` + manifest + `res/xm
 - Phase: Stage 1 MVP (security-focused) — working & tested
 - Last Updated: December 2025
 
+## Code Review Cleanup (Dec 16, 2025)
+Applied security & quality fixes from code review (verified — iteration_18, 10/10 backend + 100% frontend pass):
+- **CoverScreen.js**: Replaced `eval()` with a safe recursive-descent arithmetic parser (`safeEval`) — handles precedence, parentheses, unary +/-, division-by-zero. Works both as a real calculator and for access-code entry.
+- **TelemetryService.js**: Removed `console.log` statements that leaked access/recovery codes.
+- **security_engine.py**: `_family_code()` now uses `secrets.choice` (cryptographically secure) instead of `random.choices`. Removed dead `total` variable in `_app_usage_familiarity()`.
+- **server.py**: Fixed mutable default arg (`context={}` → `None`); narrowed 4 bare `except:` to specific exceptions; fixed 2 ObjectId serialization bugs (aegis_notifications, calendar_events); renamed duplicate functions (`get_intelligence_briefing`, `process_voice_command_alt`).
+- **DecoyMode.js**: Array-index keys → stable content-based keys.
+- **Not done (intentional)**: Large refactors (splitting DigitalMateWebsite 1442 lines, reducing cyclomatic complexity of App.js/score_session) — deferred to avoid breaking the working app. Plain-text localStorage codes retained per explicit user request.
+
 ## Recent Updates (Dec 15, 2025)
 ### Fixed App Flow
 - **Setup Complete** now shows two buttons: "Open Dashboard" and "Return to Phone"

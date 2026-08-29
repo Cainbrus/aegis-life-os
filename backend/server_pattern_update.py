@@ -1011,8 +1011,8 @@ async def get_trap_evidence():
     if l1_enhanced_kernel.current_security_state != SecurityState.OWNER_PRESENT:
         return {"error": "Owner authentication required"}
     
-    # Fetch recent evidence from database
-    evidence_docs = await db.intruder_evidence.find().sort("session_start", -1).limit(5).to_list(length=5)
+    # Fetch recent evidence from database (exclude Mongo _id to keep response serializable)
+    evidence_docs = await db.intruder_evidence.find({}, {"_id": 0}).sort("session_start", -1).limit(5).to_list(length=5)
     
     return {
         "recent_sessions": evidence_docs,
