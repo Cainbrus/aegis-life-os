@@ -13,10 +13,11 @@ import math
 import uuid
 import json
 import bcrypt
+import secrets as _secrets
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel, Field
 from motor.motor_asyncio import AsyncIOMotorClient
 from emergentintegrations.llm.chat import LlmChat, UserMessage
@@ -58,6 +59,53 @@ async def _get_config(device_id: str) -> Optional[dict]:
 async def _verify_recovery(device_id: str, code: Optional[str]) -> bool:
     cfg = await _get_config(device_id)
     return bool(cfg and cfg.get("configured") and _verify_secret(code, cfg.get("recovery_hash")))
+
+
+# ============================ Stage-2 Auth: server session tokens ============================
+# SEC-002 mitigation. After the backend verifies an owner's code, it issues a short-lived
+# session token bound to the device_id. Sensitive owner-data endpoints (vault, evidence,
+# location history, decoy profiles) require this token via the `X-DM-Token` header, so a
+# thief who only knows a device_id can no longer read that device's private data.
+# Native write endpoints (telemetry/location/recovery POST) are intentionally NOT gated.
+SESSION_TTL_HOURS = 24
+
+
+async def _issue_session(device_id: str) -> str:
+    token = _secrets.token_urlsafe(32)
+    now = datetime.now(timezone.utc)
+    await db.sessions.insert_one({
+        "token": token,
+        "device_id": device_id,
+        "created_at": now.isoformat(),
+        "expires_at": (now + timedelta(hours=SESSION_TTL_HOURS)).isoformat(),
+    })
+    # Best-effort cleanup of this device's stale tokens (keep the collection small).
+    await db.sessions.delete_many({
+        "device_id": device_id,
+        "expires_at": {"$lt": now.isoformat()},
+    })
+    return token
+
+
+async def _session_device(token: Optional[str]) -> Optional[str]:
+    if not token:
+        return None
+    s = await db.sessions.find_one({"token": token}, {"_id": 0})
+    if not s:
+        return None
+    try:
+        if datetime.fromisoformat(s["expires_at"]) < datetime.now(timezone.utc):
+            return None
+    except (ValueError, TypeError, KeyError):
+        return None
+    return s.get("device_id")
+
+
+async def _require_session(device_id: str, token: Optional[str]) -> None:
+    """Raise 401 unless `token` is a valid, unexpired session for `device_id`."""
+    sess_device = await _session_device(token)
+    if sess_device is None or sess_device != device_id:
+        raise HTTPException(status_code=401, detail="Owner session required")
 
 
 async def _verify_wipe(device_id: str, code: Optional[str]) -> bool:
@@ -515,9 +563,12 @@ async def remove_profile(req: ProfileRemoveIn):
 
 @router.post("/verify-access")
 async def verify_access_code(req: CodeIn):
-    """Unlock the dashboard from the cover app with an owner's access code."""
+    """Unlock the dashboard from the cover app with an owner's access code.
+    On success, issues a session token (X-DM-Token) required by sensitive endpoints."""
     match = await _verify_access(req.device_id, req.code)
+    token = None
     if match is not None:
+        token = await _issue_session(req.device_id)
         await db.device_state.update_one(
             {"device_id": req.device_id},
             {"$set": {"device_id": req.device_id, "last_owner": match["name"],
@@ -526,12 +577,15 @@ async def verify_access_code(req: CodeIn):
         )
     return {"verified": match is not None,
             "profile": match["name"] if match else None,
-            "role": match["role"] if match else None}
+            "role": match["role"] if match else None,
+            "token": token}
 
 
 @router.post("/verify-recovery")
 async def verify_recovery_code(req: CodeIn):
-    return {"verified": await _verify_recovery(req.device_id, req.code)}
+    ok = await _verify_recovery(req.device_id, req.code)
+    token = await _issue_session(req.device_id) if ok else None
+    return {"verified": ok, "token": token}
 
 
 # ============================ Hidden Vault / Invisible Folder ============================
@@ -554,9 +608,10 @@ class VaultActionIn(BaseModel):
 
 
 @router.post("/vault/add")
-async def vault_add(item: VaultItemIn):
+async def vault_add(item: VaultItemIn, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
     """Hide a photo/file/note/password inside Digital Mate (stored in the app's private store,
     NOT the phone gallery/file manager). Owner-only; the UI blocks this during Trap/Decoy mode."""
+    await _require_session(item.device_id, x_dm_token)
     kind = item.kind if item.kind in VAULT_KINDS else "file"
     if len(item.content) > MAX_VAULT_BYTES:
         raise HTTPException(status_code=413, detail="Item too large (max ~8MB). Use object storage for large videos.")
@@ -575,7 +630,8 @@ async def vault_add(item: VaultItemIn):
 
 
 @router.get("/vault/list")
-async def vault_list(device_id: str, status: str = "vault"):
+async def vault_list(device_id: str, status: str = "vault", x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(device_id, x_dm_token)
     q = {"device_id": device_id, "status": status if status in ("vault", "review") else "vault"}
     # older items have no status field -> treat as vault
     if q["status"] == "vault":
@@ -586,14 +642,16 @@ async def vault_list(device_id: str, status: str = "vault"):
 
 
 @router.post("/vault/approve")
-async def vault_approve(req: VaultActionIn):
+async def vault_approve(req: VaultActionIn, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
     """Approve a Review-Folder item -> move it into the Hidden Vault."""
+    await _require_session(req.device_id, x_dm_token)
     await db.vault_items.update_one({"device_id": req.device_id, "id": req.item_id}, {"$set": {"status": "vault"}})
     return {"ok": True}
 
 
 @router.get("/vault/item")
-async def vault_item(device_id: str, item_id: str):
+async def vault_item(device_id: str, item_id: str, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(device_id, x_dm_token)
     doc = await db.vault_items.find_one({"device_id": device_id, "id": item_id}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Not found")
@@ -601,7 +659,8 @@ async def vault_item(device_id: str, item_id: str):
 
 
 @router.delete("/vault/item")
-async def vault_delete(device_id: str, item_id: str):
+async def vault_delete(device_id: str, item_id: str, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(device_id, x_dm_token)
     res = await db.vault_items.delete_many({"device_id": device_id, "id": item_id})
     return {"ok": True, "deleted": res.deleted_count}
 
@@ -635,7 +694,8 @@ class DecoyProfileIn(BaseModel):
 
 
 @router.get("/decoy/profile")
-async def get_decoy_profile(device_id: str):
+async def get_decoy_profile(device_id: str, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(device_id, x_dm_token)
     doc = await db.decoy_profiles.find_one({"device_id": device_id}, {"_id": 0})
     if not doc:
         return {"configured": False, **DECOY_DEFAULTS}
@@ -646,7 +706,8 @@ async def get_decoy_profile(device_id: str):
 
 
 @router.post("/decoy/profile")
-async def save_decoy_profile(req: DecoyProfileIn):
+async def save_decoy_profile(req: DecoyProfileIn, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(req.device_id, x_dm_token)
     await db.decoy_profiles.update_one(
         {"device_id": req.device_id},
         {"$set": {
@@ -1036,14 +1097,16 @@ async def add_event(evt: EventIn):
 
 
 @router.get("/events")
-async def list_events(device_id: str, limit: int = 100):
+async def list_events(device_id: str, limit: int = 100, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(device_id, x_dm_token)
     cursor = db.security_events.find({"device_id": device_id}, {"_id": 0}).sort("created_at", -1).limit(limit)
     events = await cursor.to_list(length=limit)
     return {"events": events, "count": len(events)}
 
 
 @router.delete("/events")
-async def clear_events(device_id: str):
+async def clear_events(device_id: str, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(device_id, x_dm_token)
     res = await db.security_events.delete_many({"device_id": device_id})
     return {"ok": True, "deleted": res.deleted_count}
 
@@ -1193,7 +1256,8 @@ async def recovery_locate(req: RecoveryAction):
 
 
 @router.get("/recovery/location")
-async def recovery_location(device_id: str):
+async def recovery_location(device_id: str, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(device_id, x_dm_token)
     state = await db.device_state.find_one({"device_id": device_id}, {"_id": 0}) or {}
     return {
         "last_location": state.get("last_location"),

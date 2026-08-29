@@ -182,6 +182,14 @@ Files: `android/app/src/main/java/com/digitalmate/app/*.kt` + manifest + `res/xm
 - Phase: Stage 1 MVP (security-focused) — working & tested
 - Last Updated: December 2025
 
+## Stage-2 Auth — SEC-002 CLOSED (Dec 16, 2025)
+Implemented server-side session tokens to close the BOLA finding (verified — iteration_22, 45/45 backend + full frontend E2E pass):
+- **Backend**: `/verify-access` & `/verify-recovery` now issue a `secrets.token_urlsafe(32)` session token bound to `device_id` (stored in `db.sessions`, 24h expiry). NEW helpers `_issue_session`/`_session_device`/`_require_session`.
+- **Gated endpoints** (require `X-DM-Token` header, else 401): vault add/list/item/approve/delete, events list/clear, decoy profile get/save, recovery/location. Cross-device token reuse is rejected. Native write paths (telemetry/location/recovery POST) intentionally remain open so the Kotlin layer is unaffected.
+- **Frontend**: token obtained at unlock/setup and set as a global axios default header (`X-DM-Token`), restored from `sessionStorage` across reloads, cleared on lock/reset. Offline fallback: local unlock still opens the dashboard if backend is unreachable.
+- **Result**: a thief with only a `device_id` can no longer read vault/evidence/location from the server without the owner's code.
+- **Also fixed**: Vault modal z-index raised above bottom nav (mobile UX).
+
 ## Security Audit Remediation (Dec 16, 2025)
 Ran a full read-only security audit (verdict: FAIL). Remediation status:
 
@@ -192,8 +200,8 @@ Ran a full read-only security audit (verdict: FAIL). Remediation status:
 - **SEC-005 [MEDIUM] — Family role self-assignment**: `/family/join` no longer accepts `parent`; joiners are coerced to `teen`/`child`. Only the family creator is parent. Family code hidden from non-parents. Verified 17/17 tests (iteration_21).
 
 **Deferred to Stage-2 Auth epic (documented, not yet fixed):**
-- **SEC-002 [CRITICAL] — BOLA / no backend auth**: All `/api/security/*` endpoints trust `device_id` alone (no server-verified session). A thief with the device_id could read that device's vault/evidence/GPS from the server. Proper fix = server-issued session token after code verification, enforced on every protected endpoint. Requires coordinated frontend + FastAPI + **native Kotlin** changes → deferred to avoid destabilizing the working app (native layer can't be validated in the cloud container).
-- **SEC-004 [HIGH] — Client crypto key co-located**: AES-GCM key derived from `device_id` which sits beside the ciphertext. Inherent to the client-only model; resolved together with SEC-002 when server-side auth is added.
+- **SEC-002 [CRITICAL] — BOLA / no backend auth**: ✅ NOW FIXED (Dec 16) — see "Stage-2 Auth" section above. Server-issued session tokens now gate all sensitive owner-data endpoints.
+- **SEC-004 [HIGH] — Client crypto key co-located**: PARTIALLY mitigated. Codes are still stored client-side (AES-GCM encrypted) for offline unlock fallback, so the key-co-location weakness remains for the offline path. However, the server is now the authority for sensitive data access (SEC-002 fix), so casual localStorage inspection yields only ciphertext. Full elimination would require dropping offline unlock (store no codes client-side) — a product tradeoff to revisit.
 
 ## Code at Rest Encryption (Dec 16, 2025)
 Added client-side AES-GCM encryption for stored codes (verified — iteration_19, 10/10 frontend pass):

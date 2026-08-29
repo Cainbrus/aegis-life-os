@@ -45,6 +45,23 @@ class TelemetryService {
     this.lastScoreAt = 0;
     this.knownDevice = undefined;     // 0-1 set by native Bluetooth bridge (owner's watch/car/earbuds)
     this.started = false;
+    // Stage-2 auth: restore any existing owner session token for this tab.
+    this.sessionToken = null;
+    try {
+      const t = sessionStorage.getItem('dm_session_token');
+      if (t) { this.sessionToken = t; axios.defaults.headers.common['X-DM-Token'] = t; }
+    } catch (e) { /* sessionStorage unavailable */ }
+  }
+
+  // Store/clear the owner session token (sent as X-DM-Token on gated endpoints).
+  setSessionToken(token) {
+    this.sessionToken = token || null;
+    try {
+      if (token) sessionStorage.setItem('dm_session_token', token);
+      else sessionStorage.removeItem('dm_session_token');
+    } catch (e) { /* ignore */ }
+    if (token) axios.defaults.headers.common['X-DM-Token'] = token;
+    else delete axios.defaults.headers.common['X-DM-Token'];
   }
 
   setScreen(screen) { if (screen) this.currentScreen = screen; }
@@ -327,6 +344,20 @@ class TelemetryService {
     return res.data;
   }
 
+  // Ask the backend to verify the code and issue a session token (Stage-2 auth).
+  // Best-effort: if the backend is unreachable we still allow the local unlock below,
+  // but sensitive server reads (vault/evidence/location) will require connectivity.
+  async _obtainServerToken(code) {
+    try {
+      const r = (await axios.post(`${API}/security/verify-access`, { device_id: this.deviceId, code }, { timeout: 8000 })).data;
+      if (r && r.verified && r.token) { this.setSessionToken(r.token); return true; }
+      // Try recovery-code verification too (recovery also unlocks + issues a token).
+      const rr = (await axios.post(`${API}/security/verify-recovery`, { device_id: this.deviceId, code }, { timeout: 8000 })).data;
+      if (rr && rr.verified && rr.token) { this.setSessionToken(rr.token); return true; }
+    } catch (e) { /* offline / not configured on backend — local unlock still applies */ }
+    return false;
+  }
+
   async verifyAccess(code) {
     // Decrypt stored codes (AES-GCM) then compare in plain text.
     // Priority: 1. access code, 2. recovery code, 3. dev bypass.
@@ -343,15 +374,19 @@ class TelemetryService {
 
     // 1. Access code
     if (storedAccess && code === storedAccess) {
+      await this._obtainServerToken(code);
       return { verified: true, role: 'owner', profile: 'Owner' };
     }
     // 2. Recovery code
     if (storedRecovery && code === storedRecovery) {
+      await this._obtainServerToken(code);
       return { verified: true, role: 'owner', profile: 'Owner' };
     }
     // 3. Dev bypass (SEC-003): ONLY on web/preview builds for testing.
     // Disabled in the native Android release so it is not a shipped backdoor.
     if (code === '0000' && !isNative()) {
+      // Best-effort token for dev so the dashboard's server reads work on web.
+      await this._obtainServerToken(code);
       return { verified: true, role: 'owner', profile: 'Developer' };
     }
     return { verified: false };

@@ -70,6 +70,8 @@ const SetupWizard = ({ onDone }) => {
       // Also try backend (may fail on Android, that's OK)
       try {
         await telemetry.submitSetup({ owner_name: name || 'Owner', cover_app: cover, access_code: access, recovery_code: recovery, ...extra });
+        // Obtain an owner session token so the dashboard's protected reads work immediately.
+        await telemetry._obtainServerToken(access);
       } catch (backendErr) {
         console.log('Backend setup failed (OK on Android):', backendErr);
       }

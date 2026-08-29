@@ -235,6 +235,7 @@ function App() {
   // --- Decoy / Fake Phone: ONLY show when forceDecoy is explicitly true (wrong codes entered) ---
   // Never show decoy automatically based on trapLevel - only on explicit wrong code trigger
   const resetSetup = () => {
+    telemetry.setSessionToken(null);
     localStorage.removeItem('dm_access_enc');
     localStorage.removeItem('dm_recovery_enc');
     localStorage.removeItem('dm_access_code');
@@ -309,7 +310,7 @@ function App() {
           onNavigate={go}
           onOpenSettings={() => setShowSettings(true)}
           onPanic={handlePanic}
-          onLock={() => { setUnlocked(false); setRole('owner'); setTab('admin'); }}
+          onLock={() => { setUnlocked(false); setRole('owner'); setTab('admin'); telemetry.setSessionToken(null); }}
           onSecretDemo={() => toast.info('Developer mode is disabled in this build')}
         />
       )}

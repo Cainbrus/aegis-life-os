@@ -1,0 +1,40 @@
+{
+  "summary": "Iteration 22 (SEC-002 Stage-2 Auth verification). Backend: 45/45 pass on new /app/backend/tests/test_sec002_session_auth.py. Covered: token issuance (verify-access/verify-recovery return token; wrong code -> token null), 10 gated endpoints all return 401 with (a) no token, (b) bogus token, (c) valid token bound to a DIFFERENT device (cross-device rejection), full vault CRUD with valid token, decoy read/write, recovery/location, and regression that non-gated endpoints (setup, setup/status, status, telemetry, events POST-write, recovery/trigger, family/create+status) still work WITHOUT a token. Frontend Playwright: fresh-device setup wizard -> token stored in sessionStorage (dm_session_token) -> admin-dashboard -> Home -> Hidden Vault -> add note (POST /vault/add 200) -> item appears in list -> open item modal (GET /vault/item 200) -> Evidence/Recovery/Decoy screens load with no auth-error text. Lock/reload -> calculator cover -> access code 1234= -> admin-dashboard reappears with a FRESH token, vault still works. 2+3*4=14 calculator math OK. 0000 web dev bypass still opens dashboard. Wrong-code x5 triggered decoy and decoy-statusbar-time x5 exit works. SEC-002 is CLOSED and no regressions.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "VaultScreen AddModal",
+        "issue": "The 'Hide it' save button is obscured on mobile viewport (390x844): the modal container uses z-50 while the bottom navigation bar uses z-[10000], so a normal pointer click on data-testid='vault-save' hits the nav instead of the button. A JS .click() bypass succeeded, and the button IS visually reachable when the modal is centered on larger viewports, but on phone-sized screens users may need to close the nav or scroll. Consider raising the modal z-index above z-10000 or hiding bottom-nav while modals are open.",
+        "selector": "[data-testid=\"vault-save\"]",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sec002_session_auth.py",
+    "/app/test_reports/pytest/iter22_sec002.xml"
+  ],
+  "action_items": [
+    "Optional: raise Vault add-modal z-index above the bottom nav (z-[10000]) or dim/hide the nav while a modal is open, so the Save button is directly clickable on mobile viewports."
+  ],
+  "critical_code_review_comments": [
+    "security_engine.py _require_session correctly binds sessions to device_id and rejects mismatch (line 104-108). Token generation uses secrets.token_urlsafe(32) (line 74) - cryptographically strong.",
+    "Session TTL is 24h with expiry check on read (line 97). Expired-token cleanup is best-effort inside _issue_session; a background sweep would be nicer but the check-on-read makes stale tokens harmless.",
+    "TelemetryService.setSessionToken sets axios.defaults.headers.common['X-DM-Token'] so ALL direct axios calls from all components send the token automatically. Constructor also restores from sessionStorage - good, survives F5.",
+    "SetupWizard.finish() correctly calls telemetry._obtainServerToken(access) after submitSetup, so the post-setup dashboard load has a working token (verified: /vault/list returned 200 immediately after setup).",
+    "Note: db.sessions collection has no TTL index; only per-device cleanup on new issuance. Consider adding a MongoDB TTL index on expires_at for automatic pruning in prod.",
+    "verify-recovery does not distinguish 'configured' vs 'unconfigured' - unconfigured devices simply return verified:false. Acceptable but consider 404 for clarity.",
+    "The dev-bypass path (verifyAccess code === '0000' && !isNative()) also calls _obtainServerToken(code) which will fail server-side (verified:false) and leave axios without X-DM-Token, so protected reads on the web-only dev flow will 401. Fine for preview builds; document as known behaviour."
+  ],
+  "updated_files": ["/app/backend/tests/test_sec002_session_auth.py"],
+  "success_rate": {"backend": "100% (45/45)", "frontend": "100% of critical flows (setup+token, vault add/list/item, evidence, recovery, decoy, unlock via calculator, 0000 web bypass, decoy-escape, math). Vault-save has a z-index UI issue that required JS click bypass in tests - functional but requires main-agent attention."},
+  "test_credentials": "Ephemeral per-run devices TEST_sec002_A_*, TEST_sec002_B_*, TEST_sec002_fam_*, TEST_iter22_*, TEST_iter22b_*, TEST_iter22c_*. Setup uses access=2580/recovery=rec999 (backend suite) and access=1234/recovery=5678 (frontend flow, per test_credentials.md guidance).",
+  "seed_data_creation": "All test devices/items are TEST_-prefixed; no shared/production data touched.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "SEC-002 closed. Reusable suites in /app/backend/tests/: test_sec002_session_auth.py (45 tests, token issuance + gated 401 + cross-device rejection + valid-token 200 + ungated regression), test_sec005_family_role.py (iter21), test_iter18_regression.py (core flows), test_sec001_wipe_neutralized.py (iter20). test_sec002 uses REACT_APP_BACKEND_URL from /app/frontend/.env if not in env. Known mobile-viewport UI overlap: bottom-nav z-[10000] hides vault-add-modal 'Hide it' save button - use element.click() via JS or raise modal z-index. Landing page 'Request Beta Access' link must be clicked after every reload before setup-wizard is reachable.",
+  "rca of the issue": "N/A - no functional bugs. UI z-index note: /app/frontend/src/components/VaultScreen.js line 128 uses 'fixed inset-0 z-50', but /app/frontend/src/App.js line 333 gives the bottom nav 'z-[10000]'. The nav overlaps the bottom part of the modal on mobile-height viewports, hiding the last button (Save/Hide it). Fix: change modal container to z-[10001] OR conditionally hide bottom-nav when a full-screen modal is open."
+}
