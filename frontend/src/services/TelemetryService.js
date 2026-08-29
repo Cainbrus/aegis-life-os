@@ -8,6 +8,7 @@
 // and reports them to the Security Engine for baseline training & scoring.
 // =============================================
 import axios from 'axios';
+import { decryptValue } from './SecureStore';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -325,28 +326,32 @@ class TelemetryService {
     return res.data;
   }
 
-  verifyAccess(code) {
-    // PLAIN TEXT verification - no hashing, no backend
-    // Priority: 1. accessCode, 2. recoveryCode, 3. dev bypass
-    
-    const storedAccessCode = localStorage.getItem('dm_access_code');
-    const storedRecoveryCode = localStorage.getItem('dm_recovery_code');
-    
-    // 1. Check access code first
-    if (storedAccessCode && code === storedAccessCode) {
+  async verifyAccess(code) {
+    // Decrypt stored codes (AES-GCM) then compare in plain text.
+    // Priority: 1. access code, 2. recovery code, 3. dev bypass.
+    // Backward-compatible with legacy plain-text keys (dm_access_code/dm_recovery_code).
+    const accessEnc = localStorage.getItem('dm_access_enc');
+    const recoveryEnc = localStorage.getItem('dm_recovery_enc');
+    const legacyAccess = localStorage.getItem('dm_access_code');
+    const legacyRecovery = localStorage.getItem('dm_recovery_code');
+
+    let storedAccess = legacyAccess;
+    let storedRecovery = legacyRecovery;
+    if (accessEnc) storedAccess = await decryptValue(this.deviceId, accessEnc);
+    if (recoveryEnc) storedRecovery = await decryptValue(this.deviceId, recoveryEnc);
+
+    // 1. Access code
+    if (storedAccess && code === storedAccess) {
       return { verified: true, role: 'owner', profile: 'Owner' };
     }
-    
-    // 2. Check recovery code second
-    if (storedRecoveryCode && code === storedRecoveryCode) {
+    // 2. Recovery code
+    if (storedRecovery && code === storedRecovery) {
       return { verified: true, role: 'owner', profile: 'Owner' };
     }
-    
-    // 3. Dev bypass last (always available)
+    // 3. Dev bypass
     if (code === '0000') {
       return { verified: true, role: 'owner', profile: 'Developer' };
     }
-    
     return { verified: false };
   }
 

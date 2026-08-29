@@ -182,6 +182,14 @@ Files: `android/app/src/main/java/com/digitalmate/app/*.kt` + manifest + `res/xm
 - Phase: Stage 1 MVP (security-focused) — working & tested
 - Last Updated: December 2025
 
+## Code at Rest Encryption (Dec 16, 2025)
+Added client-side AES-GCM encryption for stored codes (verified — iteration_19, 10/10 frontend pass):
+- **NEW `src/services/SecureStore.js`**: `encryptValue`/`decryptValue` using AES-GCM 256-bit with a PBKDF2-derived key (100k iterations) from `deviceId + APP_SALT`. Random IV per value. Graceful `plain:` fallback if SubtleCrypto is unavailable on old WebViews.
+- **SetupWizard**: encrypts access + recovery codes → stores `dm_access_enc` / `dm_recovery_enc` (values prefixed `enc:`); removes legacy plain-text keys.
+- **TelemetryService.verifyAccess**: now async — decrypts stored codes then compares in plain text (preserves the no-hashing comparison model). Legacy plain-key + `0000` dev bypass still supported.
+- **App.js**: `handleCoverSubmit` awaits async verification; both `resetSetup` paths clear the encrypted keys.
+- Codes are no longer readable directly from localStorage — only ciphertext is stored.
+
 ## Code Review Cleanup (Dec 16, 2025)
 Applied security & quality fixes from code review (verified — iteration_18, 10/10 backend + 100% frontend pass):
 - **CoverScreen.js**: Replaced `eval()` with a safe recursive-descent arithmetic parser (`safeEval`) — handles precedence, parentheses, unary +/-, division-by-zero. Works both as a real calculator and for access-code entry.

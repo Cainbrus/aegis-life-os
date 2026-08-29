@@ -1,0 +1,24 @@
+{
+  "summary": "Verified client-side AES-GCM encryption of access/recovery codes end-to-end in real browser. All 8 frontend flows PASS: (A) Setup wizard finishes and stores 'enc:' prefixed ciphertext in dm_access_enc/dm_recovery_enc with no legacy plain-text keys; (B) setup-open-dashboard opens admin-dashboard; (C) return-to-cover (setup-close-btn) + typing correct access code 1234 on calculator + '=' unlocks admin-dashboard (proves async decrypt-then-compare works); (D) recovery code 5678 also unlocks admin-dashboard; (E) 0000 dev bypass still works; (F) calculator math 2+3*4= produces 14 via safeEval; (G) 5x wrong codes triggers decoy-mode with decoy-reset-setup visible; (H) tapping decoy-statusbar-time 5x returns to admin-dashboard; (I) admin test-decoy-btn opens decoy; (J) reset-setup-btn clears dm_access_enc/dm_recovery_enc/dm_configured. Backend was not re-tested this iteration (no backend code changed, prior iter_18 backend suite already green).",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_19.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "SecureStore uses PBKDF2 with deviceId as key material - if a user resets device_id (e.g. via reset-setup-btn which removes dm_device_id), any residual dm_access_enc from a partial reset would become permanently undecryptable. Not an issue today because resetSetup clears both together, but worth documenting.",
+    "SetupWizard.finish() still sends the raw access_code/recovery_code to the backend via telemetry.submitSetup(). If encryption-at-rest is the goal, consider whether the server should store hashes or ciphertext instead of plain codes. Out of scope for this iteration (backend unchanged) but a follow-up item.",
+    "TelemetryService.verifyAccess is now async but returns before propagating decryptValue failures - decryptValue returning null just makes the compare fail silently. This is acceptable but means a corrupted enc value looks identical to a wrong code and will contribute to the 5-fail decoy counter."
+  ],
+  "updated_files": [],
+  "success_rate": { "backend": "not tested (unchanged)", "frontend": "100% (10/10 checks passed)" },
+  "test_credentials": "Setup-defined per test run: access=1234, recovery=5678; dev bypass=0000. Fresh device_id per encryption test (e.g. dm-enc-B, dm-enc-F).",
+  "seed_data_creation": "None. Each test starts with localStorage.clear() and a fresh dm_device_id.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Encryption-at-rest is fully working in-browser. verifyAccess is now async and Calculator/Pad/NotesCover all correctly await onSubmit. If future iterations touch SetupWizard, TelemetryService, SecureStore or CoverScreen, re-run the flows in iteration_19 verbatim. Landing page requires clicking 'Request Beta Access' button to enter the app after every reload (screen state does not persist).",
+  "rca of the issue": "N/A - no bugs found in this iteration."
+}

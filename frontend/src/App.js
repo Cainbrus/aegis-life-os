@@ -149,9 +149,9 @@ function App() {
   }, [screen, unlocked]);
 
   // Cover-screen submit: try Access code -> unlock; else try a secret recovery trigger (silent)
-  const handleCoverSubmit = (code) => {
+  const handleCoverSubmit = async (code) => {
     if (!code || code.length < 4) return 'none';
-    const r = telemetry.verifyAccess(code);
+    const r = await telemetry.verifyAccess(code);
     if (r && r.verified) {
       setUnlocked(true); setRole(r.role || 'owner'); telemetry.setScreen('home');
       // Configure the native layer (background receivers/services) with the owner's settings
@@ -235,6 +235,8 @@ function App() {
   // --- Decoy / Fake Phone: ONLY show when forceDecoy is explicitly true (wrong codes entered) ---
   // Never show decoy automatically based on trapLevel - only on explicit wrong code trigger
   const resetSetup = () => {
+    localStorage.removeItem('dm_access_enc');
+    localStorage.removeItem('dm_recovery_enc');
     localStorage.removeItem('dm_access_code');
     localStorage.removeItem('dm_recovery_code');
     localStorage.removeItem('dm_access_hash');
@@ -367,6 +369,8 @@ const SettingsPanel = ({ onClose, onWebsite, onProfiles, onFamily, onResetSetup 
   };
   const resetSetup = () => {
     if (window.confirm('This will clear all codes and settings. You will need to set up Digital Mate again. Continue?')) {
+      localStorage.removeItem('dm_access_enc');
+      localStorage.removeItem('dm_recovery_enc');
       localStorage.removeItem('dm_access_code');
       localStorage.removeItem('dm_recovery_code');
       localStorage.removeItem('dm_access_hash');

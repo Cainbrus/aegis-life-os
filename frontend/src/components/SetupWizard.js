@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { Shield, KeyRound, LifeBuoy, Calculator, Clock, StickyNote, Check, MapPin, Camera, Bell } from 'lucide-react';
 import telemetry from '../services/TelemetryService';
+import { encryptValue } from '../services/SecureStore';
 
 // Simple setup: Cover -> Access code -> Recovery code -> Permissions -> Done.
 // Everything else (wipe code, trusted numbers, family, email) is optional and added later in Settings.
@@ -53,9 +54,16 @@ const SetupWizard = ({ onDone }) => {
       const c = contact.trim();
       const extra = c ? (c.includes('@') ? { recovery_email: c } : { trusted_numbers: [c] }) : {};
       
-      // Save codes to localStorage as PLAIN TEXT for reliable verification
-      localStorage.setItem('dm_access_code', access);
-      localStorage.setItem('dm_recovery_code', recovery);
+      // Encrypt codes at rest (AES-GCM via SubtleCrypto) before storing.
+      const [accessEnc, recoveryEnc] = await Promise.all([
+        encryptValue(telemetry.deviceId, access),
+        encryptValue(telemetry.deviceId, recovery),
+      ]);
+      localStorage.setItem('dm_access_enc', accessEnc);
+      localStorage.setItem('dm_recovery_enc', recoveryEnc);
+      // Remove any legacy plain-text copies from earlier builds.
+      localStorage.removeItem('dm_access_code');
+      localStorage.removeItem('dm_recovery_code');
       localStorage.setItem('dm_cover_app', cover);
       localStorage.setItem('dm_configured', 'true');
       

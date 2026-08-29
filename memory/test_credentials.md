@@ -41,11 +41,13 @@ POST /api/security/setup
 - recovery/trigger {secret}: recovery **phrase** | **panic pattern** | **recovery code**
 
 ## LocalStorage (saved during setup)
-- `dm_access_hash`: Base64 encoded access code
-- `dm_recovery_hash`: Base64 encoded recovery code
+- `dm_access_enc`: **AES-GCM encrypted** access code (prefix `enc:`), decrypted+compared at unlock
+- `dm_recovery_enc`: **AES-GCM encrypted** recovery code (prefix `enc:`)
 - `dm_cover_app`: Selected cover app type
 - `dm_configured`: 'true' when setup complete
-- `dm_device_id`: Unique device identifier
+- `dm_device_id`: Unique device identifier (also the PBKDF2 key material for code encryption)
+- Legacy plain-text keys `dm_access_code`/`dm_recovery_code` are removed on setup; verifyAccess still reads them for backward compatibility if present.
+- Dev bypass code `0000` always unlocks (test builds).
 
 ## Multiple owner profiles (Trusted Family)
 `POST /profiles/add { device_id, name, access_code, role, recovery_code }` (recovery code required).
