@@ -1,0 +1,38 @@
+{
+  "summary": "Iteration 21: Verified SEC-003 (0000 dev-bypass still active on web/preview via isNative()==false) and SEC-005 (family/join can no longer self-assign 'parent'; coerced to 'child'). Backend: 17/17 pass across new /app/backend/tests/test_sec005_family_role.py (7 tests) and rerun of /app/backend/tests/test_iter18_regression.py (10 tests). Frontend Playwright: real access code 1234 -> admin-dashboard PASS, real recovery 5678 -> admin-dashboard PASS, 0000 dev bypass on web -> admin-dashboard PASS, 5x wrong -> decoy-mode PASS, decoy-statusbar-time x5 -> admin-dashboard PASS. No regressions detected.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sec005_family_role.py",
+    "/app/backend/tests/test_iter18_regression.py",
+    "/app/test_reports/pytest/iter21_sec005.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "security_engine.py:710 correctly restricts joiner role to ('teen','child'); anything else (including explicit 'parent') collapses to 'child'. Response now returns member_role so callers can observe the coercion - good.",
+    "family_status only returns family_code when member_role=='parent' (line 732), so joiners cannot exfiltrate the code even if they inspect network responses. Verified.",
+    "family/members correctly hides parents' locations from children (visible list filters out parent members when role!='parent'). can_manage gated on role=='parent'. Verified.",
+    "TelemetryService.verifyAccess (line 354): dev-bypass guarded by `code === '0000' && !isNative()`. Capacitor.isNativePlatform() returns false on web, true on the Android WebView build, so 0000 is a dev-only web backdoor. Acceptable for preview; make sure release Android APK is built with Capacitor plugin loaded (otherwise isNative() would return false and reintroduce the bypass).",
+    "Minor: /family/join currently upserts by device_id only. If the same device joins two different family codes in succession, membership will silently move to the newest family. Not a security issue but consider returning 409 if the device already belongs to a family and requiring /family/leave first."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_sec005_family_role.py"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17)",
+    "frontend": "100% (5/5 flows: sec003-web, real-access-unlock, real-recovery-unlock, wrong-5x-decoy, decoy-escape)"
+  },
+  "test_credentials": "Ephemeral per-run devices TEST_sec005_parent_<ts>, TEST_sec005_joiner_<ts>, TEST_sec005_teen_<ts>, TEST_sec005_bogus_<ts>. Frontend test setup: fresh device_id TEST_iter21b_<ts> with access=1234, recovery=5678, cover=calculator.",
+  "seed_data_creation": "All test devices are TEST_-prefixed; no shared/production data touched.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "SEC-003 and SEC-005 fixes confirmed. Reusable regression suites: test_sec005_family_role.py (family role hardening), test_iter18_regression.py (core flows), test_sec001_wipe_neutralized.py (from iter20). For frontend testing pattern: set localStorage AFTER first page.goto (not via addInitScript, which re-runs on every navigation and would clear setup state on reload). Click 'Request Beta Access' on landing page to enter the app on every fresh load.",
+  "rca of the issue": "N/A - both fixes previously applied by main agent and now verified: (1) SEC-003 - one-line client guard `!isNative()` around dev bypass; native Android builds will not accept 0000. (2) SEC-005 - server-side role whitelist ('teen','child') on /family/join collapses any other requested role (including 'parent') to 'child'. Backend curl-tested with member_role='parent' returns member_role='child'."
+}

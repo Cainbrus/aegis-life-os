@@ -9,6 +9,7 @@
 // =============================================
 import axios from 'axios';
 import { decryptValue } from './SecureStore';
+import { isNative } from './NativeBridge';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -348,8 +349,9 @@ class TelemetryService {
     if (storedRecovery && code === storedRecovery) {
       return { verified: true, role: 'owner', profile: 'Owner' };
     }
-    // 3. Dev bypass
-    if (code === '0000') {
+    // 3. Dev bypass (SEC-003): ONLY on web/preview builds for testing.
+    // Disabled in the native Android release so it is not a shipped backdoor.
+    if (code === '0000' && !isNative()) {
       return { verified: true, role: 'owner', profile: 'Developer' };
     }
     return { verified: false };

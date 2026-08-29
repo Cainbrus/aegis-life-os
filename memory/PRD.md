@@ -182,6 +182,19 @@ Files: `android/app/src/main/java/com/digitalmate/app/*.kt` + manifest + `res/xm
 - Phase: Stage 1 MVP (security-focused) — working & tested
 - Last Updated: December 2025
 
+## Security Audit Remediation (Dec 16, 2025)
+Ran a full read-only security audit (verdict: FAIL). Remediation status:
+
+**Fixed & verified:**
+- **SEC-001 [CRITICAL] — Global unauthenticated data wipe**: `/api/wipe/execute-complete` previously ran `delete_many({})` on 12 shared collections for any anonymous caller. Now returns HTTP 410 (endpoint neutralized, `perform_complete_wipe()` deleted). The only wipe path is `/api/security/recovery/wipe` (bcrypt-verified + device-scoped). Verified 22/22 tests (iteration_20).
+- **CORS**: Fixed invalid `allow_origins:* + allow_credentials:true` → `allow_credentials:false` (no cookie auth used).
+- **SEC-003 [HIGH] — `0000` dev backdoor**: Now gated by `!isNative()` — active only on web/preview for testing, disabled in the native Android release. Verified (iteration_21).
+- **SEC-005 [MEDIUM] — Family role self-assignment**: `/family/join` no longer accepts `parent`; joiners are coerced to `teen`/`child`. Only the family creator is parent. Family code hidden from non-parents. Verified 17/17 tests (iteration_21).
+
+**Deferred to Stage-2 Auth epic (documented, not yet fixed):**
+- **SEC-002 [CRITICAL] — BOLA / no backend auth**: All `/api/security/*` endpoints trust `device_id` alone (no server-verified session). A thief with the device_id could read that device's vault/evidence/GPS from the server. Proper fix = server-issued session token after code verification, enforced on every protected endpoint. Requires coordinated frontend + FastAPI + **native Kotlin** changes → deferred to avoid destabilizing the working app (native layer can't be validated in the cloud container).
+- **SEC-004 [HIGH] — Client crypto key co-located**: AES-GCM key derived from `device_id` which sits beside the ciphertext. Inherent to the client-only model; resolved together with SEC-002 when server-side auth is added.
+
 ## Code at Rest Encryption (Dec 16, 2025)
 Added client-side AES-GCM encryption for stored codes (verified — iteration_19, 10/10 frontend pass):
 - **NEW `src/services/SecureStore.js`**: `encryptValue`/`decryptValue` using AES-GCM 256-bit with a PBKDF2-derived key (100k iterations) from `deviceId + APP_SALT`. Random IV per value. Graceful `plain:` fallback if SubtleCrypto is unavailable on old WebViews.

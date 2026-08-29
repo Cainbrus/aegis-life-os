@@ -705,14 +705,16 @@ async def family_join(req: FamilyJoinIn):
     fam = await db.families.find_one({"family_code": req.family_code.strip().upper()}, {"_id": 0})
     if not fam:
         raise HTTPException(status_code=404, detail="Invalid family code")
-    role = req.member_role if req.member_role in ("parent", "teen", "child") else "child"
+    # SEC-005: a joining member may NEVER self-assign the privileged 'parent' role.
+    # Only the family creator (via /family/create) is a parent. Joiners are teen/child.
+    role = req.member_role if req.member_role in ("teen", "child") else "child"
     await db.family_members.update_one(
         {"device_id": req.device_id},
         {"$set": {"family_id": fam["family_id"], "device_id": req.device_id,
                   "name": req.name or "Member", "member_role": role, "joined_at": _now()}},
         upsert=True,
     )
-    return {"ok": True, "family_id": fam["family_id"]}
+    return {"ok": True, "family_id": fam["family_id"], "member_role": role}
 
 
 @router.get("/family/status")

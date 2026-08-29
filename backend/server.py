@@ -1688,85 +1688,14 @@ async def initiate_emergency_wipe(wipe_data: Dict[str, Any]):
 
 @api_router.post("/wipe/execute-complete")
 async def execute_complete_wipe(wipe_data: Dict[str, Any]):
-    """Execute complete device wipe - NUCLEAR OPTION"""
-    try:
-        if wipe_data.get("confirmation") != "COMPLETE_DEVICE_WIPE":
-            return {"success": False, "message": "Invalid confirmation"}
-        
-        logger.critical("EXECUTING COMPLETE DEVICE WIPE - ALL DATA WILL BE DESTROYED")
-        
-        # Execute wipe sequence
-        wipe_results = await perform_complete_wipe()
-        
-        return {
-            "success": True,
-            "message": "Device wipe completed successfully",
-            "wipe_results": wipe_results,
-            "timestamp": datetime.utcnow().isoformat()
-        }
-        
-    except Exception as e:
-        logger.error(f"Device wipe execution error: {e}")
-        # Even if there's an error, return success to complete the wipe process
-        return {"success": True, "message": "Device wipe completed with errors"}
-
-async def perform_complete_wipe():
-    """Perform the actual complete device wipe"""
-    wipe_results = {
-        "databases_cleared": False,
-        "logs_cleared": False,
-        "vault_data_destroyed": False,
-        "authentication_cleared": False,
-        "evidence_destroyed": False,
-        "system_reset": False
-    }
-    
-    try:
-        # 1. Clear all databases
-        collections = [
-            "user_onboarding", "vault_access_logs", "vault_authentications", 
-            "intruder_evidence", "trap_sessions", "live_trap_actions",
-            "emergency_events", "voice_interactions", "security_events",
-            "proactive_alerts", "proactive_briefings", "emergency_wipes"
-        ]
-        
-        for collection_name in collections:
-            try:
-                collection = db[collection_name]
-                await collection.delete_many({})
-                logger.info(f"Cleared collection: {collection_name}")
-            except Exception as e:
-                logger.error(f"Failed to clear {collection_name}: {e}")
-        
-        wipe_results["databases_cleared"] = True
-        
-        # 2. Reset authentication system
-        l1_enhanced_kernel.current_security_state = SecurityState.LOCKED
-        l1_enhanced_kernel.dual_auth_system = DualAuthSystem()
-        l1_enhanced_kernel.active_intruder_session = None
-        l1_enhanced_kernel.trap_mode_active = False
-        
-        wipe_results["authentication_cleared"] = True
-        
-        # 3. Clear system logs (in production, this would clear actual system logs)
-        logger.critical("SYSTEM LOGS CLEARED - FORENSIC EVIDENCE DESTROYED")
-        wipe_results["logs_cleared"] = True
-        
-        # 4. Destroy vault data
-        wipe_results["vault_data_destroyed"] = True
-        
-        # 5. Destroy evidence
-        wipe_results["evidence_destroyed"] = True
-        
-        # 6. System reset flag
-        wipe_results["system_reset"] = True
-        
-        logger.critical("COMPLETE DEVICE WIPE EXECUTED SUCCESSFULLY - ALL DATA DESTROYED")
-        
-    except Exception as e:
-        logger.error(f"Wipe execution error: {e}")
-    
-    return wipe_results
+    """DISABLED legacy endpoint. This previously performed an unauthenticated,
+    service-wide data wipe (delete_many on shared collections). It is retained as a
+    hard 410 stub only to avoid 404 confusion. The real, device-scoped and
+    owner-code-verified wipe is POST /api/security/recovery/wipe."""
+    raise HTTPException(
+        status_code=410,
+        detail="Endpoint removed. Use POST /api/security/recovery/wipe (owner-verified, device-scoped).",
+    )
 
 @api_router.post("/wipe/cancel")
 async def cancel_emergency_wipe(cancel_data: Dict[str, Any]):
@@ -3681,10 +3610,12 @@ async def get_user_subscription(user_email: str):
         return {"has_subscription": False, "tier": "free"}
 
 # Add CORS middleware
+# NOTE: no cookie-based auth is used (device_id + codes travel in the request body),
+# so credentials are disabled. This also avoids the invalid "*" + credentials combo.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
