@@ -456,16 +456,23 @@ COVER_APPS = {"calculator", "clock", "notes"}
 
 
 @router.get("/setup/status")
-async def setup_status(device_id: str):
+async def setup_status(device_id: str, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    # Unauthenticated callers (pre-unlock) get ONLY non-sensitive flags.
+    # Sensitive config (trusted numbers/emails/profile names) is returned only when a
+    # valid owner session token is supplied (SEC-002).
     cfg = await _get_config(device_id)
-    return {
+    out = {
         "configured": bool(cfg and cfg.get("configured")),
         "cover_app": (cfg or {}).get("cover_app", "calculator"),
-        "profiles": [p.get("name") for p in (cfg or {}).get("profiles", [])],
-        "trusted_numbers": (cfg or {}).get("trusted_numbers", []),
-        "backup_numbers": (cfg or {}).get("backup_numbers", []),
-        "has_email": bool((cfg or {}).get("recovery_email")),
     }
+    if await _session_device(x_dm_token) == device_id:
+        out.update({
+            "profiles": [p.get("name") for p in (cfg or {}).get("profiles", [])],
+            "trusted_numbers": (cfg or {}).get("trusted_numbers", []),
+            "backup_numbers": (cfg or {}).get("backup_numbers", []),
+            "has_email": bool((cfg or {}).get("recovery_email")),
+        })
+    return out
 
 
 @router.post("/setup")
@@ -515,12 +522,17 @@ async def setup(req: SetupIn):
 VALID_ROLES = {"owner", "trusted", "limited", "guest"}
 
 
-@router.get("/profiles")
-async def list_profiles(device_id: str):
+async def _profiles_payload(device_id: str):
     cfg = await _get_config(device_id)
     profiles = [{"id": p.get("id"), "name": p.get("name"), "role": p.get("role", "trusted")}
                 for p in (cfg or {}).get("profiles", [])]
     return {"profiles": profiles}
+
+
+@router.get("/profiles")
+async def list_profiles(device_id: str, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(device_id, x_dm_token)
+    return await _profiles_payload(device_id)
 
 
 @router.post("/profiles/add")
@@ -543,7 +555,7 @@ async def add_profile(req: ProfileIn):
             "access_hash": _hash_secret(req.access_code), "created_at": _now(),
         }}},
     )
-    return await list_profiles(req.device_id)
+    return await _profiles_payload(req.device_id)
 
 
 @router.post("/profiles/remove")
@@ -558,7 +570,7 @@ async def remove_profile(req: ProfileRemoveIn):
     await db.device_config.update_one(
         {"device_id": req.device_id},
         {"$pull": {"profiles": {"id": req.profile_id}}})
-    return await list_profiles(req.device_id)
+    return await _profiles_payload(req.device_id)
 
 
 @router.post("/verify-access")
@@ -795,7 +807,8 @@ async def family_status(device_id: str):
 
 
 @router.get("/family/members")
-async def family_members(device_id: str):
+async def family_members(device_id: str, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(device_id, x_dm_token)
     me = await _my_membership(device_id)
     if not me:
         return {"in_family": False, "members": []}
@@ -1044,7 +1057,8 @@ async def score_session(req: ScoreRequest):
 
 
 @router.get("/status")
-async def security_status(device_id: str):
+async def security_status(device_id: str, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(device_id, x_dm_token)
     profile = await _get_profile(device_id)
     state = await db.device_state.find_one({"device_id": device_id}, {"_id": 0}) or {}
     sample_count = await db.behavior_samples.count_documents(
@@ -1081,7 +1095,8 @@ async def security_status(device_id: str):
 
 
 @router.post("/baseline/reset")
-async def reset_baseline(req: RecoveryAction):
+async def reset_baseline(req: RecoveryAction, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(req.device_id, x_dm_token)
     await db.behavior_samples.delete_many({"device_id": req.device_id})
     await db.owner_profiles.delete_one({"device_id": req.device_id})
     return {"ok": True, "message": "Baseline reset. Owner recognition will re-learn."}
@@ -1150,15 +1165,17 @@ async def add_photo(p: PhotoIn):
 
 
 @router.get("/alerts")
-async def list_alerts(device_id: str):
+async def list_alerts(device_id: str, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(device_id, x_dm_token)
     cur = db.owner_alerts.find({"device_id": device_id}, {"_id": 0}).sort("created_at", -1).limit(50)
     alerts = await cur.to_list(length=50)
     return {"alerts": alerts, "count": len(alerts), "unread": sum(1 for a in alerts if not a.get("read"))}
 
 
 @router.post("/panic")
-async def panic(req: RecoveryAction):
+async def panic(req: RecoveryAction, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
     """Owner-initiated Lost Phone: lock, enable lost mode + recovery tracking, alert owner."""
+    await _require_session(req.device_id, x_dm_token)
     set_state = {
         "device_id": req.device_id, "locked": True, "lost_mode": True,
         "trap_level": 3, "trap_active": False, "panic_at": _now(),
@@ -1267,7 +1284,8 @@ async def recovery_location(device_id: str, x_dm_token: Optional[str] = Header(d
 
 
 @router.post("/recovery/lock")
-async def recovery_lock(req: RecoveryAction):
+async def recovery_lock(req: RecoveryAction, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
+    await _require_session(req.device_id, x_dm_token)
     await db.device_state.update_one(
         {"device_id": req.device_id},
         {"$set": {"locked": True, "lost_mode": True, "locked_at": _now(),
@@ -1349,6 +1367,7 @@ async def recovery_wipe(req: RecoveryAction):
     await db.decoy_profiles.delete_many({"device_id": req.device_id})        # decoy profiles
     await db.behavior_samples.delete_many({"device_id": req.device_id})      # recognition data
     await db.owner_alerts.delete_many({"device_id": req.device_id})
+    await db.sessions.delete_many({"device_id": req.device_id})              # revoke all owner sessions
     await db.device_state.update_one(
         {"device_id": req.device_id},
         {"$set": {"wiped": True, "wiped_at": _now(), "trap_active": False, "device_id": req.device_id},
@@ -1586,9 +1605,10 @@ class InsightsIn(BaseModel):
 
 
 @router.post("/ai-insights")
-async def ai_insights(req: InsightsIn):
+async def ai_insights(req: InsightsIn, x_dm_token: Optional[str] = Header(default=None, alias="X-DM-Token")):
     """AI advisor focused on security: summarises real device signals into prioritized,
     actionable insights (suspicious activity, recognition status, battery, privacy)."""
+    await _require_session(req.device_id, x_dm_token)
     state = await db.device_state.find_one({"device_id": req.device_id}, {"_id": 0}) or {}
     profile = await db.owner_profiles.find_one({"device_id": req.device_id}, {"_id": 0}) or {}
     cur = db.security_events.find({"device_id": req.device_id}, {"_id": 0, "photo": 0}).sort("created_at", -1).limit(12)

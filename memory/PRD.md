@@ -182,6 +182,16 @@ Files: `android/app/src/main/java/com/digitalmate/app/*.kt` + manifest + `res/xm
 - Phase: Stage 1 MVP (security-focused) — working & tested
 - Last Updated: December 2025
 
+## Security Re-Audit Remediation (Dec 16, 2025 — round 2)
+A second read-audit confirmed SEC-001/003/005 + CORS held, but SEC-002 was only PARTIAL (token gate missed several endpoints). Now FULLY closed (verified — iteration_23: 49/49 backend + 100% frontend regression, zero 401s):
+- **Gated the remaining sensitive endpoints** with `X-DM-Token`: `/status`, `/alerts`, `/profiles`, `/family/members`, `/ai-insights`, `/baseline/reset`, `/panic`, `/recovery/lock` (join the already-gated vault/events/decoy/location).
+- **`/setup/status` PII gating**: unauthenticated callers get only `{configured, cover_app}`; trusted numbers/emails/profile names returned ONLY with a valid device-bound token.
+- **Legacy shadow-auth disabled**: `POST /api/auth/pattern` (which flipped a process-global OWNER_PRESENT state using hard-coded default patterns) now returns HTTP 410.
+- **Session revocation on wipe**: `/recovery/wipe` now clears `db.sessions` for the device — pre-wipe tokens become invalid.
+- All state-changes/reads are device-token-bound; cross-device token reuse rejected.
+
+**Open (non-blocking, backlog):** MongoDB TTL index on `sessions.expires_at`; verify-access rate-limiting/lockout; move `device_id` out of GET query strings; legacy `/wipe/*-remote-trigger` + `/auth/setup-dual-patterns` cleanup; `/ai-insights` spinner timeout UX.
+
 ## Stage-2 Auth — SEC-002 CLOSED (Dec 16, 2025)
 Implemented server-side session tokens to close the BOLA finding (verified — iteration_22, 45/45 backend + full frontend E2E pass):
 - **Backend**: `/verify-access` & `/verify-recovery` now issue a `secrets.token_urlsafe(32)` session token bound to `device_id` (stored in `db.sessions`, 24h expiry). NEW helpers `_issue_session`/`_session_device`/`_require_session`.

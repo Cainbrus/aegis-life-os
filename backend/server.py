@@ -927,27 +927,10 @@ async def get_auth_status():
 
 @api_router.post("/auth/pattern")
 async def authenticate_pattern(pattern_data: Dict[str, Any]):
-    """Enhanced dual pattern authentication"""
-    try:
-        pattern_attempt = PatternAttempt(
-            pattern=pattern_data.get("pattern", ""),
-            pattern_type=PatternType(pattern_data.get("pattern_type", "auto_detect"))
-        )
-        
-        result = await l1_enhanced_kernel.authenticate_with_pattern(pattern_attempt)
-        
-        # Update L2 security state
-        l2_proactive_orchestrator.security_state = l1_enhanced_kernel.current_security_state
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Pattern authentication error: {e}")
-        return {
-            "success": False,
-            "security_state": "STATE_CODE_RED",
-            "message": "Authentication system error"
-        }
+    """DISABLED legacy shadow-auth (SEC-003). This previously flipped a process-global
+    security state to OWNER_PRESENT using hard-coded default patterns, unlocking the legacy
+    mock vault/voice endpoints for any caller. The active app uses /api/security/* only."""
+    raise HTTPException(status_code=410, detail="Endpoint removed. Use /api/security/verify-access.")
 
 @api_router.post("/auth/setup-dual-patterns")
 async def setup_dual_patterns(pattern_data: Dict[str, str]):

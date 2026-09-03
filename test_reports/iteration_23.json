@@ -1,0 +1,32 @@
+{
+  "summary": "SEC-002 completeness re-audit (iter23). Backend 49/49 pass on new /app/backend/tests/test_iter23_sec002_complete.py. Verified: (1) all 8 newly-gated endpoints (GET /status, /alerts, /profiles, /family/members; POST /ai-insights, /baseline/reset, /panic, /recovery/lock) return 401 without X-DM-Token AND with a bogus token AND with a cross-device token; 200 with a valid device-bound token. (2) setup/status PII gating: no/wrong/cross-device token -> ONLY {configured, cover_app}; valid token -> also profiles/trusted_numbers/backup_numbers/has_email. Verified with a real trusted number '+15550009' round-trip. (3) POST /api/auth/pattern returns HTTP 410 (legacy shadow-auth disabled). (4) Session revocation on wipe: token issued pre-wipe becomes 401 on /status, /alerts, /vault/list after POST /recovery/wipe with correct wipe_code+confirm:true. (5) Regression ungated (still open, no token): POST /setup, /telemetry, /events (write), /recovery/trigger (secret-based), GET /setup/status (flags-only), /verify-access, /verify-recovery, family/create+status+join. (6) Previously-gated (iter22) endpoints /vault/list, /events GET, /decoy/profile, /recovery/location still 401 without token. Frontend Playwright regression on the CRITICAL /status-gated path: fresh device -> full SetupWizard (name+calculator cover, access=2580, recovery=rec999, permissions, finish) -> setup-complete -> setup-open-dashboard -> admin-dashboard loads with populated stats (stat-learned-behavior, stat-last-unlock, stat-intruder-photos, stat-gps-events, stat-decoy-activations) -> visited nav-home (SecurityDashboard), nav-recovery (Recovery Center), nav-evidence, nav-mate (AI Advisor) -- ZERO 401s across the entire post-unlock session. All /status, /events, /recovery/location, /telemetry, /score calls returned 200 with the X-DM-Token header set globally by TelemetryService. No auth-error text on any screen. Token binding is enforced and no owner-screen regression detected.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter23_sec002_complete.py",
+    "/app/test_reports/pytest/iter23_sec002.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "security_engine.py setup_status (line 458-475) correctly returns flags-only response when _session_device(token) does NOT match device_id -- confirmed no PII leaks on wrong/bogus/cross-device tokens. Good.",
+    "recovery_wipe (line 1370) now issues db.sessions.delete_many({device_id}) before device_state update; combined with _require_session's expiry+device check this fully invalidates any pre-wipe tokens. Verified end-to-end.",
+    "server.py /api/auth/pattern (line 928-933) now raises 410 -- the legacy OWNER_PRESENT global-state hazard is closed. Consider also disabling /auth/setup-dual-patterns (line 935) if it's no longer used, since it still writes to the L1EnhancedKernel state -- not part of SEC-002 scope but worth a look.",
+    "All 8 newly-gated handlers accept `x_dm_token: Optional[str] = Header(default=None, alias='X-DM-Token')` and call `await _require_session(device_id, x_dm_token)` as first line -- consistent pattern, easy to audit.",
+    "_profiles_payload() is correctly used by internal callers (list_profiles/add_profile/remove_profile) so the payload shape is unified.",
+    "Frontend TelemetryService keeps X-DM-Token as axios.defaults.headers.common; confirmed all owner-screen endpoints send it after unlock/setup. No screen showed a 401 in the whole flow.",
+    "Nice-to-have (not blocking): db.sessions still lacks a MongoDB TTL index on expires_at (flagged in iter22, still open) -- read-time expiry check is sufficient for correctness but leaves stale rows.",
+    "Nice-to-have: the /ai-insights POST is now token-gated but the client shows an indefinite 'Analysing your device...' spinner while it computes. Consider a timeout+retry UX; not a security issue."
+  ],
+  "updated_files": ["/app/backend/tests/test_iter23_sec002_complete.py"],
+  "success_rate": {"backend": "100% (49/49)", "frontend": "100% of critical regression path (setup+unlock+dashboard+Home+Recovery+Evidence+Mate all load, 0 x 401 across /api/*)"},
+  "test_credentials": "Ephemeral TEST_iter23_* devices; access=2580, recovery=rec999, wipe=wipe888. Frontend flow used a fresh randomly-generated dm_device_id from the wizard.",
+  "seed_data_creation": "All test devices are TEST_iter23_-prefixed; no shared/production data touched.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "SEC-002 is now FULLY closed. Reusable suites in /app/backend/tests/: test_iter23_sec002_complete.py (49 tests, newly-gated 401+cross-device+valid-token, PII gating, /auth/pattern 410, wipe session revocation, ungated regression), test_sec002_session_auth.py (iter22, 45 tests). Frontend token-header path verified end-to-end. If any future SEC-002 addition adds new gated endpoints, extend NEW_GATED list in test_iter23_sec002_complete.py. Note: /api/security/setup/status is a 'dual-mode' endpoint: PII conditionally returned only when a device-bound X-DM-Token is present.",
+  "rca of the issue": "N/A - no bugs found. Prior BOLA partial-fix (SEC-002) is now complete: 8 previously-ungated sensitive endpoints are gated; setup/status PII is token-conditional; legacy /auth/pattern removed; sessions revoked on wipe; ungated write/pre-unlock endpoints preserved for native and setup flows."
+}
