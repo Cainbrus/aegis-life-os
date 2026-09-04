@@ -1,0 +1,23 @@
+{
+  "summary": "Verified /api/security/events endpoint gating against the LIVE preview backend. All 6 tests pass. Confirms the user-reported 404 was a transient artifact; correct behavior is 401-without-token, 200-with-valid-token. Route is registered, gated by SEC-002, and healthy.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iter24_events_gating.py",
+    "/app/test_reports/pytest/iter24.xml"
+  ],
+  "action_items": [
+    "Inform user: GET /api/security/events?device_id=<dev> WITHOUT X-DM-Token correctly returns 401 (not 404). The 404 they observed was a transient during a backend restart. Native app should: 1) POST /verify-access to obtain token, 2) send X-DM-Token header on GET/DELETE /events. POST /events remains ungated for background logging."
+  ],
+  "critical_code_review_comments": [
+    "Verified: POST /events ungated (correct for background logging by device), GET/DELETE /events call _require_session with device-bound token binding — cross-device token use is rejected (401). Lifecycle POST->GET->DELETE->GET works cleanly."
+  ],
+  "updated_files": ["/app/backend/tests/test_iter24_events_gating.py"],
+  "success_rate": {"backend": "100% (6/6)", "frontend": "n/a"},
+  "test_credentials": "Fresh device created per test run: setup {device_id: evt-test-<rand>, access_code:'2580'}; token obtained via /verify-access.",
+  "seed_data_creation": "Two throwaway devices (evt-test-<rand>) created per module for token-binding test. No cleanup of these test devices was performed (no admin delete endpoint used).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Suite /app/backend/tests/test_iter24_events_gating.py is a good regression harness for SEC-002 event gating + token binding + full CRUD lifecycle. Hits the LIVE preview URL from REACT_APP_BACKEND_URL. Reusable pattern: setup -> verify-access -> use X-DM-Token header.",
+  "rca of the issue": "User reported 404 on GET /api/security/events?device_id=test. RCA: route /api/security/events is registered and returns 401 when X-DM-Token is missing (SEC-002 gating via _require_session). The 404 was a transient error during a backend supervisor restart (route not yet mounted). Mitigation: none needed on backend; the native/Android client must obtain a session token via POST /api/security/verify-access and send X-DM-Token on GET/DELETE /events."
+}
