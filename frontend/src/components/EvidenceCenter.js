@@ -23,18 +23,26 @@ const SEV_STYLES = {
 const EvidenceCenter = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(false);
   const [lightbox, setLightbox] = useState(null);
 
   const load = useCallback(async () => {
+    setLoading(true);
     try {
+      // Make sure an owner session token is attached (self-heals a lost/expired token).
+      await telemetry.ensureSession();
       const res = await axios.get(`${API}/security/events?device_id=${telemetry.deviceId}`);
       setEvents(res.data.events || []);
-    } catch (e) { /* ignore */ } finally { setLoading(false); }
+      setAuthError(false);
+    } catch (e) {
+      if (e.response && e.response.status === 401) setAuthError(true);
+    } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
   const clearAll = async () => {
+    await telemetry.ensureSession();
     await axios.delete(`${API}/security/events?device_id=${telemetry.deviceId}`);
     load();
   };
@@ -62,6 +70,14 @@ const EvidenceCenter = () => {
 
       {loading ? (
         <p className="text-slate-500 text-sm">Loading timeline…</p>
+      ) : authError ? (
+        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-8 text-center" data-testid="evidence-locked">
+          <Lock className="text-amber-400 mx-auto mb-3" size={40} />
+          <p className="text-white font-semibold">Session expired</p>
+          <p className="text-slate-400 text-sm mt-1">Re-enter your access code from the cover to view evidence.</p>
+          <button onClick={load} data-testid="evidence-retry-btn"
+            className="mt-4 px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold">Retry</button>
+        </div>
       ) : events.length === 0 ? (
         <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 text-center" data-testid="evidence-empty">
           <img src={`${process.env.PUBLIC_URL}/brand/shield-emblem.png`} alt="" className="w-24 h-24 object-contain mx-auto mb-3 opacity-90" />

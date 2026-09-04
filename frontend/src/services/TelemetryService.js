@@ -45,23 +45,53 @@ class TelemetryService {
     this.lastScoreAt = 0;
     this.knownDevice = undefined;     // 0-1 set by native Bluetooth bridge (owner's watch/car/earbuds)
     this.started = false;
-    // Stage-2 auth: restore any existing owner session token for this tab.
+    // Stage-2 auth: restore any existing owner session token.
+    // Uses localStorage (NOT sessionStorage) so the token survives the Android WebView
+    // being killed/reopened — sessionStorage is wiped on app restart.
     this.sessionToken = null;
     try {
-      const t = sessionStorage.getItem('dm_session_token');
+      const t = localStorage.getItem('dm_session_token') || sessionStorage.getItem('dm_session_token');
       if (t) { this.sessionToken = t; axios.defaults.headers.common['X-DM-Token'] = t; }
-    } catch (e) { /* sessionStorage unavailable */ }
+    } catch (e) { /* storage unavailable */ }
   }
 
   // Store/clear the owner session token (sent as X-DM-Token on gated endpoints).
   setSessionToken(token) {
     this.sessionToken = token || null;
     try {
-      if (token) sessionStorage.setItem('dm_session_token', token);
-      else sessionStorage.removeItem('dm_session_token');
+      if (token) { localStorage.setItem('dm_session_token', token); sessionStorage.setItem('dm_session_token', token); }
+      else { localStorage.removeItem('dm_session_token'); sessionStorage.removeItem('dm_session_token'); }
     } catch (e) { /* ignore */ }
     if (token) axios.defaults.headers.common['X-DM-Token'] = token;
     else delete axios.defaults.headers.common['X-DM-Token'];
+  }
+
+  // Ensure a valid owner session exists before hitting gated endpoints.
+  // Self-heals the case where the token was never obtained (offline setup) or was lost
+  // (WebView restart / expiry): re-derive it from the locally stored access code.
+  // Returns true if a usable token is available afterwards.
+  async ensureSession() {
+    if (this.sessionToken) {
+      // Quick validity probe against a gated endpoint (also confirms the device is known server-side).
+      try {
+        await axios.get(`${API}/security/status?device_id=${this.deviceId}`);
+        return true;
+      } catch (e) {
+        if (!(e.response && e.response.status === 401)) return true; // network hiccup, keep token
+        this.setSessionToken(null); // 401 -> token is stale, fall through to refresh
+      }
+    }
+    // Try to re-authenticate using the locally stored (encrypted) access/recovery code.
+    let code = null;
+    try {
+      const accEnc = localStorage.getItem('dm_access_enc');
+      const recEnc = localStorage.getItem('dm_recovery_enc');
+      if (accEnc) code = await decryptValue(this.deviceId, accEnc);
+      if (!code && recEnc) code = await decryptValue(this.deviceId, recEnc);
+      if (!code) code = localStorage.getItem('dm_access_code') || localStorage.getItem('dm_recovery_code');
+    } catch (e) { /* decrypt failed */ }
+    if (!code) return false;
+    return await this._obtainServerToken(code);
   }
 
   setScreen(screen) { if (screen) this.currentScreen = screen; }
