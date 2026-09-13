@@ -1,6 +1,7 @@
 """Cloud-only staging ASGI factory. Never loads .env or the legacy server."""
 import os
 import logging
+import asyncio
 from contextlib import asynccontextmanager
 from urllib.parse import urlsplit, parse_qsl
 
@@ -92,8 +93,16 @@ def create_app(env=None, database=None):
 
     @app.get('/health')
     async def health():
+        # Render liveness must not wait for an external dependency. This does
+        # not certify database readiness or authorize any protected operation.
+        return {'staging': True, 'alive': True, 'workforce_enabled': False}
+
+    @app.get('/ready')
+    async def ready():
         try:
-            await database.command('ping')
+            # Bound the entire await, not just Mongo server selection. Leave
+            # margin below Render's five-second HTTP health-check deadline.
+            await asyncio.wait_for(database.command('ping'), timeout=2.0)
         except Exception:
             return JSONResponse({'staging': True, 'database_ready': False}, status_code=503)
         return {'staging': True, 'database_ready': True, 'workforce_enabled': False}

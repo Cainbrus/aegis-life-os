@@ -1,5 +1,7 @@
 """HTTP boundary tests with an injected in-memory database; no real secrets/network."""
 import copy
+import asyncio
+import time
 import unittest
 from datetime import datetime, timezone, timedelta
 from unittest.mock import patch
@@ -86,15 +88,42 @@ class CloudTests(unittest.TestCase):
                 self.assertNotIn('synthetic:', str(error.exception))
 
     def test_health_database_failure_is_redacted(self):
-        self.assertEqual(200, self.client.get('/health').status_code)
+        self.assertEqual(200, self.client.get('/ready').status_code)
         self.db.failed = True
-        response = self.client.get('/health')
+        response = self.client.get('/ready')
         self.assertEqual(503, response.status_code)
         self.assertNotIn('SYNTHETIC_SECRET', response.text)
         self.assertEqual('no-store', response.headers['cache-control'])
 
+    def test_liveness_does_not_call_database(self):
+        async def forbidden(*args):
+            raise AssertionError('Liveness called database')
+        with patch.object(self.db, 'command', forbidden):
+            response = self.client.get('/health')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({'staging': True, 'alive': True, 'workforce_enabled': False}, response.json())
+        self.assertNotIn('database_ready', response.json())
+        self.assertEqual('no-store', response.headers['cache-control'])
+
+    def test_readiness_timeout_then_recovery(self):
+        cancelled = []
+        async def stalled(*args):
+            try:
+                await asyncio.Event().wait()
+            finally:
+                cancelled.append(True)
+        with patch.object(self.db, 'command', stalled):
+            start = time.monotonic()
+            response = self.client.get('/ready')
+            self.assertLess(time.monotonic() - start, 4.5)
+        self.assertEqual(503, response.status_code)
+        self.assertEqual({'staging': True, 'database_ready': False}, response.json())
+        self.assertTrue(cancelled)
+        self.assertEqual(200, self.client.get('/ready').status_code)
+        self.assertEqual(401, self.post('session/native').status_code)
+
     def test_only_allowlisted_routes_exist(self):
-        expected = {('GET', '/health')}
+        expected = {('GET', '/health'), ('GET', '/ready')}
         expected |= {('POST', '/api/security/'+p) for p in ['setup','profiles/add','profiles/remove',
             'verify-access','verify-recovery','session/native','session/revoke','session/revoke-device',
             'session/revocation-ticket','session/revoke-ticket','recovery/locate','recovery/trigger','events']}

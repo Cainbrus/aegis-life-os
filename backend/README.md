@@ -15,7 +15,19 @@ Start:
 uvicorn staging_cloud_app:create_app --factory --host 0.0.0.0 --port $PORT --no-access-log
 ```
 
-Health check: `/health` (503 when the database cannot be reached).
+Render liveness check: `/health` (fast 200 without contacting MongoDB).
+Database readiness: `/ready` (200 when MongoDB ping succeeds; redacted 503 on
+failure or a two-second timeout). A healthy process does not mean the backend
+is ready for use: require `/ready` success before RC acceptance. Protected routes
+still require their existing authorization and database operations; no offline
+authorization or data fallback is introduced.
+
+Startup validates configuration but does not prove Atlas connectivity. If
+`/ready` returns503, privately check Atlas cluster availability, Render outbound
+CIDR allowlisting, database-user permissions, and TLS/DNS connectivity. Do not
+paste credentials or disable certificate verification. Driver server selection
+can take five seconds; using that dependency in `/health` previously conflicted
+with Render's five-second probe deadline.
 
 Required provider environment settings:
 - `MONGO_URL`: authenticated Atlas SRV URI, entered privately in provider settings.
