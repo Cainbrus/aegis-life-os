@@ -51,6 +51,13 @@ python atlas_diagnostic.py
 ```
 It reads the existing provider environment, performs only a TLS-protected ping,
 and prints a fixed JSON category. Never pass a URI on the command line. Worker
+output now contains only `category` and an allowlisted `exception_class` (or null).
+Wrapped authentication, authorization, DNS and TLS errors are classified before
+generic server-selection timeouts. Explicit network errors report
+`network failure (IP allowlist possible)`; this does not prove an allowlist problem.
+Worker failures and the overall diagnostic deadline have separate categories.
+Unknown exception text, custom class names and extra JSON fields are discarded.
+Worker
 stderr is discarded and its output is allowlisted; a 12-second worker deadline
 bounds DNS/connection waits. No credentials, hosts or exception details are printed.
 The command does not change `/health`, `/ready`, authorization or database data.

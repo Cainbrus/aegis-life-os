@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 from pymongo.errors import OperationFailure, ServerSelectionTimeoutError, InvalidURI
 from pymongo.uri_parser import parse_uri
 from unittest.mock import patch
-from atlas_diagnostic import diagnose, category, run_bounded
+from atlas_diagnostic import diagnose, category, run_bounded, failure
 from test_cloud_staging import ENV
 
 
@@ -20,7 +20,10 @@ class AtlasDiagnosticTests(unittest.TestCase):
                  (OperationFailure(secret, 13), 'authorization failure'),
                  (ssl.SSLError(secret), 'TLS failure'),
                  (socket.gaierror(secret), 'DNS failure'),
-                 (ServerSelectionTimeoutError(secret), 'timeout'),
+                 (ServerSelectionTimeoutError(secret), 'server-selection timeout'),
+                 (ServerSelectionTimeoutError('connection refused '+secret), 'network failure (IP allowlist possible)'),
+                 (ServerSelectionTimeoutError('bad auth '+secret), 'authentication failure'),
+                 (ServerSelectionTimeoutError('resolution lifetime expired '+secret), 'DNS failure'),
                  (ServerSelectionTimeoutError('SSL handshake failed: '+secret), 'TLS failure'),
                  (InvalidURI(secret), 'URI format rejected'),
                  (RuntimeError(secret), 'unknown database error')]
@@ -50,9 +53,38 @@ class AtlasDiagnosticTests(unittest.TestCase):
             self.assertIs(kwargs['stderr'], subprocess.DEVNULL)
             self.assertEqual(12, kwargs['timeout'])
             return SimpleNamespace(returncode=0, stdout='synthetic secret')
-        self.assertEqual('unknown database error', run_bounded(bad))
+        self.assertEqual('diagnostic worker failure', run_bounded(bad)['category'])
         def slow(*args, **kwargs): raise subprocess.TimeoutExpired('worker', 12)
-        self.assertEqual('timeout', run_bounded(slow))
+        self.assertEqual('diagnostic deadline exceeded', run_bounded(slow)['category'])
+
+    def test_safe_class_and_nested_errors(self):
+        error = RuntimeError('synthetic secret')
+        error.__cause__ = OperationFailure('synthetic secret', 13)
+        self.assertEqual({'category': 'authorization failure', 'exception_class': 'RuntimeError'}, failure(error))
+        custom = type('synthetic_secret_class', (Exception,), {})('synthetic secret')
+        self.assertEqual('Other', failure(custom)['exception_class'])
+        error.__cause__ = error
+        self.assertEqual('unknown database error', category(error))
+
+    def test_worker_json_is_strictly_allowlisted(self):
+        import json
+        for value in ({'category': 'TLS failure', 'exception_class': 'SSLError'},
+                      {'category': 'ready', 'exception_class': None}):
+            runner = lambda *a, **k: SimpleNamespace(returncode=0, stdout=json.dumps(value))
+            self.assertEqual(value, run_bounded(runner))
+        for value in ({'category': 'TLS failure', 'exception_class': 'synthetic secret'},
+                      {'category': 'TLS failure', 'exception_class': None, 'host': 'synthetic secret'},
+                      {'category': ['synthetic secret'], 'exception_class': None}):
+            runner = lambda *a, **k: SimpleNamespace(returncode=0, stdout=json.dumps(value))
+            self.assertEqual('diagnostic worker failure', run_bounded(runner)['category'])
+
+    def test_real_worker_without_credentials(self):
+        import os
+        # Windows SSL/runtime imports require OS locations, not provider secrets.
+        clean = {key: os.environ[key] for key in ('SystemRoot', 'WINDIR', 'TEMP', 'TMP') if key in os.environ}
+        with patch.dict(os.environ, clean, clear=True):
+            result = run_bounded()
+        self.assertEqual({'category': 'configuration rejected', 'exception_class': 'RuntimeError'}, result)
 
     def test_pinned_driver_parses_paths_and_encoded_password_without_dns(self):
         # Mock SRV/TXT only; use the installed PyMongo URI parser, no network.
