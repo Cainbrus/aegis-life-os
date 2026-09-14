@@ -42,8 +42,24 @@ do not allow global database access. CORS permits the bundled Android origin
 Run tests from this directory, using a local virtual environment:
 ```sh
 pip install -r requirements-test.txt
-python -m unittest discover -s tests -p test_cloud_staging.py -v
+python -m unittest discover -s tests -p 'test_*.py' -v
 ```
+
+Temporary Atlas diagnostic (run privately in this staging service's Render Shell):
+```sh
+python atlas_diagnostic.py
+```
+It reads the existing provider environment, performs only a TLS-protected ping,
+and prints a fixed JSON category. Never pass a URI on the command line. Worker
+stderr is discarded and its output is allowlisted; a 12-second worker deadline
+bounds DNS/connection waits. No credentials, hosts or exception details are printed.
+The command does not change `/health`, `/ready`, authorization or database data.
+Run it after manually deploying the commit containing this file. A Shell test
+checks that shell instance's connectivity, not the running HTTP worker itself.
+If it reports ready but `/ready` fails, investigate the web worker and its shorter
+two-second deadline; do not assume authentication failed. Ping success does not
+prove application read/write or session acceptance. Remove this temporary utility
+after the connectivity investigation is complete.
 Tests inject an in-memory database and synthetic credentials; no Atlas credentials
 or network access are required. Real Atlas/HTTPS/device acceptance remains separate.
 
