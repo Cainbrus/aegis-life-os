@@ -118,3 +118,21 @@ class HttpTests(unittest.TestCase):
         self.device=original_device
         self.db.native_sessions.rows[0]['expires_at']='2000-01-01T00:00:00+00:00'
         self.assertEqual(401,self.post('ai/consent',enabled=False,limit=10).status_code)
+    def test_scoped_status_rejects_broad_and_reporting_sessions(self):
+        self.assertEqual(401,self.post('session/ai/status').status_code)
+        owner=self.token
+        self.token=self.post('session/native').json()['token']
+        self.assertEqual(401,self.post('session/ai/status').status_code)
+        self.token=owner; self.token=self.post('session/ai').json()['token']
+        response=self.post('session/ai/status')
+        self.assertEqual(200,response.status_code)
+        self.assertEqual(self.device,response.json()['device_id'])
+        self.assertEqual('ai:layout',response.json()['scope'])
+        self.assertNotIn(self.token,response.text)
+        self.device='wrong-device'
+        self.assertEqual(401,self.post('session/ai/status').status_code)
+    def test_exhausted_budget_denied_without_provider(self):
+        self.post('ai/consent',enabled=True,limit=10)
+        self.db.ai_controls.rows[0]['calls']=10
+        response=self.post('ai/suggest',context={'layout':'grid','large_text':False})
+        self.assertEqual('budget_exhausted',response.json()['reason'])

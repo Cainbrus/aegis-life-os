@@ -130,6 +130,9 @@ class CloudAiBroker:
             if not state['enrolled']: return await self.fallback(identity,'not_enrolled')
             if not state['consent']: return await self.fallback(identity,'consent_off')
             if state.get('consent_policy')!=CONSENT_POLICY or state['consent_version']!=consent_version: return await self.fallback(identity,'consent_changed')
+            if (state['calls']>=state['limit'] or state['tokens']+384>state['limit']*384 or
+                state['cost_micros']+10000>state['limit']*10000):
+                return await self.fallback(identity,'budget_exhausted')
             if self.provider is None: return await self.fallback(identity,'provider_unavailable')
             attempt=uuid.uuid4().hex
             denied=await self.reserve(device,token,identity,tier,attempt,consent_version)

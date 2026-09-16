@@ -104,6 +104,14 @@ def build_router(db):
             return await _require_session(device_id, native.get('parent_token'), roles=('owner',))
         return await _require_session(device_id, token, roles=('owner',))
 
+    @router.post('/session/ai/status')
+    async def ai_session_status(req: NativeSessionIn, x_dm_token: Optional[str]=Header(default=None, alias='X-DM-Token')):
+        native = await db.native_sessions.find_one({'token_hash': hashlib.sha256((x_dm_token or '').encode()).hexdigest()})
+        if not native or native.get('scope') != 'ai:layout':
+            raise HTTPException(401, 'AI capability required')
+        await _require_ai_session(req.device_id, x_dm_token)
+        return {'scope': 'ai:layout', 'device_id': req.device_id, 'expires_at': int(datetime.fromisoformat(native['expires_at']).timestamp()*1000)}
+
     @router.post('/session/revoke')
     async def revoke_session(req: NativeSessionIn, x_dm_token: Optional[str]=Header(default=None, alias='X-DM-Token')):
         await _require_session(req.device_id, x_dm_token, roles=('owner', 'trusted', 'limited', 'guest'))

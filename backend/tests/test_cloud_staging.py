@@ -126,7 +126,7 @@ class CloudTests(unittest.TestCase):
         expected = {('GET', '/health'), ('GET', '/ready')}
         expected |= {('POST', '/api/security/ai/'+p) for p in ['consent','suggest']}
         expected |= {('POST', '/api/security/'+p) for p in ['setup','profiles/add','profiles/remove',
-            'verify-access','verify-recovery','session/native','session/ai','session/revoke','session/revoke-device',
+            'verify-access','verify-recovery','session/native','session/ai','session/ai/status','session/revoke','session/revoke-device',
             'session/revocation-ticket','session/revoke-ticket','recovery/locate','recovery/trigger','events']}
         expected |= {('GET', '/api/security/'+p) for p in ['setup/status','profiles','recovery/location','events','alerts']}
         actual = {(m, r.path) for r in self.client.app.routes for m in r.methods}
