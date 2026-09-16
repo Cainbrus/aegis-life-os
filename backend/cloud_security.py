@@ -83,6 +83,27 @@ def build_router(db):
         await db.native_sessions.insert_one({'token_hash': hashlib.sha256(token.encode()).hexdigest(), 'parent_token': x_dm_token, 'device_id': req.device_id, 'scope': 'location:write', 'created_at': datetime.now(timezone.utc).isoformat(), 'expires_at': expires.isoformat()})
         return {'token': token, 'expires_at': int(expires.timestamp() * 1000), 'scope': 'location:write'}
 
+    @router.post('/session/ai')
+    async def issue_ai_session(req: NativeSessionIn, x_dm_token: Optional[str]=Header(default=None, alias='X-DM-Token')):
+        parent = await _require_session(req.device_id, x_dm_token, roles=('owner',))
+        token = _secrets.token_urlsafe(32)
+        now = datetime.now(timezone.utc)
+        expires = min(datetime.fromisoformat(parent['expires_at']), now + timedelta(minutes=5))
+        await db.native_sessions.insert_one({'token_hash': hashlib.sha256(token.encode()).hexdigest(), 'parent_token': x_dm_token, 'device_id': req.device_id, 'scope': 'ai:layout', 'created_at': now.isoformat(), 'expires_at': expires.isoformat()})
+        return {'token': token, 'expires_at': int(expires.timestamp() * 1000), 'scope': 'ai:layout'}
+
+    async def _require_ai_session(device_id: str, token: Optional[str], roles=('owner',)):
+        native = await db.native_sessions.find_one({'token_hash': hashlib.sha256((token or '').encode()).hexdigest()})
+        if native:
+            try:
+                valid = native.get('scope') == 'ai:layout' and native.get('device_id') == device_id and datetime.fromisoformat(native['expires_at']) > datetime.now(timezone.utc)
+            except (KeyError, ValueError, TypeError):
+                valid = False
+            if not valid:
+                raise HTTPException(status_code=401, detail='AI capability expired or invalid')
+            return await _require_session(device_id, native.get('parent_token'), roles=('owner',))
+        return await _require_session(device_id, token, roles=('owner',))
+
     @router.post('/session/revoke')
     async def revoke_session(req: NativeSessionIn, x_dm_token: Optional[str]=Header(default=None, alias='X-DM-Token')):
         await _require_session(req.device_id, x_dm_token, roles=('owner', 'trusted', 'limited', 'guest'))
@@ -388,5 +409,5 @@ def build_router(db):
     # Staging AI safety boundary reuses the same reviewed Owner-session authority.
     # No provider transport or server-side secret is loaded by this router.
     from cloud_ai import build_ai_router
-    router.include_router(build_ai_router(db, _require_session))
+    router.include_router(build_ai_router(db, _require_ai_session))
     return router

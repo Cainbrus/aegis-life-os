@@ -96,3 +96,25 @@ class HttpTests(unittest.TestCase):
         state=self.db.ai_controls.rows[0]
         self.assertTrue(state['enrolled']); self.assertFalse(state['consent'])
         self.assertEqual(3,state['calls']); self.assertEqual(2,state['consent_version'])
+
+    def test_ai_session_is_scoped_and_parent_revocation_cascades(self):
+        owner=self.token
+        response=self.post('session/ai')
+        self.assertEqual(200,response.status_code)
+        self.assertEqual('ai:layout',response.json()['scope'])
+        ai=response.json()['token']; self.token=ai
+        self.assertEqual(200,self.post('ai/consent',enabled=True,limit=10).status_code)
+        self.assertEqual('provider_unavailable',self.post('ai/suggest',context={'layout':'list','large_text':True}).json()['reason'])
+        self.assertEqual(401,self.post('recovery/locate',lat=0,lng=0).status_code)
+        self.assertEqual(401,self.post('session/native').status_code)
+        self.assertEqual(401,self.post('session/ai').status_code)
+        self.token=owner; self.post('session/revoke')
+        self.token=ai; self.assertEqual(401,self.post('ai/suggest',context={'layout':'grid','large_text':False}).status_code)
+    def test_ai_session_expiry_and_device_binding(self):
+        response=self.post('session/ai'); self.assertEqual(200,response.status_code)
+        self.token=response.json()['token']
+        original_device=self.device; self.device='unrelated-device'
+        self.assertEqual(401,self.post('ai/consent',enabled=False,limit=10).status_code)
+        self.device=original_device
+        self.db.native_sessions.rows[0]['expires_at']='2000-01-01T00:00:00+00:00'
+        self.assertEqual(401,self.post('ai/consent',enabled=False,limit=10).status_code)
