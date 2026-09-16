@@ -385,4 +385,8 @@ def build_router(db):
         await _log_event(req.device_id, 'recovery', 'critical', f'Recovery triggered ({via})', 'Owner activated Lost Phone mode via secret trigger. Server recovery state saved; device tracking unconfirmed.', lat=req.lat, lng=req.lng)
         await _create_alert(req.device_id, 'Recovery activated', f'Lost Phone mode was triggered via your secret {via}. Device lock and live tracking require device confirmation.')
         return {'triggered': True, 'via': via}
+    # Staging AI safety boundary reuses the same reviewed Owner-session authority.
+    # No provider transport or server-side secret is loaded by this router.
+    from cloud_ai import build_ai_router
+    router.include_router(build_ai_router(db, _require_session))
     return router

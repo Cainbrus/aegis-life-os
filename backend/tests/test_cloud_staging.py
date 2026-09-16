@@ -124,6 +124,7 @@ class CloudTests(unittest.TestCase):
 
     def test_only_allowlisted_routes_exist(self):
         expected = {('GET', '/health'), ('GET', '/ready')}
+        expected |= {('POST', '/api/security/ai/'+p) for p in ['consent','suggest']}
         expected |= {('POST', '/api/security/'+p) for p in ['setup','profiles/add','profiles/remove',
             'verify-access','verify-recovery','session/native','session/revoke','session/revoke-device',
             'session/revocation-ticket','session/revoke-ticket','recovery/locate','recovery/trigger','events']}

@@ -107,6 +107,8 @@ def create_app(env=None, database=None):
             return JSONResponse({'staging': True, 'database_ready': False}, status_code=503)
         return {'staging': True, 'database_ready': True, 'workforce_enabled': False}
 
+    from cloud_ai import AiBodyLimit
+    app.add_middleware(AiBodyLimit)
     app.add_middleware(SafeBoundary)
     app.add_middleware(CORSMiddleware, allow_origins=['https://localhost'],
                        allow_methods=['GET', 'POST'],
